@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  app:
+    image: 'docker-spring-boot-postgres:latest'
+    container_name: sumfood_backend
+    build:
+      context: ./sumfood-backend/
+    depends_on:
+      - db
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+
+  frontend:
+    image: node:23-bookworm
+    working_dir: /app
+    container_name: sumfood_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./sumfood-frontend/app:/app
+    command: |
+      sh -c "npm ci && npm start"
+
+  db:
+    container_name: sumfood_db
+    image: postgres
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ../data/pg_data:/var/lib/postgresql/data
+    ports:
+      - "5446:5432"
