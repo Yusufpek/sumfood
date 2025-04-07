@@ -8,8 +8,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class DemoApplication {
 
-
-//test
+	// test
 	@GetMapping("/")
 	public String home() {
 		return "Spring is here!";
