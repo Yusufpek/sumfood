@@ -33,7 +33,7 @@ public abstract class UserBase extends EntityBase implements UserDetails {
     @Column(nullable = false)
     private String lastName;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true, length = 10) // 505 505 55 55
     private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
