@@ -1,5 +1,8 @@
 package com.fivesum.sumfood.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.*;
 
 import com.fivesum.sumfood.model.base.UserBase;
@@ -15,4 +18,9 @@ public class Customer extends UserBase {
     public void prePersist() {
         setRole(Role.CUSTOMER);
     }
+
+    // Relations
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CustomerFavoriteRestaurant> favoriteRestaurants = new ArrayList<>();
+
 }
