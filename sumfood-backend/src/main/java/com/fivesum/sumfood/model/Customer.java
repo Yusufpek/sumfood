@@ -3,6 +3,7 @@ package com.fivesum.sumfood.model;
 import javax.persistence.*;
 
 import com.fivesum.sumfood.model.base.UserBase;
+import com.fivesum.sumfood.model.enums.Role;
 
 import lombok.experimental.SuperBuilder;
 
