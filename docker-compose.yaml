@@ -2,22 +2,26 @@ version: '3'
 
 services:
   app:
-    image: 'docker-spring-boot-postgres:latest'
+    image: maven:3.8.5-openjdk-8
     container_name: sumfood_backend
-    build:
-      context: ./sumfood-backend/
+    working_dir: /app
+    volumes:
+      - ./sumfood-backend:/app
     depends_on:
       - db
     env_file:
       - .env
     ports:
       - "8080:8080"
+    command: mvn spring-boot:run
 
   frontend:
     image: node:23-bookworm
     working_dir: /app
     container_name: sumfood_frontend
     restart: unless-stopped
+    env_file:
+      - .env
     ports:
       - "3000:3000"
     volumes:
