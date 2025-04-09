@@ -6,6 +6,11 @@ import com.fivesum.sumfood.model.base.EntityBase;
 import com.fivesum.sumfood.model.enums.OrderStatus;
 import com.fivesum.sumfood.model.enums.PaymentStatus;
 
+import lombok.experimental.SuperBuilder;
+
+@SuperBuilder
+@Entity
+@Table(name = "orders")
 public class Order extends EntityBase {
 
     @ManyToOne(optional = false)
