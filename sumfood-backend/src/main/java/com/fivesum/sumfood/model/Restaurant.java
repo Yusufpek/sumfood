@@ -25,6 +25,9 @@ public class Restaurant extends UserBase {
     @Column(nullable = false)
     private String description;
 
+    @Column(nullable = false)
+    private boolean isValidated = false;
+
     // TODO: Add location fields
 
     @PrePersist

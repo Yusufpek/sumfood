@@ -30,6 +30,9 @@ public class Courier extends UserBase {
     @Column(nullable = false)
     private VehicleType vehicleType;
 
+    @Column(nullable = false)
+    private boolean isValidated = false;
+
     @PrePersist
     public void prePersist() {
         setRole(Role.COURIER);
