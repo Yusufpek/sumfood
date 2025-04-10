@@ -8,10 +8,13 @@ import org.springframework.web.bind.annotation.*;
 import com.fivesum.sumfood.dto.AuthRequest;
 import com.fivesum.sumfood.dto.CourierRegistrationRequest;
 import com.fivesum.sumfood.dto.CustomerRegistrationRequest;
+import com.fivesum.sumfood.dto.RestaurantRegistrationRequest;
 import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.model.Customer;
+import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.service.CourierService;
 import com.fivesum.sumfood.service.CustomerService;
+import com.fivesum.sumfood.service.RestaurantService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,6 +23,7 @@ public class AuthController {
 
     private final CustomerService customerService;
     private final CourierService courierService;
+    private final RestaurantService restaurantService;
 
     @PostMapping("/register/customer")
     public ResponseEntity<Customer> registerCustomer(@RequestBody CustomerRegistrationRequest request) {
@@ -39,6 +43,16 @@ public class AuthController {
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(courierService.registerCourier(request));
+    }
+
+    @PostMapping("/register/restaurant")
+    public ResponseEntity<Restaurant> registerRestaurant(@RequestBody RestaurantRegistrationRequest request) {
+        // Check if email already exists
+        if (restaurantService.existsByEmail(request.getEmail())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(restaurantService.registerCourier(request));
     }
 
     @PostMapping("/login-alt")

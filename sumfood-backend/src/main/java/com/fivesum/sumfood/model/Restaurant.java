@@ -34,4 +34,9 @@ public class Restaurant extends UserBase {
     public void prePersist() {
         setRole(Role.RESTAURANT);
     }
+
+    @Override
+    public boolean isEnabled() {
+        return isValidated;
+    }
 }
