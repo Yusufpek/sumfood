@@ -38,6 +38,11 @@ public class Courier extends UserBase {
         setRole(Role.COURIER);
     }
 
+    @Override
+    public boolean isEnabled() {
+        return isValidated;
+    }
+
     // Relations
     @OneToMany(mappedBy = "courier", cascade = CascadeType.REMOVE)
     private List<Delivery> deliveries = new ArrayList<>();
