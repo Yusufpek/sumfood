@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RestaurantRegistrationRequest extends CustomerRegistrationRequest {
     private String taxIdentificationNumber;
-    private String bussinesName;
+    private String businessName;
     private String displayName;
     private String description;
 }

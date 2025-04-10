@@ -17,7 +17,7 @@ public class Restaurant extends UserBase {
     private String taxIdentificationNumber; // Vergi Kimlik Numarası
 
     @Column(nullable = false, unique = true)
-    private String bussinesName; // Real Name
+    private String businessName; // Real Name
 
     @Column(nullable = false, unique = true, length = 50)
     private String displayName;

@@ -32,7 +32,7 @@ public class RestaurantService implements UserDetailsService {
                 .lastName(request.getLastName())
                 .phoneNumber(request.getPhoneNumber())
                 .taxIdentificationNumber(request.getTaxIdentificationNumber())
-                .bussinesName(request.getBussinesName())
+                .businessName(request.getBusinessName())
                 .displayName(request.getDisplayName())
                 .description(request.getDescription())
                 .isValidated(false)
