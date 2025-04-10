@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+
 import '../App.css';
 
 function Register() {
@@ -20,7 +22,6 @@ function Register() {
     e.preventDefault();
     // Handle registration logic here
     const userData = {
-      userType,
       name,
       lastName,
       email,
@@ -29,8 +30,39 @@ function Register() {
       ...(userType === 'courier' && { driverLicenseId, birthDate }),
       ...(userType === 'restaurant' && { taxId, businessName, displayName, description }),
     };
-    alert(`Registered: ${JSON.stringify(userData, null, 2)}`);
-  };
+
+    register(userData)
+      .then((response) => {
+        if (userType === 'restaurant') {
+          alert(`Registered: ${userData['displayName']}`);
+        } else {
+          alert(`Registered: ${response.data['username']}`);
+        }
+      })
+      .catch((e) => {
+        if (e.status === 409) {
+          alert("This email already in use!");
+        } else {
+          alert("Something went wrong! " + e['message']);
+        }
+      });
+  }
+
+  async function register(userData) {
+    let url = "http://localhost:8080/api/auth/register/";
+    if (userType === 'regular') {
+      url += "customer";
+    } else if (userType === 'restaurant') {
+      userData['taxIdentificationNumber'] = userData['taxId'];
+      url += userType;
+    } else {
+      url += userType;
+    }
+    const body = JSON.stringify(userData, null, 2);
+    console.log("body", body);
+    const response = await axios.post(url, body, { headers: { 'Content-Type': 'application/json' } });
+    return response;
+  }
 
   return (
     <div>
