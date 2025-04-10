@@ -11,7 +11,8 @@ function Register() {
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
-  const [driverLicenseId, setDriverLicenseId] = useState('');
+  const [driverLicenceId, setDriverLicenceId] = useState('');
+  const [vehicleType, setVehicleType] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [taxId, setTaxId] = useState('');
   const [businessName, setBusinessName] = useState('');
@@ -27,7 +28,7 @@ function Register() {
       email,
       phoneNumber,
       password,
-      ...(userType === 'courier' && { driverLicenseId, birthDate }),
+      ...(userType === 'courier' && { driverLicenceId, birthDate, vehicleType }),
       ...(userType === 'restaurant' && { taxId, businessName, displayName, description }),
     };
 
@@ -141,11 +142,11 @@ function Register() {
         {userType === 'courier' && (
           <>
             <div>
-              <label>Driver License ID</label>
+              <label>Driver Licence ID</label>
               <input
                 type="text"
-                value={driverLicenseId}
-                onChange={(e) => setDriverLicenseId(e.target.value)}
+                value={driverLicenceId}
+                onChange={(e) => setDriverLicenceId(e.target.value)}
                 required
               />
             </div>
@@ -157,6 +158,27 @@ function Register() {
                 onChange={(e) => setBirthDate(e.target.value)}
                 required
               />
+            </div>
+            <div>
+              <label>Vehicle Type</label>
+              <select
+                value={vehicleType}
+                onChange={(e) => setVehicleType(e.target.value)}
+                required
+                style={{
+                  width: '80%',
+                  padding: '0.5rem',
+                  border: '1px solid #ccc',
+                  borderRadius: '6px',
+                  fontSize: '1rem',
+                  appearance: 'none',
+                  cursor: 'pointer',
+                }}>
+                <option value="">Select vehicle type</option>
+                <option value="CAR">Car</option>
+                <option value="BICYCLE">Bicycle</option>
+                <option value="MOTORCYCLE">Motorcycle</option>
+              </select>
             </div>
           </>
         )}
