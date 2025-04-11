@@ -1,11 +1,10 @@
 package com.fivesum.sumfood.model;
 
 import java.util.List;
-import java.util.Locale.Category;
-
 import javax.persistence.*;
 
 import com.fivesum.sumfood.model.base.EntityBase;
+import com.fivesum.sumfood.model.enums.Category;
 
 import lombok.experimental.SuperBuilder;
 
