@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import axios from 'axios';
-
 import '../App.css';
+import { Link, useNavigate } from 'react-router-dom';
+import AuthNavbar from '../components/layout/AuthNavbar';
+import '../styles/auth.css';
 
 function Register() {
-  const [userType, setUserType] = useState('regular'); // 'regular', 'courier', 'restaurant'
+  const [userType, setUserType] = useState('regular');
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -18,6 +19,7 @@ function Register() {
   const [businessName, setBusinessName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [description, setDescription] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -39,6 +41,8 @@ function Register() {
         } else {
           alert(`Registered: ${response.data['username']}`);
         }
+        // redirect to login after successful registration
+        navigate('/login');
       })
       .catch((e) => {
         if (e.status === 409) {
@@ -66,10 +70,11 @@ function Register() {
   }
 
   return (
-    <div>
-      <h2>Register</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
+    <>
+      <AuthNavbar />
+      <h2 className="page-title">Register</h2>
+      <div className="auth-container">
+        <form onSubmit={handleSubmit}>
           <div className="button-group">
             <button
               type="button"
@@ -93,140 +98,141 @@ function Register() {
               Restaurant
             </button>
           </div>
-        </div>
-        <div>
-          <label>{userType === 'restaurant' ? 'Owner Name' : 'Name'}</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>{userType === 'restaurant' ? 'Owner Last Name' : 'Last Name'}</label>
-          <input
-            type="text"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Phone Number</label>
-          <input
-            type="tel"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        {userType === 'courier' && (
-          <>
-            <div>
-              <label>Driver Licence ID</label>
-              <input
-                type="text"
-                value={driverLicenceId}
-                onChange={(e) => setDriverLicenceId(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label>Birth Date</label>
-              <input
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label>Vehicle Type</label>
-              <select
-                value={vehicleType}
-                onChange={(e) => setVehicleType(e.target.value)}
-                required
-                style={{
-                  width: '80%',
-                  padding: '0.5rem',
-                  border: '1px solid #ccc',
-                  borderRadius: '6px',
-                  fontSize: '1rem',
-                  appearance: 'none',
-                  cursor: 'pointer',
-                }}>
-                <option value="">Select vehicle type</option>
-                <option value="CAR">Car</option>
-                <option value="BICYCLE">Bicycle</option>
-                <option value="MOTORCYCLE">Motorcycle</option>
-              </select>
-            </div>
-          </>
-        )}
-        {userType === 'restaurant' && (
-          <>
-            <div>
-              <label>Tax ID Number</label>
-              <input
-                type="text"
-                value={taxId}
-                onChange={(e) => setTaxId(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label>Business Name</label>
-              <input
-                type="text"
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label>Display Name</label>
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label>Description</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-              />
-            </div>
-          </>
-        )}
-        <button type="submit">Register</button>
-      </form>
-      <p>
-        Already have an account? <Link to="/login">Log in</Link>
-      </p>
-    </div>
+          <div>
+            <label>{userType === 'restaurant' ? 'Owner Name' : 'Name'}</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label>{userType === 'restaurant' ? 'Owner Last Name' : 'Last Name'}</label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label>Phone Number</label>
+            <input
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          {userType === 'courier' && (
+            <>
+              <div>
+                <label>Driver License ID</label>
+                <input
+                  type="text"
+                  value={driverLicenceId}
+                  onChange={(e) => setDriverLicenceId(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label>Birth Date</label>
+                <input
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label>Vehicle Type</label>
+                <select
+                  value={vehicleType}
+                  onChange={(e) => setVehicleType(e.target.value)}
+                  required
+                  style={{
+                    width: '80%',
+                    padding: '0.5rem',
+                    border: '1px solid #ccc',
+                    borderRadius: '6px',
+                    fontSize: '1rem',
+                    appearance: 'none',
+                    cursor: 'pointer',
+                  }}>
+                  <option value="">Select vehicle type</option>
+                  <option value="CAR">Car</option>
+                  <option value="BICYCLE">Bicycle</option>
+                  <option value="MOTORCYCLE">Motorcycle</option>
+                </select>
+              </div>
+
+            </>
+          )}
+          {userType === 'restaurant' && (
+            <>
+              <div>
+                <label>Tax ID Number</label>
+                <input
+                  type="text"
+                  value={taxId}
+                  onChange={(e) => setTaxId(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label>Business Name</label>
+                <input
+                  type="text"
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label>Display Name</label>
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label>Description</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                />
+              </div>
+            </>
+          )}
+          <button type="submit">Register</button>
+        </form>
+        <p>
+          Already have an account? <Link to="/login">Log in</Link>
+        </p>
+      </div>
+    </>
   );
 }
 
