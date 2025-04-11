@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import './App.css';
 import './styles/global.css';
 import './styles/auth.css';
+import Profile from "./pages/Profile/Profile";
 
 function App() {
   return (
@@ -25,6 +26,10 @@ function App() {
           <Route 
             path="/" 
             element={<Login />} 
+          />
+          <Route
+              path="/profile"
+              element={<Profile />}
           />
         </Routes>
       </div>
