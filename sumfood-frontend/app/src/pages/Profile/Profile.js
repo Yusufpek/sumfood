@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Navbar from '../../components/layout/Navbar';
 
 const Profile = () => {
-    const [activeSection, setActiveSection] = useState('personal');
+    const [activeSection, setActiveSection] = useState('Personal Information');
     const [username, setUsername] = useState('User');
     const [isLoggedIn, setIsLoggedIn] = useState(true);
 
@@ -32,12 +32,12 @@ const Profile = () => {
                     borderRight: '1px solid #ddd'
                 }}>
                     <button 
-                        onClick={() => setActiveSection('personal')}
+                        onClick={() => setActiveSection('Personal Information')}
                         style={{
                             width: '100%',
                             padding: '10px',
                             marginBottom: '10px',
-                            backgroundColor: activeSection === 'personal' ? '#e0e0e0' : 'white',
+                            backgroundColor: activeSection === 'Personal Information' ? '#e0e0e0' : 'white',
                             border: '1px solid #ddd',
                             borderRadius: '5px',
                             cursor: 'pointer'
@@ -46,32 +46,32 @@ const Profile = () => {
                         Personal Information
                     </button>
                     <button 
-                        onClick={() => setActiveSection('orders')}
+                        onClick={() => setActiveSection('Manage Adresses')}
                         style={{
                             width: '100%',
                             padding: '10px',
                             marginBottom: '10px',
-                            backgroundColor: activeSection === 'orders' ? '#e0e0e0' : 'white',
+                            backgroundColor: activeSection === 'Manage Adresses' ? '#e0e0e0' : 'white',
                             border: '1px solid #ddd',
                             borderRadius: '5px',
                             cursor: 'pointer'
                         }}
                     >
-                        Order History
+                        Manage Adresses
                     </button>
                     <button 
-                        onClick={() => setActiveSection('favorites')}
+                        onClick={() => setActiveSection('Payment Methods')}
                         style={{
                             width: '100%',
                             padding: '10px',
                             marginBottom: '10px',
-                            backgroundColor: activeSection === 'favorites' ? '#e0e0e0' : 'white',
+                            backgroundColor: activeSection === 'Payment Methods' ? '#e0e0e0' : 'white',
                             border: '1px solid #ddd',
                             borderRadius: '5px',
                             cursor: 'pointer'
                         }}
                     >
-                        Favorites
+                        Payment Methods
                     </button>
                     <button 
                         onClick={() => setActiveSection('settings')}
