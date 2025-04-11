@@ -241,7 +241,7 @@ Response:
 | Yusuf İpek           | Project Manager       | [Yusufpek](https://github.com/Yusufpek)   | [in/yusuf-ipek](https://www.linkedin.com/in/yusuf-ipek/)                 |
 | Ümit Sevinçler       | Analyst               | [dnaux](https://github.com/dnaux)         | [in/umit-sevincler](https://www.linkedin.com/in/umit-sevincler/)         |
 | Toprak Güngör        | Configuration Manager | [Toprak](https://github.com/b2210356037)  | [in/toprak-gungor](https://www.linkedin.com/in/toprak-gungor/)           |
-| Kerem Berkehan Pınar | Architect             |                                           | [in/keremberkehanpinar](https://www.linkedin.com/in/keremberkehanpinar/) |
+| Kerem Berkehan Pınar | Architect             |                                    [KeremBerkehan](https://github.com/KeremBerkehan)       | [in/keremberkehanpinar](https://www.linkedin.com/in/keremberkehanpinar/) |
 | Berke Yusuf Uğurlu   | Tester                | [berkecore](https://github.com/berkecore) | [in/berkecore](https://www.linkedin.com/in/berkecore/)                   |
 
 ## License
