@@ -1,23 +1,28 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import '../App.css';
+import { Link, useNavigate } from 'react-router-dom';
+import AuthNavbar from '../components/layout/AuthNavbar';
+import '../styles/auth.css';
 
 function Login() {
-  const [userType, setUserType] = useState('regular'); // 'regular', 'courier', 'restaurant'
+  const [userType, setUserType] = useState('regular');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle login logic here
-    alert(`Logging in as ${userType} with Username: ${username}`);
+    console.log(`Logging in as ${userType} with Username: ${username}`);
+    
+    // after successful login redirect to main page
+    navigate('/main');
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
+    <>
+      <AuthNavbar />
+      <h2 className="page-title">Login</h2>
+      <div className="auth-container">
+        <form onSubmit={handleSubmit}>
           <div className="button-group">
             <button
               type="button"
@@ -41,31 +46,31 @@ function Login() {
               Restaurant
             </button>
           </div>
-        </div>
-        <div>
-          <label>Email</label>
-          <input
-            type="email"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">Login</button>
-      </form>
-      <p>
-        Don't have an account? <Link to="/register">Register here</Link>
-      </p>
-    </div>
+          <div>
+            <label>Email</label>
+            <input
+              type="email"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button type="submit">Login</button>
+        </form>
+        <p>
+          Don't have an account? <Link to="/register">Register here</Link>
+        </p>
+      </div>
+    </>
   );
 }
 
