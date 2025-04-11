@@ -9,7 +9,7 @@ import com.fivesum.sumfood.model.base.EntityBase;
 public class FoodCase extends EntityBase {
     @OneToOne(optional = false)
     @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    private Menu category;
 
     @Column(nullable = false, length = 50)
     String title;

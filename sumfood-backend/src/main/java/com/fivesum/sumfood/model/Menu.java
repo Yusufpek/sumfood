@@ -8,8 +8,8 @@ import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @Entity
-@Table(name = "categories")
-public class Category extends EntityBase {
+@Table(name = "menu")
+public class Menu extends EntityBase {
     @ManyToOne(optional = false)
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant resturant;
