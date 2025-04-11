@@ -5,12 +5,15 @@ import java.util.Optional;
 import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.fivesum.sumfood.dto.CourierRegistrationRequest;
+import com.fivesum.sumfood.dto.AuthRequest;
 import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.repository.CourierRepository;
 
@@ -22,6 +25,7 @@ public class CourierService implements UserDetailsService {
 
     private final CourierRepository courierRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
     @Transactional
     public Courier registerCourier(CourierRegistrationRequest request) {
@@ -39,6 +43,18 @@ public class CourierService implements UserDetailsService {
                 .build();
 
         return courierRepository.save(courier);
+    }
+
+    @Transactional
+    public Courier authenticate(AuthRequest request) {
+        authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                request.getEmail(),
+                request.getPassword()
+            )
+        );
+
+        return courierRepository.findByEmail(request.getEmail()).orElseThrow();
     }
 
     @Override

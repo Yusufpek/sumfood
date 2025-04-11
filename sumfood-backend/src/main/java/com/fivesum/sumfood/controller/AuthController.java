@@ -15,6 +15,7 @@ import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.service.CourierService;
 import com.fivesum.sumfood.service.CustomerService;
 import com.fivesum.sumfood.service.RestaurantService;
+import com.fivesum.sumfood.responses.LoginResponse;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -65,5 +66,26 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> authenticate(@RequestBody AuthRequest loginUserDto) {
+        User authenticatedUser;
+
+        if (loginUserDto.getRole() == "CUSTOMER") {
+            authenticatedUser = customerService.authenticate(loginUserDto);
+        } else if (loginUserDto.getRole() == "COURIER") {
+            authenticatedUser = courierService.authenticate(loginUserDto);
+        } else if (loginUserDto.getRole() == "RESTAURANT") {
+            authenticatedUser = restaurantService.authenticate(loginUserDto);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Request Body");
+        }
+
+        String jwtToken = jwtService.generateToken(authenticatedUser);
+
+        LoginResponse loginResponse = new LoginResponse().setToken(jwtToken).setExpiresIn(jwtService.getExpirationTime());
+
+        return ResponseEntity.ok(loginResponse);
     }
 }
