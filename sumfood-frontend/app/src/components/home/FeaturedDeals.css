@@ -21,13 +21,13 @@
   
   .featured-deals {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Adjusted min width */
+    gap: 16px; /* Reduced gap for better spacing */
   }
   
   .deal-card {
-    height: 180px;
-    border-radius: 8px;
+    height: 200px; /* Increased height for better visibility */
+    border-radius: 10px; /* Slightly larger border radius */
     overflow: hidden;
     position: relative;
     background-color: #ff6347;
@@ -53,21 +53,20 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    text-align: center;
+    justify-content: center; /* Center vertically */
+    align-items: center; /* Center horizontally */
+    text-align: center; /* Ensure text alignment */
   }
   
   .deal-content h3 {
-    font-size: 2rem;
+    font-size: 1.8rem; /* Slightly smaller font size */
     margin-bottom: 8px;
     font-weight: 700;
   }
   
   .deal-content p {
     margin-bottom: 16px;
-    font-size: 1.1rem;
+    font-size: 1rem; /* Adjusted font size for better readability */
   }
   
   .deal-content button {
@@ -93,14 +92,14 @@
   @media (max-width: 768px) {
     .featured-deals {
       grid-template-columns: 1fr;
+      gap: 12px; /* Reduced gap for smaller screens */
     }
     
     .deal-card {
-      height: 150px;
+      height: 160px; /* Adjusted height for smaller screens */
     }
     
     .deal-content h3 {
-      font-size: 1.8rem;
+      font-size: 1.6rem; /* Adjusted font size for smaller screens */
     }
   }
-  
