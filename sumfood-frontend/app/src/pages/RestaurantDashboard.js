@@ -39,7 +39,8 @@ function RestaurantDashboard() {
         setLoading(true);
         const response = await axios.get('http://localhost:8080/api/restaurant/profile', {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Role': 'RESTAURANT' 
           }
         });
         setRestaurantInfo(response.data);
@@ -64,21 +65,21 @@ function RestaurantDashboard() {
 
   if (loading) return (
     <>
-      <RestaurantNavbar restaurantName="Loading..." />
+      <RestaurantNavbar restaurantName="Loading..." currentPage="dashboard" />
       <div className="loading">Loading...</div>
     </>
   );
   
   if (error) return (
     <>
-      <RestaurantNavbar restaurantName="Error" />
+      <RestaurantNavbar restaurantName="Error" currentPage="dashboard" />
       <div className="error">{error}</div>
     </>
   );
 
   return (
     <>
-      <RestaurantNavbar restaurantName={restaurantInfo.name || 'Your Restaurant'} />
+      <RestaurantNavbar restaurantName={restaurantInfo.businessName || 'Your Restaurant'} currentPage="dashboard" />
       <div className="restaurant-dashboard">
         <header className="dashboard-header">
           <h1>Restaurant Dashboard</h1>
@@ -90,26 +91,8 @@ function RestaurantDashboard() {
         </header>
 
         <div className="restaurant-info">
-          <h2>{restaurantInfo.name || 'Your Restaurant'}</h2>
+          <h2>{restaurantInfo.displayName || 'Your Restaurant'}</h2>
           <p className="restaurant-description">{restaurantInfo.description || 'Restaurant description'}</p>
-          
-          <div className="restaurant-details">
-            <div className="detail-item">
-              <strong>Email:</strong> {restaurantInfo.email || 'Not available'}
-            </div>
-            <div className="detail-item">
-              <strong>Phone:</strong> {restaurantInfo.phone || 'Not available'}
-            </div>
-            <div className="detail-item">
-              <strong>Address:</strong> {restaurantInfo.address || 'Not available'}
-            </div>
-            <div className="detail-item">
-              <strong>Cuisine Type:</strong> {restaurantInfo.cuisineType || 'Not specified'}
-            </div>
-            <div className="detail-item">
-              <strong>Status:</strong> <span className="status-active">Active</span>
-            </div>
-          </div>
         </div>
 
         <div className="dashboard-cards">

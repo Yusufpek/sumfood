@@ -12,6 +12,8 @@ function RestaurantMenu() {
   const [restaurantInfo, setRestaurantInfo] = useState({});
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -36,19 +38,28 @@ function RestaurantMenu() {
         setLoading(true);
         // Fetch restaurant profile
         const restaurantResponse = await axios.get('http://localhost:8080/api/restaurant/profile', {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 'Authorization': `Bearer ${token}`,
+          'Role': `RESTAURANT` }
         });
+        console.log('API Restaurant Response:', restaurantResponse);
         setRestaurantInfo(restaurantResponse.data);
-
-        // Fetch food items
-        const itemsResponse = await axios.get('http://localhost:8080/api/restaurant/items', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Role': `RESTAURANT`
+        
+        
+        // Ensure we're setting an array to the state
+        if (restaurantResponse.data.foodItems && Array.isArray(restaurantResponse.data.foodItems)) {
+          if (Array.isArray(restaurantResponse.data.foodItems)) {
+            setFoodItems(restaurantResponse.data.foodItems);
+          } else if (restaurantResponse.data.content && Array.isArray(restaurantResponse.data.content)) {
+            // If the data is nested in a content property (common pagination format)
+            setFoodItems(restaurantResponse.data.content);
+          } else {
+            console.error('Unexpected data format:', restaurantResponse.data);
+            setFoodItems([]); // Set empty array as fallback
+            setError('Received invalid data format from server');
           }
-        });
-        console.log(itemsResponse);
-        setFoodItems(itemsResponse.data);
+        } else {
+          setFoodItems([]);
+        }
 
         // Hardcoded categories instead of fetching from API
         const hardcodedCategories = [
@@ -62,7 +73,7 @@ function RestaurantMenu() {
           { id: 'PIDE_LAHMACUN', name: 'Pide & Lahmacun' },
           { id: 'HOMEMADE', name: 'Homemade' },
           { id: 'MEATBALL', name: 'Meatball' },
-          { id: 'VEGATERIAN', name: 'Vegetarian' },
+          { id: 'VEGETARIAN', name: 'Vegetarian' },
           { id: 'SALAD', name: 'Salad' },
           { id: 'GLOBAL', name: 'Global' },
           { id: 'MANTI', name: 'Manti' },
@@ -111,7 +122,7 @@ function RestaurantMenu() {
         description: item.description,
         price: item.price,
         stock: item.stock,
-        categoryId: item.category.id,
+        categoryId: item.category?.id || '', // Use optional chaining and provide default value
         isDonated: item.isDonated
       });
       setEditingItem(item);
@@ -125,6 +136,7 @@ function RestaurantMenu() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
+    setError(''); // Clear any previous error
 
     try {
       const payload = {
@@ -133,71 +145,143 @@ function RestaurantMenu() {
         stock: parseInt(formData.stock, 10)
       };
 
+      console.log('Submitting with payload:', payload);
+      
       if (editingItem) {
-        // Update existing item
-        await axios.put(`http://localhost:8080/api/restaurant/menu-items/${editingItem.id}`, payload, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-      } else {
-        // Add new item - updated to use the correct endpoint from the controller
-        await axios.post('http://localhost:8080/api/food/item', payload, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Role': 'RESTAURANT'
+        // Update existing item - fixed to match the controller parameter name
+        console.log('Updating item with ID:', editingItem.id);
+        try {
+          // Fix: We need to use 'editingItem.id' as the idString parameter
+          const response = await axios.put(`http://localhost:8080/api/food/item/${editingItem.id}`, payload, {
+            headers: { 
+              'Authorization': `Bearer ${token}`,
+              'Role': 'RESTAURANT'
+            }
+          });
+          console.log('Update response:', response.data);
+        } catch (updateErr) {
+          console.error('Error in update request:', updateErr);
+          if (updateErr.response) {
+            console.error('Response data:', updateErr.response.data);
+            console.error('Response status:', updateErr.response.status);
           }
-        });
+          const errorMsg = getErrorMessage(updateErr);
+          throw new Error(errorMsg);
+        }
+      } else {
+        // Add new item
+        try {
+          const response = await axios.post('http://localhost:8080/api/food/item', payload, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Role': 'RESTAURANT'
+            }
+          });
+          console.log('Create response:', response.data);
+        } catch (createErr) {
+          console.error('Error in create request:', createErr);
+          const errorMsg = getErrorMessage(createErr);
+          throw new Error(errorMsg);
+        }
       }
 
-      // Refresh food items - using the public endpoint from the controller
-      const response = await axios.get('http://localhost:8080/api/food/public/items', {
+      // Refresh food items
+      const restaurantResponse = await axios.get('http://localhost:8080/api/restaurant/profile', {
         headers: { 'Authorization': `Bearer ${token}`,
-        'Role': 'RESTAURANT' }
+        'Role': `RESTAURANT` }
       });
-      setFoodItems(response.data);
+      console.log('API Restaurant Response after update:', restaurantResponse);
+      if (restaurantResponse.data.foodItems && Array.isArray(restaurantResponse.data.foodItems)) {
+        setFoodItems(restaurantResponse.data.foodItems);
+      }
+      setError(''); // Clear any previous error
 
       setIsFormOpen(false);
       resetForm();
     } catch (err) {
       console.error('Error saving food item:', err);
-      setError('Failed to save food item');
+      setError(`Failed to save food item: ${err.message}`);
     }
   };
 
-  const handleDelete = async (itemId) => {
-    if (!window.confirm('Are you sure you want to delete this item?')) return;
+  // Helper function to extract meaningful error messages from Axios errors
+  const getErrorMessage = (error) => {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      const responseData = error.response.data;
+      if (typeof responseData === 'string') {
+        return responseData;
+      } else if (responseData && typeof responseData.message === 'string') {
+        return responseData.message;
+      } else if (responseData && typeof responseData.error === 'string') {
+        return responseData.error;
+      } else {
+        return `Server error: ${error.response.status}`;
+      }
+    } else if (error.request) {
+      // The request was made but no response was received
+      return 'No response from server. Please check your connection.';
+    } else if (error.message) {
+      // Something happened in setting up the request that triggered an Error
+      return error.message;
+    } else {
+      return 'An unknown error occurred';
+    }
+  };
 
+  const handleDelete = (itemId) => {
+    // Find the item to delete by ID
+    const itemToRemove = foodItems.find(item => item.id === itemId);
+    setItemToDelete(itemToRemove);
+    setIsDeleteConfirmOpen(true);
+  };
+  
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`http://localhost:8080/api/food/item/${itemId}`, {
-        headers: { 'Authorization': `Bearer ${token}`,
-        'Role': 'RESTAURANT' }
+      await axios.delete(`http://localhost:8080/api/food/item/${itemToDelete.id}`, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Role': 'RESTAURANT' 
+        }
       });
 
       // Remove item from state
-      setFoodItems(foodItems.filter(item => item.id !== itemId));
+      setFoodItems(foodItems.filter(item => item.id !== itemToDelete.id));
+      setIsDeleteConfirmOpen(false);
+      setItemToDelete(null);
     } catch (err) {
       console.error('Error deleting food item:', err);
       setError('Failed to delete food item');
+      setIsDeleteConfirmOpen(false);
     }
+  };
+  
+  const cancelDelete = () => {
+    setIsDeleteConfirmOpen(false);
+    setItemToDelete(null);
   };
 
   if (loading) return (
     <>
-      <RestaurantNavbar restaurantName="Loading..." />
+      <RestaurantNavbar restaurantName="Loading..." currentPage="menu" />
       <div className="loading">Loading menu data...</div>
     </>
   );
 
   if (error) return (
     <>
-      <RestaurantNavbar restaurantName="Error" />
+      <RestaurantNavbar restaurantName="Error" currentPage="menu" />
       <div className="error">{error}</div>
     </>
   );
 
   return (
     <>
-      <RestaurantNavbar restaurantName={restaurantInfo.name || 'Your Restaurant'} />
+      <RestaurantNavbar restaurantName={restaurantInfo.businessName || 'Your Restaurant'} currentPage="menu" />
       <div className="restaurant-menu-container">
         <header className="menu-header">
           <h1>Menu Management</h1>
@@ -307,8 +391,27 @@ function RestaurantMenu() {
           </div>
         )}
 
+        {/* Delete confirmation popup */}
+        {isDeleteConfirmOpen && (
+          <div className="menu-form-overlay">
+            <div className="delete-confirm-container">
+              <h2>Confirm Deletion</h2>
+              <p>Are you sure you want to delete "{itemToDelete?.name}"?</p>
+              <p>This action cannot be undone.</p>
+              <div className="form-buttons">
+                <button className="delete-button" onClick={confirmDelete}>
+                  Delete
+                </button>
+                <button className="cancel-button" onClick={cancelDelete}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="menu-items-container">
-          {foodItems.length === 0 ? (
+          {!Array.isArray(foodItems) || foodItems.length === 0 ? (
             <div className="empty-menu-message">
               <p>No menu items found. Add your first menu item to get started!</p>
             </div>
