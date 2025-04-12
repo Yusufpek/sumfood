@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import AuthNavbar from '../components/layout/AuthNavbar';
 import '../styles/auth.css';
 
@@ -7,14 +8,99 @@ function Login() {
   const [userType, setUserType] = useState('regular');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  async function login(credentials) {
+    try {
+      // Map frontend userType to backend Role enum - must match exactly what backend expects
+      let role;
+      switch(userType) {
+        case 'regular':
+          role = 'CUSTOMER';
+          break;
+        case 'courier':
+          role = 'COURIER';
+          break;
+        case 'restaurant':
+          role = 'RESTAURANT';
+          break;
+        default:
+          role = 'CUSTOMER';
+      }
+      
+      // Create the request body exactly as expected by backend
+      const requestBody = {
+        email: credentials.email,
+        password: credentials.password,
+        role: role
+      };
+      
+      console.log('Sending login request with:', requestBody);
+      
+      // Don't stringify the body - axios will do that automatically
+      const response = await axios.post(
+        "http://localhost:8080/api/auth/login", 
+        requestBody, 
+        { 
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true // Important for CORS with credentials
+        }
+      );
+      
+      return response;
+    } catch (error) {
+      console.error('Full error object:', error);
+      // Access the response data properly
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+        throw error.response;
+      } else {
+        throw error;
+      }
+    }
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(`Logging in as ${userType} with Username: ${username}`);
+    setError('');
     
-    // after successful login redirect to main page
-    navigate('/main');
+    const credentials = {
+      email: username,
+      password: password
+    };
+
+    login(credentials)
+      .then((response) => {
+        console.log('Login successful:', response.data);
+        
+        // Store authentication token based on backend's LoginResponse
+        localStorage.setItem('token', response.data.token);
+        if (response.data.expiresIn) {
+          localStorage.setItem('tokenExpiry', response.data.expiresIn);
+        }
+        localStorage.setItem('userType', userType);
+        
+        // Redirect to appropriate page based on user type
+        if (userType === 'regular') {
+          navigate('/main');
+        } else if (userType === 'courier') {
+          navigate('/courier-dashboard');
+        } else if (userType === 'restaurant') {
+          navigate('/restaurant-dashboard');
+        }
+      })
+      .catch((err) => {
+        console.error('Login error:', err);
+        if (err.status === 401) {
+          setError('Invalid email or password');
+        } else if (err.status === 403) {
+          setError('Access forbidden. Check your credentials and permissions.');
+        } else {
+          setError(`An error occurred (${err.status || 'unknown'}). Please try again.`);
+        }
+      });
   };
 
   return (
@@ -46,6 +132,7 @@ function Login() {
               Restaurant
             </button>
           </div>
+          {error && <div className="error-message">{error}</div>}
           <div>
             <label>Email</label>
             <input
