@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ManageAddresses.css';
 import StandardizedInput from '../../../components/common/StandardizedInput';
 
 const ManageAddresses = () => {
+    // TODO: Replace with API data when backend is connected
     const [addresses, setAddresses] = useState([
         {
             id: 1,
@@ -26,6 +27,29 @@ const ManageAddresses = () => {
         addressLine2: '',
         postalCode: ''
     });
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState({ type: '', text: '' });
+    
+    // TODO: API Integration - Fetch addresses from backend on component mount
+    useEffect(() => {
+        // TODO: Implement API call to fetch addresses
+        // GET /api/sections/addresses
+        // Example:
+        // const fetchAddresses = async () => {
+        //     try {
+        //         setLoading(true);
+        //         const response = await fetch('/api/sections/addresses');
+        //         const data = await response.json();
+        //         setAddresses(data);
+        //     } catch (error) {
+        //         setMessage({ type: 'error', text: 'Failed to load addresses' });
+        //     } finally {
+        //         setLoading(false);
+        //     }
+        // };
+        // 
+        // fetchAddresses();
+    }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -38,17 +62,67 @@ const ManageAddresses = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        
+        // TODO: API Integration - Create or update address
+        // Example:
+        // const saveAddress = async () => {
+        //     try {
+        //         setLoading(true);
+        //         const method = editingId ? 'PUT' : 'POST';
+        //         const endpoint = editingId 
+        //             ? `/api/sections/addresses/${editingId}` 
+        //             : '/api/sections/addresses';
+        //         
+        //         const response = await fetch(endpoint, {
+        //             method,
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //                 'Authorization': `Bearer ${authToken}`
+        //             },
+        //             body: JSON.stringify(formData)
+        //         });
+        //         
+        //         if (response.ok) {
+        //             const data = await response.json();
+        //             if (editingId) {
+        //                 setAddresses(prevAddresses => 
+        //                     prevAddresses.map(address => 
+        //                         address.id === editingId ? data : address
+        //                     )
+        //                 );
+        //                 setMessage({ type: 'success', text: 'Address updated successfully' });
+        //             } else {
+        //                 setAddresses(prevAddresses => [...prevAddresses, data]);
+        //                 setMessage({ type: 'success', text: 'Address added successfully' });
+        //             }
+        //             resetForm();
+        //         } else {
+        //             const errorData = await response.json();
+        //             setMessage({ type: 'error', text: errorData.message || 'Failed to save address' });
+        //         }
+        //     } catch (error) {
+        //         setMessage({ type: 'error', text: 'An error occurred while saving the address' });
+        //     } finally {
+        //         setLoading(false);
+        //     }
+        // };
+        //
+        // saveAddress();
+        
+        // Temporary implementation until API is connected
         if (editingId) {
             setAddresses(prevAddresses => 
                 prevAddresses.map(address => 
                     address.id === editingId ? { id: editingId, ...formData } : address
                 )
             );
+            setMessage({ type: 'success', text: 'Address updated successfully' });
         } else {
             setAddresses(prevAddresses => [
                 ...prevAddresses,
                 { id: Date.now(), ...formData }
             ]);
+            setMessage({ type: 'success', text: 'Address added successfully' });
         }
         resetForm();
     };
@@ -63,12 +137,47 @@ const ManageAddresses = () => {
     };
 
     const handleDelete = (id) => {
+        // TODO: API Integration - Delete address
+        // Example:
+        // const deleteAddress = async () => {
+        //     try {
+        //         setLoading(true);
+        //         const response = await fetch(`/api/sections/addresses/${id}`, {
+        //             method: 'DELETE',
+        //             headers: {
+        //                 'Authorization': `Bearer ${authToken}`
+        //             }
+        //         });
+        //         
+        //         if (response.ok) {
+        //             setAddresses(prevAddresses => 
+        //                 prevAddresses.filter(address => address.id !== id)
+        //             );
+        //             if (editingId === id) {
+        //                 resetForm();
+        //             }
+        //             setMessage({ type: 'success', text: 'Address deleted successfully' });
+        //         } else {
+        //             const errorData = await response.json();
+        //             setMessage({ type: 'error', text: errorData.message || 'Failed to delete address' });
+        //         }
+        //     } catch (error) {
+        //         setMessage({ type: 'error', text: 'An error occurred while deleting the address' });
+        //     } finally {
+        //         setLoading(false);
+        //     }
+        // };
+        //
+        // deleteAddress();
+        
+        // Temporary implementation until API is connected
         setAddresses(prevAddresses => 
             prevAddresses.filter(address => address.id !== id)
         );
         if (editingId === id) {
             resetForm();
         }
+        setMessage({ type: 'success', text: 'Address deleted successfully' });
     };
 
     const resetForm = () => {
@@ -83,6 +192,15 @@ const ManageAddresses = () => {
     return (
         <div className="manage-addresses">
             <h2>Manage Addresses</h2>
+            
+            {/* TODO: Add loading indicator when fetching or updating data */}
+            {loading && <div className="loading-indicator">Loading...</div>}
+            
+            {message.text && (
+                <div className={`message ${message.type === 'success' ? 'success-message' : 'error-message'}`}>
+                    {message.text}
+                </div>
+            )}
             
             <form className="address-form" onSubmit={handleSubmit}>
                 <StandardizedInput
@@ -116,11 +234,20 @@ const ManageAddresses = () => {
                 />
                 
                 <div className="form-actions">
-                    <button type="submit" className="submit-btn">
-                        {editingId ? 'Update Address' : 'Add Address'}
+                    <button 
+                        type="submit" 
+                        className="submit-btn"
+                        disabled={loading}
+                    >
+                        {loading ? 'Saving...' : (editingId ? 'Update Address' : 'Add Address')}
                     </button>
                     {editingId && (
-                        <button type="button" className="cancel-btn" onClick={resetForm}>
+                        <button 
+                            type="button" 
+                            className="cancel-btn" 
+                            onClick={resetForm}
+                            disabled={loading}
+                        >
                             Cancel
                         </button>
                     )}
@@ -147,10 +274,18 @@ const ManageAddresses = () => {
                             </p>
                         </div>
                         <div className="address-actions">
-                            <button className="edit-btn" onClick={() => handleEdit(address)}>
+                            <button 
+                                className="edit-btn" 
+                                onClick={() => handleEdit(address)}
+                                disabled={loading}
+                            >
                                 Edit
                             </button>
-                            <button className="delete-btn" onClick={() => handleDelete(address.id)}>
+                            <button 
+                                className="delete-btn" 
+                                onClick={() => handleDelete(address.id)}
+                                disabled={loading}
+                            >
                                 Delete
                             </button>
                         </div>
