@@ -4,7 +4,7 @@ import MainPage from './pages/MainPage/main';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import RestaurantDashboard from './pages/RestaurantDashboard';
-import RestaurantMenu from './pages/RestaurantMenu';
+import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 import './styles/global.css';
 import './styles/auth.css';
@@ -16,22 +16,37 @@ function App() {
       <div className="App">
         {}
         <Routes>
-          <Route path="/main" element={<MainPage />} />
-          <Route 
-            path="/login" 
-            element={<Login />} 
+          {}
+          <Route
+            path="/main"
+            element={
+              <ProtectedRoute>
+                <MainPage />
+              </ProtectedRoute>
+            }
           />
-          <Route 
-            path="/register" 
-            element={<Register />} 
+          <Route
+            path="/restaurant-dashboard"
+            element={
+              <ProtectedRoute>
+                <RestaurantDashboard />
+              </ProtectedRoute>
+            }
           />
-          <Route 
-            path="/" 
-            element={<Login />} 
+          {}
+          {}
+          {}
+          <Route
+            path="/login"
+            element={<Login />}
           />
-          <Route 
-            path="/restaurant-dashboard" 
-            element={<RestaurantDashboard />} 
+          <Route
+            path="/register"
+            element={<Register />}
+          />
+          <Route
+            path="/"
+            element={<Login />}
           />
           <Route 
             path="/restaurant-dashboard/menu" 
