@@ -6,9 +6,13 @@ import javax.persistence.*;
 import com.fivesum.sumfood.model.base.EntityBase;
 import com.fivesum.sumfood.model.enums.Category;
 
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+@Data
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "food_items")
 public class FoodItem extends EntityBase {
