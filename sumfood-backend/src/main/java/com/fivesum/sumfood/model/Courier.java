@@ -10,8 +10,10 @@ import com.fivesum.sumfood.model.base.UserBase;
 import com.fivesum.sumfood.model.enums.Role;
 import com.fivesum.sumfood.model.enums.VehicleType;
 
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+@NoArgsConstructor
 @SuperBuilder
 @Entity
 @Table(name = "couriers")
@@ -36,6 +38,11 @@ public class Courier extends UserBase {
     @PrePersist
     public void prePersist() {
         setRole(Role.COURIER);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return isValidated;
     }
 
     // Relations

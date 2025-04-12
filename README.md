@@ -102,6 +102,7 @@ Base URL: http://localhost:8080/
 
 #### Register Customer
 
+>>>>>>> origin/development
 ```http
 POST /api/register/customer
 ```
@@ -236,6 +237,8 @@ Response:
 
 ## Authors and acknowledgment
 
+Show your appreciation to those who have contributed to the project.
+
 | Name                 | Role                  | Github                                    | Linkedin                                                                 |
 | :------------------- | :-------------------- | :---------------------------------------- | :----------------------------------------------------------------------- |
 | Yusuf İpek           | Project Manager       | [Yusufpek](https://github.com/Yusufpek)   | [in/yusuf-ipek](https://www.linkedin.com/in/yusuf-ipek/)                 |
@@ -251,3 +254,4 @@ For open source projects, say how it is licensed.
 ## Project status
 
 Development int progress
+
