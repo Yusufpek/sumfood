@@ -12,9 +12,13 @@ import com.fivesum.sumfood.dto.RestaurantRegistrationRequest;
 import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.Restaurant;
+import com.fivesum.sumfood.model.base.UserBase;
+import com.fivesum.sumfood.model.enums.Role;
 import com.fivesum.sumfood.service.CourierService;
 import com.fivesum.sumfood.service.CustomerService;
+import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.RestaurantService;
+import com.fivesum.sumfood.responses.LoginResponse;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -24,11 +28,13 @@ public class AuthController {
     private final CustomerService customerService;
     private final CourierService courierService;
     private final RestaurantService restaurantService;
+    private final JwtService jwtService;
 
     @PostMapping("/register/customer")
     public ResponseEntity<Customer> registerCustomer(@RequestBody CustomerRegistrationRequest request) {
         // Check if email already exists
-        if (customerService.existsByEmail(request.getEmail())) {
+        if (customerService.existsByEmail(request.getEmail()) || courierService.existsByEmail(request.getEmail())
+                || restaurantService.existsByEmail(request.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
@@ -38,7 +44,8 @@ public class AuthController {
     @PostMapping("/register/courier")
     public ResponseEntity<Courier> registerCouirer(@RequestBody CourierRegistrationRequest request) {
         // Check if email already exists
-        if (courierService.existsByEmail(request.getEmail())) {
+        if (customerService.existsByEmail(request.getEmail()) || courierService.existsByEmail(request.getEmail())
+                || restaurantService.existsByEmail(request.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
@@ -48,11 +55,12 @@ public class AuthController {
     @PostMapping("/register/restaurant")
     public ResponseEntity<Restaurant> registerRestaurant(@RequestBody RestaurantRegistrationRequest request) {
         // Check if email already exists
-        if (restaurantService.existsByEmail(request.getEmail())) {
+        if (customerService.existsByEmail(request.getEmail()) || courierService.existsByEmail(request.getEmail())
+                || restaurantService.existsByEmail(request.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(restaurantService.registerCourier(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(restaurantService.registerRestaurant(request));
     }
 
     @PostMapping("/login-alt")
@@ -65,5 +73,26 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> authenticate(@RequestBody AuthRequest loginUserDto) {
+        UserBase authenticatedUser;
+
+        if (loginUserDto.getRole() == Role.CUSTOMER) {
+            authenticatedUser = customerService.authenticate(loginUserDto);
+        } else if (loginUserDto.getRole() == Role.COURIER) {
+            authenticatedUser = courierService.authenticate(loginUserDto);
+        } else if (loginUserDto.getRole() == Role.RESTAURANT) {
+            authenticatedUser = restaurantService.authenticate(loginUserDto);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String jwtToken = jwtService.generateToken(authenticatedUser);
+        LoginResponse loginResponse = new LoginResponse(jwtToken);
+        loginResponse.setExpiresIn(jwtService.getExpirationTime());
+
+        return ResponseEntity.ok(loginResponse);
     }
 }
