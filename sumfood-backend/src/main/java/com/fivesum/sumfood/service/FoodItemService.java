@@ -28,6 +28,11 @@ public class FoodItemService {
         return foodItemRepository.findByCategoriesContaining(category);
     }
 
+    public List<FoodItem> getFoodItemByRestaurant(Restaurant restaurant) {
+        return foodItemRepository.findByRestaurant(restaurant);
+
+    }
+
     @Transactional
     public FoodItem addFoodItem(FoodItemAddRequest request, Restaurant restaurant) {
         FoodItem foodItem = FoodItem.builder()
