@@ -1,5 +1,8 @@
 package com.fivesum.sumfood.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.*;
 
 import com.fivesum.sumfood.model.base.UserBase;
@@ -41,4 +44,8 @@ public class Restaurant extends UserBase {
     public boolean isEnabled() {
         return isValidated;
     }
+
+    // Relation
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FoodItem> foodItems = new ArrayList<>();
 }

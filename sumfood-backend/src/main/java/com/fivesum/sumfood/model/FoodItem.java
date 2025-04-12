@@ -1,8 +1,11 @@
 package com.fivesum.sumfood.model;
 
+import java.util.List;
+
 import javax.persistence.*;
 
 import com.fivesum.sumfood.model.base.EntityBase;
+import com.fivesum.sumfood.model.enums.Category;
 
 import lombok.experimental.SuperBuilder;
 
@@ -10,23 +13,28 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(name = "food_items")
 public class FoodItem extends EntityBase {
-    @OneToOne(optional = false)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "restaurant_id", nullable = false)
+    private Restaurant restaurant;
 
     @Column(nullable = false, length = 50)
-    String name;
+    private String name;
 
     @Column(nullable = false)
-    String description;
+    private String description;
 
     @Column(nullable = false)
-    double price;
+    private double price;
 
     @Column(nullable = false)
-    int stock = 0;
+    private int stock = 0;
 
     @Column(nullable = false)
-    boolean isDonated = false; // default is for sale
+    private boolean isDonated = false;
 
+    @ElementCollection(targetClass = Category.class)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "food_item_categories", joinColumns = @JoinColumn(name = "food_item_id"))
+    @Column(name = "category")
+    private List<Category> categories;
 }
