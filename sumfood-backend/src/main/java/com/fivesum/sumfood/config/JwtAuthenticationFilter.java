@@ -10,7 +10,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -55,11 +54,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (userEmail != null && authentication == null) {
                 UserDetails userDetails;
 
-                if (role == "CUSTOMER") {
+                if (role.equals("CUSTOMER")) {
                     userDetails = customerService.loadUserByUsername(userEmail);
-                } else if (role == "COURIER") {
+                } else if (role.equals("COURIER")) {
                     userDetails = courierService.loadUserByUsername(userEmail);
-                } else if (role == "RESTAURANT") {
+                } else if (role.equals("RESTAURANT")) {
                     userDetails = restaurantService.loadUserByUsername(userEmail);
                 } else {
                     userDetails = null;
