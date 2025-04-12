@@ -55,12 +55,12 @@ public class FoodItemController {
 
     @PutMapping("/item/{itemId}")
     public ResponseEntity<FoodItem> updateFoodItem(@RequestHeader("Authorization") String token,
-            @RequestBody FoodItemAddRequest request, @PathVariable() String idString) {
+            @RequestBody FoodItemAddRequest request, @PathVariable() String itemId) {
         String email = jwtService.extractUsername(token.substring(7));
         Optional<Restaurant> restaurant = restaurantService.findByEmail(email);
         if (restaurant.isPresent()) {
             try {
-                long id = Long.valueOf(idString);
+                long id = Long.valueOf(itemId);
                 FoodItem foodItem = foodItemService.updateFoodItem(request, id);
                 if (foodItem != null) {
                     return ResponseEntity.status(HttpStatus.OK).body(foodItem);
