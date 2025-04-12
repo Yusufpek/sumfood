@@ -21,12 +21,12 @@ import lombok.RequiredArgsConstructor;
 public class FoodItemController {
     private final FoodItemService foodItemService;
 
-    @GetMapping("/items")
+    @GetMapping("/public/items")
     public ResponseEntity<List<FoodItem>> getAllFoodItems() {
         return ResponseEntity.ok(foodItemService.getAllFoodItems());
     }
 
-    @GetMapping("/items/{categoryStr}")
+    @GetMapping("/public/items/{categoryStr}")
     public ResponseEntity<List<FoodItem>> getFoodItemByCategory(@PathVariable() String categoryStr) {
         try {
             Category category = Category.valueOf(categoryStr.toUpperCase());
