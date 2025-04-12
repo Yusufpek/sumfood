@@ -8,6 +8,7 @@ import RestaurantMenu from './pages/RestaurantMenu';
 import './App.css';
 import './styles/global.css';
 import './styles/auth.css';
+import Profile from "./pages/Profile/Profile";
 
 function App() {
   return (
