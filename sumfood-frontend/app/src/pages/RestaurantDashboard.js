@@ -8,15 +8,30 @@ function RestaurantDashboard() {
   const [restaurantInfo, setRestaurantInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Check for authentication
     const token = localStorage.getItem('token');
+    const tokenExpiry = localStorage.getItem('tokenExpiry');
+    
     if (!token) {
       navigate('/login');
       return;
     }
+    
+    // Check if token is expired
+    if (tokenExpiry && new Date(tokenExpiry) < new Date()) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('tokenExpiry');
+      localStorage.removeItem('userType');
+      setError('Session expired. Please login again.');
+      navigate('/login');
+      return;
+    }
+    
+    setIsAuthenticated(true);
 
     // Fetch restaurant data
     const fetchRestaurantData = async () => {
@@ -31,14 +46,21 @@ function RestaurantDashboard() {
         setLoading(false);
       } catch (err) {
         console.error('Error fetching restaurant data:', err);
-        setError('Failed to load restaurant information');
-        setLoading(false);
+        if (err.response && err.response.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('tokenExpiry');
+          localStorage.removeItem('userType');
+          setError('Authentication failed. Please login again.');
+          navigate('/login');
+        } else {
+          setError('Failed to load restaurant information');
+          setLoading(false);
+        }
       }
     };
 
     fetchRestaurantData();
   }, [navigate]);
-
 
   if (loading) return (
     <>
@@ -60,11 +82,34 @@ function RestaurantDashboard() {
       <div className="restaurant-dashboard">
         <header className="dashboard-header">
           <h1>Restaurant Dashboard</h1>
+          {isAuthenticated && (
+            <div className="auth-status">
+              <span className="status-badge">Authenticated ✓</span>
+            </div>
+          )}
         </header>
 
         <div className="restaurant-info">
           <h2>{restaurantInfo.name || 'Your Restaurant'}</h2>
-          <p>{restaurantInfo.description || 'Restaurant description'}</p>
+          <p className="restaurant-description">{restaurantInfo.description || 'Restaurant description'}</p>
+          
+          <div className="restaurant-details">
+            <div className="detail-item">
+              <strong>Email:</strong> {restaurantInfo.email || 'Not available'}
+            </div>
+            <div className="detail-item">
+              <strong>Phone:</strong> {restaurantInfo.phone || 'Not available'}
+            </div>
+            <div className="detail-item">
+              <strong>Address:</strong> {restaurantInfo.address || 'Not available'}
+            </div>
+            <div className="detail-item">
+              <strong>Cuisine Type:</strong> {restaurantInfo.cuisineType || 'Not specified'}
+            </div>
+            <div className="detail-item">
+              <strong>Status:</strong> <span className="status-active">Active</span>
+            </div>
+          </div>
         </div>
 
         <div className="dashboard-cards">
