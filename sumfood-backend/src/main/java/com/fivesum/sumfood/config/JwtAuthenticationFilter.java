@@ -20,37 +20,24 @@ import com.fivesum.sumfood.service.CourierService;
 import com.fivesum.sumfood.service.CustomerService;
 import com.fivesum.sumfood.service.RestaurantService;
 
+import lombok.AllArgsConstructor;
+
 import java.io.IOException;
 
+@AllArgsConstructor
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final HandlerExceptionResolver handlerExceptionResolver;
-
     private final JwtService jwtService;
     private final CourierService courierService;
     private final CustomerService customerService;
     private final RestaurantService restaurantService;
 
-    public JwtAuthenticationFilter(
-        JwtService jwtService,
-        CourierService courierService,
-        CustomerService customerService,
-        RestaurantService restaurantService,
-        HandlerExceptionResolver handlerExceptionResolver
-    ) {
-        this.jwtService = jwtService;
-        this.courierService = courierService;
-        this.customerService = customerService;
-        this.restaurantService = restaurantService;
-        this.handlerExceptionResolver = handlerExceptionResolver;
-    }
-
     @Override
     protected void doFilterInternal(
-        @NonNull HttpServletRequest request,
-        @NonNull HttpServletResponse response,
-        @NonNull FilterChain filterChain
-    ) throws ServletException, IOException {
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
         final String role = request.getHeader("Role");
 
@@ -68,20 +55,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (userEmail != null && authentication == null) {
                 UserDetails userDetails;
 
-                if(role == "CUSTOMER") {
+                if (role == "CUSTOMER") {
                     userDetails = customerService.loadUserByUsername(userEmail);
-                } else if(role == "COURIER") {
+                } else if (role == "COURIER") {
                     userDetails = courierService.loadUserByUsername(userEmail);
-                } else if(role == "RESTAURANT") {
+                } else if (role == "RESTAURANT") {
                     userDetails = restaurantService.loadUserByUsername(userEmail);
+                } else {
+                    userDetails = null;
                 }
 
                 if (jwtService.isTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
-                            userDetails.getAuthorities()
-                    );
+                            userDetails.getAuthorities());
 
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
