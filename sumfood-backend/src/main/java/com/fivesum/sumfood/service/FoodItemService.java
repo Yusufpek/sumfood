@@ -20,6 +20,10 @@ public class FoodItemService {
 
     private final FoodItemRepository foodItemRepository;
 
+    public FoodItem getById(Long id) {
+        return foodItemRepository.getById(id);
+    }
+
     public List<FoodItem> getAllFoodItems() {
         return foodItemRepository.findAll();
     }
@@ -30,6 +34,17 @@ public class FoodItemService {
 
     public List<FoodItem> getFoodItemByRestaurant(Restaurant restaurant) {
         return foodItemRepository.findByRestaurant(restaurant);
+
+    }
+
+    @Transactional
+    public boolean deleteFoodItem(FoodItem toBeDeleted) {
+        try {
+            foodItemRepository.delete(toBeDeleted);
+            return true;
+        } catch (Exception exception) {
+            return false;
+        }
 
     }
 

@@ -52,4 +52,24 @@ public class FoodItemController {
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
+    @DeleteMapping("/item/{itemId}")
+    public ResponseEntity<?> addFoodItem(@RequestHeader("Authorization") String token, @PathVariable() String id) {
+        String email = jwtService.extractUsername(token.substring(7));
+        Optional<Restaurant> restaurant = restaurantService.findByEmail(email);
+        if (restaurant.isPresent()) {
+            try {
+                FoodItem toBeDeleted = foodItemService.getById(Long.valueOf(id));
+                boolean response = foodItemService.deleteFoodItem(toBeDeleted);
+                if (response) {
+                    return ResponseEntity.status(HttpStatus.OK).body("Deleted succesfully");
+                } else {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Deleted failed");
+                }
+            } catch (Exception exception) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ID invalid");
+            }
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
 }
