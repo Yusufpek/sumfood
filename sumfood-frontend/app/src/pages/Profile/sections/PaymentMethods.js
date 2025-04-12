@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { styles } from './PaymentMethods.styles';
+import './PaymentMethods.css';
 import StandardizedInput from '../../../components/common/StandardizedInput';
 
 const PaymentMethods = () => {
@@ -95,12 +95,12 @@ const PaymentMethods = () => {
     };
 
     return (
-        <div style={styles.container}>
-            <h2 style={styles.title}>Payment Methods</h2>
+        <div className="payment-methods">
+            <h2>Payment Methods</h2>
             
-            <form onSubmit={handleAddCard} style={styles.form}>
-                <h3 style={styles.formTitle}>Add New Card</h3>
-                <div style={styles.inputGroup}>
+            <form onSubmit={handleAddCard} className="payment-form">
+                <h3>Add New Card</h3>
+                <div className="input-group">
                     <StandardizedInput
                         label="Card Number"
                         name="cardNumber"
@@ -111,31 +111,27 @@ const PaymentMethods = () => {
                         placeholder="1234 5678 9012 3456"
                     />
                 </div>
-                <div style={styles.expiryAndCvvContainer}>
-                    <div style={styles.halfWidth}>
+                <div className="expiry-and-cvv">
+                    <div className="half-width">
                         <StandardizedInput
                             label="Expiry Date (MM/YY)"
                             name="expiryDate"
                             value={newCard.expiryDate}
                             onChange={handleInputChange}
                             required
-                            maxLength={5}
-                            placeholder="MM/YY"
                         />
                     </div>
-                    <div style={styles.halfWidth}>
+                    <div className="half-width">
                         <StandardizedInput
                             label="CVV"
                             name="cvv"
                             value={newCard.cvv}
                             onChange={handleInputChange}
                             required
-                            maxLength={3}
-                            placeholder="123"
                         />
                     </div>
                 </div>
-                <div style={styles.inputGroup}>
+                <div className="input-group">
                     <StandardizedInput
                         label="Card Holder Name"
                         name="cardHolder"
@@ -147,50 +143,50 @@ const PaymentMethods = () => {
                 </div>
                 <button
                     type="submit"
-                    style={{ ...styles.button, ...styles.addButton }}
+                    className="add-button"
                 >
                     Add Card
                 </button>
             </form>
 
             {message.text && (
-                <div style={message.type === 'success' ? styles.successMessage : styles.errorMessage}>
+                <div className={`message ${message.type === 'success' ? 'success-message' : 'error-message'}`}>
                     {message.text}
                 </div>
             )}
 
             {paymentMethods.length > 0 && (
-                <div>
-                    <h3 style={styles.formTitle}>Saved Cards</h3>
+                <div className="saved-cards">
+                    <h3>Saved Cards</h3>
                     {paymentMethods.map(card => (
-                        <div key={card.id} style={styles.paymentCard}>
-                            <div style={styles.cardHeader}>
-                                <h4 style={styles.cardTitle}>Card {card.id}</h4>
+                        <div key={card.id} className="payment-card">
+                            <div className="card-header">
+                                <h4>Card {card.id}</h4>
                                 {card.isDefault && (
-                                    <span style={styles.defaultBadge}>
+                                    <span className="default-badge">
                                         Default
                                     </span>
                                 )}
                             </div>
-                            <div style={styles.cardDetails}>
-                                <div style={styles.cardNumber}>{card.cardNumber}</div>
-                                <div style={styles.cardInfo}>
+                            <div className="card-details">
+                                <div className="card-number">{card.cardNumber}</div>
+                                <div className="card-info">
                                     <span>Expires: {card.expiryDate}</span>
                                     <span>Holder: {card.cardHolder}</span>
                                 </div>
                             </div>
-                            <div style={styles.buttonContainer}>
+                            <div className="card-actions">
                                 {!card.isDefault && (
                                     <button
                                         onClick={() => handleSetDefault(card.id)}
-                                        style={{ ...styles.button, ...styles.setDefaultButton }}
+                                        className="set-default-button"
                                     >
                                         Set as Default
                                     </button>
                                 )}
                                 <button
                                     onClick={() => handleDeleteCard(card.id)}
-                                    style={{ ...styles.button, ...styles.deleteButton }}
+                                    className="delete-button"
                                 >
                                     Delete
                                 </button>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { styles } from './PersonalInformation.styles';
+import './PersonalInformation.css';
 import StandardizedInput from '../../../components/common/StandardizedInput';
 
 const PersonalInformation = () => {
@@ -27,10 +27,10 @@ const PersonalInformation = () => {
     };
 
     return (
-        <div style={styles.container}>
-            <h2 style={styles.title}>Personal Information</h2>
+        <div className="personal-info">
+            <h2>Personal Information</h2>
             
-            <form onSubmit={handleSubmit} style={styles.form}>
+            <form className="info-form" onSubmit={handleSubmit}>
                 <StandardizedInput
                     label="First Name"
                     name="firstName"
@@ -61,21 +61,21 @@ const PersonalInformation = () => {
                 />
 
                 {message.text && (
-                    <div style={message.type === 'success' ? styles.successMessage : styles.errorMessage}>
+                    <div className={`message ${message.type === 'success' ? 'success-message' : 'error-message'}`}>
                         {message.text}
                     </div>
                 )}
 
-                <div style={styles.buttonContainer}>
+                <div className="form-actions">
                     <button
                         type="submit"
-                        style={{ ...styles.button, ...styles.primaryButton }}
+                        className="submit-btn"
                     >
                         Save Changes
                     </button>
                     <button
                         type="button"
-                        style={{ ...styles.button, ...styles.secondaryButton }}
+                        className="cancel-btn"
                         onClick={() => setFormData({
                             firstName: '',
                             lastName: '',
