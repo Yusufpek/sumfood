@@ -50,4 +50,24 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
+
+    @GetMapping("/")
+    public ResponseEntity<?> getCustomer(@RequestHeader("Authorization") String token) {
+        try {
+            String email = jwtService.extractUsername(token.substring(7));
+            Optional<Customer> customerOpt = customerService.findByEmail(email);
+
+            if (!customerOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
+            }
+
+            Customer customer = customerOpt.get();
+
+            CustomerGetResponse resp = customerService.getCustomerResponse(customer);
+
+            return ResponseEntity.ok(resp);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+        }
+    }
 }

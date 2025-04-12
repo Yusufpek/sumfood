@@ -17,6 +17,7 @@ import com.fivesum.sumfood.dto.CustomerUpdateRequest;
 import com.fivesum.sumfood.dto.AuthRequest;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.repository.CustomerRepository;
+import com.fivesum.sumfood.responses.CustomerGetResponse;
 
 import lombok.AllArgsConstructor;
 
@@ -58,6 +59,16 @@ public class CustomerService implements UserDetailsService {
 
         return customerRepository.save(customer);
     }
+
+    public CustomerGetResponse getCustomerResponse(Customer customer) {
+        return new CustomerGetResponse(
+            customer.getName(),
+            customer.getLastName(),
+            customer.getEmail(),
+            customer.getPhoneNumber()
+        );
+    }
+
     @Transactional
     public Customer authenticate(AuthRequest request) {
         authenticationManager.authenticate(
