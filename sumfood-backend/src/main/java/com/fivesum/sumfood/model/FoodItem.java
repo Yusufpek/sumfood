@@ -1,7 +1,6 @@
 package com.fivesum.sumfood.model;
 
 import java.util.List;
-
 import javax.persistence.*;
 
 import com.fivesum.sumfood.model.base.EntityBase;
