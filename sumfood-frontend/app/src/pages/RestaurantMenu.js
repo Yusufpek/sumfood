@@ -13,7 +13,7 @@ function RestaurantMenu() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -39,13 +39,17 @@ function RestaurantMenu() {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         setRestaurantInfo(restaurantResponse.data);
-        
+
         // Fetch food items
-        const itemsResponse = await axios.get('http://localhost:8080/api/restaurant/menu-items', {
-          headers: { 'Authorization': `Bearer ${token}` }
+        const itemsResponse = await axios.get('http://localhost:8080/api/restaurant/items', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Role': `RESTAURANT`
+          }
         });
+        console.log(itemsResponse);
         setFoodItems(itemsResponse.data);
-        
+
         // Hardcoded categories instead of fetching from API
         const hardcodedCategories = [
           { id: 'PIZZA', name: 'Pizza' },
@@ -67,7 +71,7 @@ function RestaurantMenu() {
           { id: 'GRILL', name: 'Grill' }
         ];
         setCategories(hardcodedCategories);
-        
+
         setLoading(false);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -121,14 +125,14 @@ function RestaurantMenu() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    
+
     try {
       const payload = {
         ...formData,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock, 10)
       };
-      
+
       if (editingItem) {
         // Update existing item
         await axios.put(`http://localhost:8080/api/restaurant/menu-items/${editingItem.id}`, payload, {
@@ -137,18 +141,19 @@ function RestaurantMenu() {
       } else {
         // Add new item - updated to use the correct endpoint from the controller
         await axios.post('http://localhost:8080/api/food/item', payload, {
-          headers: { 
+          headers: {
             'Authorization': `Bearer ${token}`,
-            'Role' : 'RESTAURANT' }
+            'Role': 'RESTAURANT'
+          }
         });
       }
-      
+
       // Refresh food items - using the public endpoint from the controller
       const response = await axios.get('http://localhost:8080/api/food/public/items', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setFoodItems(response.data);
-      
+
       setIsFormOpen(false);
       resetForm();
     } catch (err) {
@@ -159,13 +164,13 @@ function RestaurantMenu() {
 
   const handleDelete = async (itemId) => {
     if (!window.confirm('Are you sure you want to delete this item?')) return;
-    
+
     const token = localStorage.getItem('token');
     try {
       await axios.delete(`http://localhost:8080/api/restaurant/menu-items/${itemId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      
+
       // Remove item from state
       setFoodItems(foodItems.filter(item => item.id !== itemId));
     } catch (err) {
@@ -180,7 +185,7 @@ function RestaurantMenu() {
       <div className="loading">Loading menu data...</div>
     </>
   );
-  
+
   if (error) return (
     <>
       <RestaurantNavbar restaurantName="Error" />
@@ -194,8 +199,8 @@ function RestaurantMenu() {
       <div className="restaurant-menu-container">
         <header className="menu-header">
           <h1>Menu Management</h1>
-          <button 
-            className="add-item-button" 
+          <button
+            className="add-item-button"
             onClick={() => openForm()}
           >
             Add New Item
@@ -304,17 +309,23 @@ function RestaurantMenu() {
                   </div>
                   <h3>{item.name}</h3>
                   <p className="item-description">{item.description}</p>
-                  <p className="item-category">{item.category ? item.category.name : 'Uncategorized'}</p>
+                  <p className="item-category">
+                    {item.categories && item.categories.length > 0 
+                      ? item.categories.map(cat => cat.name || cat).join(', ') 
+                      : item.category && item.category.name 
+                        ? item.category.name 
+                        : 'Uncategorized'}
+                  </p>
                   <p className="item-price">${item.price.toFixed(2)}</p>
                   <div className="item-actions">
-                    <button 
-                      className="edit-button" 
+                    <button
+                      className="edit-button"
                       onClick={() => openForm(item)}
                     >
                       Edit
                     </button>
-                    <button 
-                      className="delete-button" 
+                    <button
+                      className="delete-button"
                       onClick={() => handleDelete(item.id)}
                     >
                       Delete
