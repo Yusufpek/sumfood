@@ -46,13 +46,27 @@ function RestaurantMenu() {
         });
         setFoodItems(itemsResponse.data);
         
-        // Fetch categories
-        const categoriesResponse = await axios.get('http://localhost:8080/api/categories', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        // Ensure categories is always an array
-        const categoriesData = categoriesResponse.data;
-        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+        // Hardcoded categories instead of fetching from API
+        const hardcodedCategories = [
+          { id: 'PIZZA', name: 'Pizza' },
+          { id: 'DESERT', name: 'Desert' },
+          { id: 'STREET_FOOD', name: 'Street Food' },
+          { id: 'HAMBURGER', name: 'Hamburger' },
+          { id: 'DONER', name: 'Doner' },
+          { id: 'KEBAB', name: 'Kebab' },
+          { id: 'CHICKEN', name: 'Chicken' },
+          { id: 'PIDE_LAHMACUN', name: 'Pide & Lahmacun' },
+          { id: 'HOMEMADE', name: 'Homemade' },
+          { id: 'MEATBALL', name: 'Meatball' },
+          { id: 'VEGATERIAN', name: 'Vegetarian' },
+          { id: 'SALAD', name: 'Salad' },
+          { id: 'GLOBAL', name: 'Global' },
+          { id: 'MANTI', name: 'Manti' },
+          { id: 'PASTA', name: 'Pasta' },
+          { id: 'SEAFOOD', name: 'Seafood' },
+          { id: 'GRILL', name: 'Grill' }
+        ];
+        setCategories(hardcodedCategories);
         
         setLoading(false);
       } catch (err) {
@@ -121,14 +135,16 @@ function RestaurantMenu() {
           headers: { 'Authorization': `Bearer ${token}` }
         });
       } else {
-        // Add new item
-        await axios.post('http://localhost:8080/api/restaurant/menu-items', payload, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        // Add new item - updated to use the correct endpoint from the controller
+        await axios.post('http://localhost:8080/api/food/item', payload, {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Role' : 'RESTAURANT' }
         });
       }
       
-      // Refresh food items
-      const response = await axios.get('http://localhost:8080/api/restaurant/menu-items', {
+      // Refresh food items - using the public endpoint from the controller
+      const response = await axios.get('http://localhost:8080/api/food/public/items', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setFoodItems(response.data);
