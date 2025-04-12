@@ -47,6 +47,11 @@ function App() {
             path="/"
             element={<Login />}
           />
+          <Route 
+            path="/restaurant-dashboard/menu" 
+            element={<RestaurantMenu />} 
+          />
+          
         </Routes>
       </div>
     </Router>
