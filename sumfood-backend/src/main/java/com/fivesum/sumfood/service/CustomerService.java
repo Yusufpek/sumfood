@@ -5,12 +5,15 @@ import java.util.Optional;
 import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.fivesum.sumfood.dto.CustomerRegistrationRequest;
+import com.fivesum.sumfood.dto.AuthRequest;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.repository.CustomerRepository;
 
@@ -22,6 +25,7 @@ public class CustomerService implements UserDetailsService {
 
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
     @Transactional
     public Customer registerCustomer(CustomerRegistrationRequest request) {
@@ -34,6 +38,15 @@ public class CustomerService implements UserDetailsService {
                 .build();
 
         return customerRepository.save(customer);
+    }
+
+    @Transactional
+    public Customer authenticate(AuthRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()));
+        return customerRepository.findByEmail(request.getEmail()).orElseThrow(null);
     }
 
     @Override

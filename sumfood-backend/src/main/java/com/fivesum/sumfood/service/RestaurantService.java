@@ -5,12 +5,15 @@ import java.util.Optional;
 import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.fivesum.sumfood.dto.RestaurantRegistrationRequest;
+import com.fivesum.sumfood.dto.AuthRequest;
 import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.repository.RestaurantRepository;
 
@@ -22,9 +25,10 @@ public class RestaurantService implements UserDetailsService {
 
     private final RestaurantRepository restaurantRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
     @Transactional
-    public Restaurant registerCourier(RestaurantRegistrationRequest request) {
+    public Restaurant registerRestaurant(RestaurantRegistrationRequest request) {
         Restaurant restaurant = Restaurant.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -39,6 +43,16 @@ public class RestaurantService implements UserDetailsService {
                 .build();
 
         return restaurantRepository.save(restaurant);
+    }
+
+    @Transactional
+    public Restaurant authenticate(AuthRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()));
+
+        return restaurantRepository.findByEmail(request.getEmail()).orElseThrow(null);
     }
 
     @Override
