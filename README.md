@@ -235,6 +235,48 @@ Response:
 }
 ```
 
+#### Add Food Item
+
+```http
+POST /api/food/item
+```
+Authorization: Bearer {jwt token}
+Role: RESTAURANT
+
+| Parametre | Tip    | Açıklama        |
+| :-------- | :----- | :-------------- |
+| `body`    | `JSON` | food_item_data |
+
+Example Data Structure:
+
+```
+{
+  "name": "test item",
+  "description": "descccc",
+  "price": 55.5,
+  "stock": 5,
+  "category": "PIZZA"
+}
+
+```
+
+Response:
+
+```
+{
+    "id": 1,
+    "name": "test item",
+    "description": "descccc",
+    "price": 55.5,
+    "stock": 5,
+    "category": "PIZZA"
+}
+```
+
+
+
+
+
 ## Authors and acknowledgment
 
 Show your appreciation to those who have contributed to the project.
