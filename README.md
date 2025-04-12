@@ -240,8 +240,11 @@ Response:
 ```http
 POST /api/food/item
 ```
-Authorization: Bearer {jwt token}
-Role: RESTAURANT
+**Headers:**
+| Key            | Value             | Required |
+|----------------|-------------------|----------|
+| `Authorization`| `Bearer {token}`  | Yes      |
+| `Role`         | `RESTAURANT`      | Yes      |
 
 | Parametre | Tip    | Açıklama        |
 | :-------- | :----- | :-------------- |
@@ -273,7 +276,56 @@ Response:
 }
 ```
 
+#### Get Food Items
 
+```http
+GET /api/restaurant/items
+```
+**Headers:**
+| Key            | Value             | Required |
+|----------------|-------------------|----------|
+| `Authorization`| `Bearer {token}`  | Yes      |
+| `Role`         | `RESTAURANT`      | Yes      |
+
+| Parametre | Tip    | Açıklama        |
+| :-------- | :----- | :-------------- |
+| `body`    | `JSON` | food_item_data |
+
+Example Data Structure:
+
+```
+{
+  "name": "test item",
+  "description": "descccc",
+  "price": 55.5,
+  "stock": 5,
+  "category": "PIZZA"
+}
+
+```
+
+Response:
+
+```
+[
+    {
+        "id": 1,
+        "name": "Margherita Pizza",
+        "description": "Classic tomato and mozzarella",
+        "price": 12.99,
+        "stock": 10,
+        "category": "PIZZA"
+    },
+    {
+        "id": 2,
+        "name": "Cheeseburger",
+        "description": "Beef patty with cheese",
+        "price": 8.99,
+        "stock": 15,
+        "category": "BURGER"
+    }
+]
+```
 
 
 
