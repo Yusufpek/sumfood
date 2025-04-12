@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import '../App.css';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthNavbar from '../components/layout/AuthNavbar';
 import '../styles/auth.css';
@@ -10,7 +12,8 @@ function Register() {
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
-  const [driverLicenseId, setDriverLicenseId] = useState('');
+  const [driverLicenceId, setDriverLicenceId] = useState('');
+  const [vehicleType, setVehicleType] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [taxId, setTaxId] = useState('');
   const [businessName, setBusinessName] = useState('');
@@ -22,24 +25,53 @@ function Register() {
     e.preventDefault();
     // Handle registration logic here
     const userData = {
-      userType,
       name,
       lastName,
       email,
       phoneNumber,
       password,
-      ...(userType === 'courier' && { driverLicenseId, birthDate }),
+      ...(userType === 'courier' && { driverLicenceId, birthDate, vehicleType }),
       ...(userType === 'restaurant' && { taxId, businessName, displayName, description }),
     };
-    console.log(`Registered: ${JSON.stringify(userData, null, 2)}`);
-    
-    // redirect to login after successful registration
-    navigate('/login');
-  };
+
+    register(userData)
+      .then((response) => {
+        if (userType === 'restaurant') {
+          alert(`Registered: ${userData['displayName']}`);
+        } else {
+          alert(`Registered: ${response.data['username']}`);
+        }
+        // redirect to login after successful registration
+        navigate('/login');
+      })
+      .catch((e) => {
+        if (e.status === 409) {
+          alert("This email already in use!");
+        } else {
+          alert("Something went wrong! " + e['message']);
+        }
+      });
+  }
+
+  async function register(userData) {
+    let url = "http://localhost:8080/api/auth/register/";
+    if (userType === 'regular') {
+      url += "customer";
+    } else if (userType === 'restaurant') {
+      userData['taxIdentificationNumber'] = userData['taxId'];
+      url += userType;
+    } else {
+      url += userType;
+    }
+    const body = JSON.stringify(userData, null, 2);
+    console.log("body", body);
+    const response = await axios.post(url, body, { headers: { 'Content-Type': 'application/json' } });
+    return response;
+  }
 
   return (
     <>
-    <AuthNavbar />
+      <AuthNavbar />
       <h2 className="page-title">Register</h2>
       <div className="auth-container">
         <form onSubmit={handleSubmit}>
@@ -117,8 +149,8 @@ function Register() {
                 <label>Driver License ID</label>
                 <input
                   type="text"
-                  value={driverLicenseId}
-                  onChange={(e) => setDriverLicenseId(e.target.value)}
+                  value={driverLicenceId}
+                  onChange={(e) => setDriverLicenceId(e.target.value)}
                   required
                 />
               </div>
@@ -131,6 +163,28 @@ function Register() {
                   required
                 />
               </div>
+              <div>
+                <label>Vehicle Type</label>
+                <select
+                  value={vehicleType}
+                  onChange={(e) => setVehicleType(e.target.value)}
+                  required
+                  style={{
+                    width: '80%',
+                    padding: '0.5rem',
+                    border: '1px solid #ccc',
+                    borderRadius: '6px',
+                    fontSize: '1rem',
+                    appearance: 'none',
+                    cursor: 'pointer',
+                  }}>
+                  <option value="">Select vehicle type</option>
+                  <option value="CAR">Car</option>
+                  <option value="BICYCLE">Bicycle</option>
+                  <option value="MOTORCYCLE">Motorcycle</option>
+                </select>
+              </div>
+
             </>
           )}
           {userType === 'restaurant' && (

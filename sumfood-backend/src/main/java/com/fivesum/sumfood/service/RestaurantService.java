@@ -12,55 +12,60 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.fivesum.sumfood.dto.CustomerRegistrationRequest;
+import com.fivesum.sumfood.dto.RestaurantRegistrationRequest;
 import com.fivesum.sumfood.dto.AuthRequest;
-import com.fivesum.sumfood.model.Customer;
-import com.fivesum.sumfood.repository.CustomerRepository;
+import com.fivesum.sumfood.model.Restaurant;
+import com.fivesum.sumfood.repository.RestaurantRepository;
 
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @Service
-public class CustomerService implements UserDetailsService {
+public class RestaurantService implements UserDetailsService {
 
-    private final CustomerRepository customerRepository;
+    private final RestaurantRepository restaurantRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
     @Transactional
-    public Customer registerCustomer(CustomerRegistrationRequest request) {
-        Customer customer = Customer.builder()
+    public Restaurant registerRestaurant(RestaurantRegistrationRequest request) {
+        Restaurant restaurant = Restaurant.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .name(request.getName())
                 .lastName(request.getLastName())
                 .phoneNumber(request.getPhoneNumber())
+                .taxIdentificationNumber(request.getTaxIdentificationNumber())
+                .businessName(request.getBusinessName())
+                .displayName(request.getDisplayName())
+                .description(request.getDescription())
+                .isValidated(false)
                 .build();
 
-        return customerRepository.save(customer);
+        return restaurantRepository.save(restaurant);
     }
 
     @Transactional
-    public Customer authenticate(AuthRequest request) {
+    public Restaurant authenticate(AuthRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()));
-        return customerRepository.findByEmail(request.getEmail()).orElseThrow(null);
+
+        return restaurantRepository.findByEmail(request.getEmail()).orElseThrow(null);
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        customerRepository.findByEmail(email);
-        return customerRepository.findByEmail(email)
+        return restaurantRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 
-    public Optional<Customer> findByEmail(String email) {
-        return customerRepository.findByEmail(email);
+    public Optional<Restaurant> findByEmail(String email) {
+        return restaurantRepository.findByEmail(email);
     }
 
     public boolean existsByEmail(String email) {
-        return customerRepository.existsByEmail(email);
+        return restaurantRepository.existsByEmail(email);
     }
 }

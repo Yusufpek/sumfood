@@ -12,55 +12,60 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.fivesum.sumfood.dto.CustomerRegistrationRequest;
+import com.fivesum.sumfood.dto.CourierRegistrationRequest;
 import com.fivesum.sumfood.dto.AuthRequest;
-import com.fivesum.sumfood.model.Customer;
-import com.fivesum.sumfood.repository.CustomerRepository;
+import com.fivesum.sumfood.model.Courier;
+import com.fivesum.sumfood.repository.CourierRepository;
 
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @Service
-public class CustomerService implements UserDetailsService {
+public class CourierService implements UserDetailsService {
 
-    private final CustomerRepository customerRepository;
+    private final CourierRepository courierRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
     @Transactional
-    public Customer registerCustomer(CustomerRegistrationRequest request) {
-        Customer customer = Customer.builder()
+    public Courier registerCourier(CourierRegistrationRequest request) {
+        Courier courier = Courier.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .name(request.getName())
                 .lastName(request.getLastName())
                 .phoneNumber(request.getPhoneNumber())
+                .vehicleType(request.getVehicleType())
+                .driverLicenceId(request.getDriverLicenceId())
+                .birthDate(request.getBirthDate())
+                .totalScore(0)
+                .isValidated(false)
                 .build();
 
-        return customerRepository.save(customer);
+        return courierRepository.save(courier);
     }
 
     @Transactional
-    public Customer authenticate(AuthRequest request) {
+    public Courier authenticate(AuthRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()));
-        return customerRepository.findByEmail(request.getEmail()).orElseThrow(null);
+
+        return courierRepository.findByEmail(request.getEmail()).orElseThrow(null);
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        customerRepository.findByEmail(email);
-        return customerRepository.findByEmail(email)
+        return courierRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 
-    public Optional<Customer> findByEmail(String email) {
-        return customerRepository.findByEmail(email);
+    public Optional<Courier> findByEmail(String email) {
+        return courierRepository.findByEmail(email);
     }
 
     public boolean existsByEmail(String email) {
-        return customerRepository.existsByEmail(email);
+        return courierRepository.existsByEmail(email);
     }
 }
