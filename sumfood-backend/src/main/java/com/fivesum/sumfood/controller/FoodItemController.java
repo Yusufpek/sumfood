@@ -53,6 +53,27 @@ public class FoodItemController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    @PutMapping("/item/{itemId}")
+    public ResponseEntity<FoodItem> updateFoodItem(@RequestHeader("Authorization") String token,
+            @RequestBody FoodItemAddRequest request, @PathVariable() String idString) {
+        String email = jwtService.extractUsername(token.substring(7));
+        Optional<Restaurant> restaurant = restaurantService.findByEmail(email);
+        if (restaurant.isPresent()) {
+            try {
+                long id = Long.valueOf(idString);
+                FoodItem foodItem = foodItemService.updateFoodItem(request, id);
+                if (foodItem != null) {
+                    return ResponseEntity.status(HttpStatus.OK).body(foodItem);
+                } else {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                }
+            } catch (Exception except) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
     @DeleteMapping("/item/{itemId}")
     public ResponseEntity<?> addFoodItem(@RequestHeader("Authorization") String token, @PathVariable() String id) {
         String email = jwtService.extractUsername(token.substring(7));

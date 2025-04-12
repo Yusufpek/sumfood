@@ -1,6 +1,7 @@
 package com.fivesum.sumfood.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -59,6 +60,21 @@ public class FoodItemService {
                 .build();
 
         return foodItemRepository.save(foodItem);
+    }
+
+    @Transactional
+    public FoodItem updateFoodItem(FoodItemAddRequest request, Long id) {
+        Optional<FoodItem> foodItemOptional = foodItemRepository.findById(id);
+        if (foodItemOptional.isPresent()) {
+            FoodItem foodItem = foodItemOptional.get();
+            foodItem.setName(request.getName());
+            foodItem.setDescription(request.getDescription());
+            foodItem.setPrice(request.getPrice());
+            foodItem.setStock(request.getStock());
+
+            return foodItemRepository.save(foodItem);
+        }
+        return null;
     }
 
 }
