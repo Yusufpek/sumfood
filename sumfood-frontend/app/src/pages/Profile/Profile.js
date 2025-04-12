@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import Navbar from '../../components/layout/Navbar';
+import ManageAddresses from './sections/ManageAddresses';
+import PaymentMethods from './sections/PaymentMethods';
+import PersonalInformation from './sections/PersonalInformation';
 
 const Profile = () => {
     const [activeSection, setActiveSection] = useState('Personal Information');
@@ -9,13 +12,11 @@ const Profile = () => {
     const renderContent = () => {
         switch (activeSection) {
             case 'Personal Information':
-                return <div>Personal Information Content</div>;
+                return <PersonalInformation />;
             case 'Manage Adresses':
-                return <div>Adresses</div>;
+                return <ManageAddresses />;
             case 'Payment Methods':
-                return <div>Payment Methods</div>;
-            case 'Settings':
-                return <div>Account Settings Content</div>;
+                return <PaymentMethods />;
             default:
                 return <div>Select a section</div>;
         }
@@ -72,20 +73,6 @@ const Profile = () => {
                         }}
                     >
                         Payment Methods
-                    </button>
-                    <button 
-                        onClick={() => setActiveSection('settings')}
-                        style={{
-                            width: '100%',
-                            padding: '10px',
-                            marginBottom: '10px',
-                            backgroundColor: activeSection === 'settings' ? '#e0e0e0' : 'white',
-                            border: '1px solid #ddd',
-                            borderRadius: '5px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        Account Settings
                     </button>
                 </div>
                 <div className="content-area" style={{ 
