@@ -1,190 +1,164 @@
 import React, { useState } from 'react';
+import { styles } from './ManageAddresses.styles';
+import StandardizedInput from '../../../components/common/StandardizedInput';
 
 const ManageAddresses = () => {
-    // Mock data - TODO: Replace with API call to fetch user addresses
     const [addresses, setAddresses] = useState([
         {
             id: 1,
-            title: 'Home',
-            address: '123 Main St',
-            city: 'New York',
-            state: 'NY',
-            zipCode: '10001',
+            addressLine1: '123 Main St',
+            addressLine2: 'Apt 4B',
+            postalCode: '10001',
             isDefault: true
         },
         {
             id: 2,
-            title: 'Work',
-            address: '456 Business Ave',
-            city: 'New York',
-            state: 'NY',
-            zipCode: '10002',
+            addressLine1: '456 Business Ave',
+            addressLine2: 'Floor 3',
+            postalCode: '10002',
             isDefault: false
         }
     ]);
 
     const [newAddress, setNewAddress] = useState({
-        title: '',
-        address: '',
-        city: '',
-        state: '',
-        zipCode: '',
+        addressLine1: '',
+        addressLine2: '',
+        postalCode: '',
         isDefault: false
     });
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        if (name === 'postalCode' && value.length > 5) return;
         setNewAddress(prev => ({
             ...prev,
             [name]: value
         }));
     };
 
-    const handleAddAddress = (e) => {
+    const handleAddAddress = async (e) => {
         e.preventDefault();
-        // TODO: Add API call to create new address
-        // Example: POST /api/users/addresses
-        const newId = Math.max(...addresses.map(a => a.id)) + 1;
-        setAddresses([...addresses, { ...newAddress, id: newId }]);
-        setNewAddress({
-            title: '',
-            address: '',
-            city: '',
-            state: '',
-            zipCode: '',
-            isDefault: false
-        });
+        try {
+            // TODO: Add API call to create new address
+            // Example: POST /api/users/addresses
+            // const response = await axios.post('/api/users/addresses', newAddress);
+            // const addedAddress = response.data;
+
+            const newId = Math.max(...addresses.map(a => a.id)) + 1;
+            
+            // If the new address is set as default, remove default from other addresses
+            const updatedAddresses = addresses.map(address => ({
+                ...address,
+                isDefault: newAddress.isDefault ? false : address.isDefault
+            }));
+
+            // TODO: If new address is default, make API call to update other addresses' default status
+            // Example: If newAddress.isDefault is true
+            // await axios.put('/api/users/addresses/update-defaults', { newDefaultId: newId });
+
+            setAddresses([...updatedAddresses, { ...newAddress, id: newId }]);
+            setNewAddress({
+                addressLine1: '',
+                addressLine2: '',
+                postalCode: '',
+                isDefault: false
+            });
+        } catch (error) {
+            console.error('Error adding address:', error);
+            // TODO: Add error handling
+        }
     };
 
-    const handleDeleteAddress = (id) => {
-        // TODO: Add API call to delete address
-        // Example: DELETE /api/users/addresses/{id}
-        setAddresses(addresses.filter(address => address.id !== id));
+    const handleDeleteAddress = async (id) => {
+        try {
+            // TODO: Add API call to delete address
+            // Example: DELETE /api/users/addresses/{id}
+            // await axios.delete(`/api/users/addresses/${id}`);
+
+            const addressToDelete = addresses.find(addr => addr.id === id);
+            const remainingAddresses = addresses.filter(address => address.id !== id);
+
+            // If we're deleting the default address and there are other addresses,
+            // make the first remaining address the default
+            if (addressToDelete.isDefault && remainingAddresses.length > 0) {
+                // TODO: Add API call to set new default address
+                // Example: PUT /api/users/addresses/{remainingAddresses[0].id}/default
+                // await axios.put(`/api/users/addresses/${remainingAddresses[0].id}/default`);
+                remainingAddresses[0].isDefault = true;
+            }
+
+            setAddresses(remainingAddresses);
+        } catch (error) {
+            console.error('Error deleting address:', error);
+            // TODO: Add error handling
+        }
     };
 
-    const handleSetDefault = (id) => {
-        // TODO: Add API call to set default address
-        // Example: PUT /api/users/addresses/{id}/default
-        setAddresses(addresses.map(address => ({
-            ...address,
-            isDefault: address.id === id
-        })));
-    };
+    const handleToggleDefault = async (id) => {
+        try {
+            const currentAddress = addresses.find(addr => addr.id === id);
+            
+            // If this is the default address and it's the only address, don't allow removing default status
+            if (currentAddress.isDefault && addresses.length === 1) {
+                return;
+            }
 
-    const inputStyle = {
-        width: '100%',
-        padding: '8px',
-        borderRadius: '4px',
-        border: '1px solid #ddd',
-        marginBottom: '15px',
-        boxSizing: 'border-box',
-        height: '40px'
-    };
+            if (currentAddress.isDefault) {
+                const otherAddresses = addresses.filter(addr => addr.id !== id);
+                // TODO: Add API call to set new default address and remove default from current
+                // Example: PUT /api/users/addresses/update-defaults
+                // await axios.put('/api/users/addresses/update-defaults', {
+                //     newDefaultId: otherAddresses[0].id,
+                //     removeDefaultId: id
+                // });
 
-    const labelStyle = {
-        display: 'block',
-        marginBottom: '5px',
-        fontWeight: 'bold'
-    };
+                otherAddresses[0].isDefault = true;
+                setAddresses([...otherAddresses, { ...currentAddress, isDefault: false }].sort((a, b) => a.id - b.id));
+            } else {
+                // TODO: Add API call to set new default address
+                // Example: PUT /api/users/addresses/{id}/default
+                // await axios.put(`/api/users/addresses/${id}/default`);
 
-    const formStyle = {
-        backgroundColor: '#f8f9fa', 
-        padding: '20px', 
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        marginBottom: '20px'
-    };
-
-    const addressCardStyle = {
-        backgroundColor: '#f8f9fa', 
-        padding: '20px', 
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        marginBottom: '15px'
-    };
-
-    const buttonStyle = {
-        padding: '5px 10px',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer'
+                setAddresses(addresses.map(address => ({
+                    ...address,
+                    isDefault: address.id === id
+                })));
+            }
+        } catch (error) {
+            console.error('Error updating default address:', error);
+            // TODO: Add error handling
+        }
     };
 
     return (
-        <div className="manage-addresses" style={{ maxWidth: '600px', margin: '0 auto' }}>
-            <h2 style={{ marginBottom: '20px' }}>Manage Addresses</h2>
+        <div className="manage-addresses" style={styles.container}>
+            <h2 style={styles.title}>Manage Addresses</h2>
             
-            {/* Add New Address Form */}
-            <form onSubmit={handleAddAddress} style={formStyle}>
-                <h3 style={{ marginBottom: '15px' }}>Add New Address</h3>
-                <div>
-                    <label style={labelStyle}>
-                        Title
-                    </label>
-                    <input
-                        type="text"
-                        name="title"
-                        value={newAddress.title}
-                        onChange={handleInputChange}
-                        required
-                        style={inputStyle}
-                    />
-                </div>
-                <div>
-                    <label style={labelStyle}>
-                        Address
-                    </label>
-                    <input
-                        type="text"
-                        name="address"
-                        value={newAddress.address}
-                        onChange={handleInputChange}
-                        required
-                        style={inputStyle}
-                    />
-                </div>
-                <div>
-                    <label style={labelStyle}>
-                        City
-                    </label>
-                    <input
-                        type="text"
-                        name="city"
-                        value={newAddress.city}
-                        onChange={handleInputChange}
-                        required
-                        style={inputStyle}
-                    />
-                </div>
-                <div>
-                    <label style={labelStyle}>
-                        State
-                    </label>
-                    <input
-                        type="text"
-                        name="state"
-                        value={newAddress.state}
-                        onChange={handleInputChange}
-                        required
-                        style={inputStyle}
-                    />
-                </div>
-                <div>
-                    <label style={labelStyle}>
-                        ZIP Code
-                    </label>
-                    <input
-                        type="text"
-                        name="zipCode"
-                        value={newAddress.zipCode}
-                        onChange={handleInputChange}
-                        required
-                        style={inputStyle}
-                    />
-                </div>
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <form onSubmit={handleAddAddress} style={styles.form}>
+                <h3 style={styles.formTitle}>Add New Address</h3>
+                <StandardizedInput
+                    label="Address Line 1"
+                    name="addressLine1"
+                    value={newAddress.addressLine1}
+                    onChange={handleInputChange}
+                    required
+                />
+                <StandardizedInput
+                    label="Address Line 2"
+                    name="addressLine2"
+                    value={newAddress.addressLine2}
+                    onChange={handleInputChange}
+                />
+                <StandardizedInput
+                    label="Postal Code"
+                    name="postalCode"
+                    value={newAddress.postalCode}
+                    onChange={handleInputChange}
+                    required
+                    maxLength={5}
+                />
+                <div style={styles.checkboxContainer}>
+                    <label style={styles.checkboxLabel}>
                         <input
                             type="checkbox"
                             name="isDefault"
@@ -196,55 +170,41 @@ const ManageAddresses = () => {
                 </div>
                 <button
                     type="submit"
-                    style={{
-                        ...buttonStyle,
-                        padding: '10px 20px',
-                        backgroundColor: '#28a745'
-                    }}
+                    style={{ ...styles.button, ...styles.addButton }}
                 >
                     Add Address
                 </button>
             </form>
 
-            {/* Address List */}
             <div>
-                <h3 style={{ marginBottom: '15px' }}>Saved Addresses</h3>
+                <h3 style={styles.formTitle}>Saved Addresses</h3>
                 {addresses.map(address => (
-                    <div key={address.id} style={addressCardStyle}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                            <h4 style={{ margin: 0 }}>{address.title}</h4>
+                    <div key={address.id} style={styles.addressCard}>
+                        <div style={styles.addressHeader}>
+                            <h4 style={styles.addressTitle}>Address {address.id}</h4>
                             {address.isDefault && (
-                                <span style={{ 
-                                    backgroundColor: '#28a745',
-                                    color: 'white',
-                                    padding: '4px 8px',
-                                    borderRadius: '4px',
-                                    fontSize: '12px'
-                                }}>
+                                <span style={styles.defaultBadge}>
                                     Default
                                 </span>
                             )}
                         </div>
-                        <p style={{ margin: '5px 0' }}>{address.address}</p>
-                        <p style={{ margin: '5px 0' }}>{address.city}, {address.state} {address.zipCode}</p>
-                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                            {!address.isDefault && (
-                                <button
-                                    onClick={() => handleSetDefault(address.id)}
-                                    style={{
-                                        ...buttonStyle,
-                                        backgroundColor: '#007bff'
-                                    }}
-                                >
-                                    Set as Default
-                                </button>
-                            )}
+                        <p style={styles.addressText}>{address.addressLine1}</p>
+                        {address.addressLine2 && <p style={styles.addressText}>{address.addressLine2}</p>}
+                        <p style={styles.addressText}>Postal Code: {address.postalCode}</p>
+                        <div style={styles.buttonContainer}>
+                            <button
+                                onClick={() => handleToggleDefault(address.id)}
+                                style={{
+                                    ...styles.button,
+                                    ...styles.setDefaultButton,
+                                    backgroundColor: address.isDefault ? '#6c757d' : '#007bff'
+                                }}
+                            >
+                                {address.isDefault ? 'Remove Default' : 'Set as Default'}
+                            </button>
                             <button
                                 onClick={() => handleDeleteAddress(address.id)}
-                                style={{
-                                    ...buttonStyle,
-                                    backgroundColor: '#dc3545'
-                                }}
+                                style={{ ...styles.button, ...styles.deleteButton }}
                             >
                                 Delete
                             </button>
