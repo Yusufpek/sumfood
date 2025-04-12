@@ -48,9 +48,14 @@ function App() {
             path="/"
             element={<Login />}
           />
-          <Route 
-            path="/restaurant-dashboard/menu" 
-            element={<RestaurantMenu />} 
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
           />
           
         </Routes>
