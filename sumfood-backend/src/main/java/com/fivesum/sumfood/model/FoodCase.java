@@ -6,6 +6,8 @@ import javax.persistence.*;
 
 import com.fivesum.sumfood.model.base.EntityBase;
 
+@Entity
+@Table(name = "food_cases")
 public class FoodCase extends EntityBase {
     @OneToOne(optional = false)
     @JoinColumn(name = "category_id", nullable = false)

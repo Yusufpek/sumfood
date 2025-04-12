@@ -5,8 +5,10 @@ import javax.persistence.*;
 import com.fivesum.sumfood.model.base.UserBase;
 import com.fivesum.sumfood.model.enums.Role;
 
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+@NoArgsConstructor
 @SuperBuilder
 @Entity
 @Table(name = "restaurants")
@@ -17,7 +19,7 @@ public class Restaurant extends UserBase {
     private String taxIdentificationNumber; // Vergi Kimlik Numarası
 
     @Column(nullable = false, unique = true)
-    private String bussinesName; // Real Name
+    private String businessName; // Real Name
 
     @Column(nullable = false, unique = true, length = 50)
     private String displayName;
@@ -33,5 +35,10 @@ public class Restaurant extends UserBase {
     @PrePersist
     public void prePersist() {
         setRole(Role.RESTAURANT);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return isValidated;
     }
 }

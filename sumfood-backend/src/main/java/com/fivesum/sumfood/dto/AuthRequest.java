@@ -1,5 +1,7 @@
 package com.fivesum.sumfood.dto;
 
+import com.fivesum.sumfood.model.enums.Role;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class AuthRequest {
     private String email;
     private String password;
+    private Role role;
 }

@@ -1,9 +1,29 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './ProfileDropdown.css';
 
 const ProfileDropdown = ({ username }) => {
   const [showDropdown, setShowDropdown] = useState(false);
+  const navigate = useNavigate();
+  
+  const handleLogout = () => {
+    // Clear all authentication data from localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('tokenExpiry');
+    localStorage.removeItem('userType');
+    localStorage.removeItem('userData');
+    
+    // Additional items that might be stored
+    localStorage.removeItem('user');
+    
+    console.log('User logged out successfully');
+    
+    // Close dropdown
+    setShowDropdown(false);
+    
+    // Redirect to login page
+    navigate('/login');
+  };
   
   return (
     <div className="profile-dropdown-container">
@@ -19,7 +39,12 @@ const ProfileDropdown = ({ username }) => {
           <Link to="/orders">Order History</Link>
           <Link to="/favorites">Favorites</Link>
           <Link to="/notifications">Notifications (3)</Link>
-          <Link to="/Login">Logout</Link>
+          <button 
+            className="logout-button" 
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
         </div>
       )}
     </div>
