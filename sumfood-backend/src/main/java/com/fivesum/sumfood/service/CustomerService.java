@@ -43,13 +43,10 @@ public class CustomerService implements UserDetailsService {
     @Transactional
     public Customer authenticate(AuthRequest request) {
         authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                request.getEmail(),
-                request.getPassword()
-            )
-        );
-
-        return customerRepository.findByEmail(request.getEmail()).orElseThrow();
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()));
+        return customerRepository.findByEmail(request.getEmail()).orElseThrow(null);
     }
 
     @Override

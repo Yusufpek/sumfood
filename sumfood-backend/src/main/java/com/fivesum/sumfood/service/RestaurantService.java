@@ -48,13 +48,11 @@ public class RestaurantService implements UserDetailsService {
     @Transactional
     public Restaurant authenticate(AuthRequest request) {
         authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                request.getEmail(),
-                request.getPassword()
-            )
-        );
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()));
 
-        return restaurantRepository.findByEmail(request.getEmail()).orElseThrow();
+        return restaurantRepository.findByEmail(request.getEmail()).orElseThrow(null);
     }
 
     @Override

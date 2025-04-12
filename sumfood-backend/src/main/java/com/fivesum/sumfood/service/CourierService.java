@@ -48,13 +48,11 @@ public class CourierService implements UserDetailsService {
     @Transactional
     public Courier authenticate(AuthRequest request) {
         authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                request.getEmail(),
-                request.getPassword()
-            )
-        );
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()));
 
-        return courierRepository.findByEmail(request.getEmail()).orElseThrow();
+        return courierRepository.findByEmail(request.getEmail()).orElseThrow(null);
     }
 
     @Override
