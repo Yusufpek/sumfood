@@ -39,12 +39,6 @@ function RestaurantDashboard() {
     fetchRestaurantData();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('tokenExpiry');
-    localStorage.removeItem('userType');
-    navigate('/login');
-  };
 
   if (loading) return (
     <>
