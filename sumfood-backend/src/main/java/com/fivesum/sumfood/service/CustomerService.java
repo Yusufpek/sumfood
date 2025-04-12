@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.fivesum.sumfood.dto.CustomerRegistrationRequest;
+import com.fivesum.sumfood.dto.CustomerUpdateRequest;
 import com.fivesum.sumfood.dto.AuthRequest;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.repository.CustomerRepository;
@@ -40,6 +41,23 @@ public class CustomerService implements UserDetailsService {
         return customerRepository.save(customer);
     }
 
+    @Transactional
+    public Customer updateCustomer(CustomerUpdateRequest request, Customer customer) {
+        if (request.getName() != null) {
+            customer.setName(request.getName());
+        }
+        if (request.getLastName() != null) {
+            customer.setLastName(request.getLastName());
+        }
+        if (request.getPhoneNumber() != null) {
+            customer.setPhoneNumber(request.getPhoneNumber());
+        }
+        if (request.getPassword() != null) {
+            customer.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        return customerRepository.save(customer);
+    }
     @Transactional
     public Customer authenticate(AuthRequest request) {
         authenticationManager.authenticate(
