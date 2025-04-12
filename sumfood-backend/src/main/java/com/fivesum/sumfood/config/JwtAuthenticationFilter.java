@@ -55,11 +55,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (userEmail != null && authentication == null) {
                 UserDetails userDetails;
 
-                if (role == "CUSTOMER") {
+                if (role.equals("CUSTOMER")) {
                     userDetails = customerService.loadUserByUsername(userEmail);
-                } else if (role == "COURIER") {
+                } else if (role.equals("COURIER")) {
                     userDetails = courierService.loadUserByUsername(userEmail);
-                } else if (role == "RESTAURANT") {
+                } else if (role.equals("RESTAURANT")) {
                     userDetails = restaurantService.loadUserByUsername(userEmail);
                 } else {
                     userDetails = null;
