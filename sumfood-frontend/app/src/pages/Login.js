@@ -55,6 +55,12 @@ function Login() {
       if (error.response) {
         console.error('Response status:', error.response.status);
         console.error('Response data:', error.response.data);
+        
+        // Enhanced error information
+        if (error.response.data && error.response.data.message) {
+          console.error('Server error message:', error.response.data.message);
+        }
+        
         throw error.response;
       } else {
         throw error;
@@ -96,7 +102,11 @@ function Login() {
         if (err.status === 401) {
           setError('Invalid email or password');
         } else if (err.status === 403) {
-          setError('Access forbidden. Check your credentials and permissions.');
+          // Extract more specific error message if available
+          const errorMessage = err.data && err.data.message 
+            ? err.data.message 
+            : 'Access forbidden. Check your credentials and permissions.';
+          setError(errorMessage);
         } else {
           setError(`An error occurred (${err.status || 'unknown'}). Please try again.`);
         }

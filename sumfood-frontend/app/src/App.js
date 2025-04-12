@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainPage from './pages/MainPage/main';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import RestaurantDashboard from './pages/RestaurantDashboard';
 import './App.css';
 import './styles/global.css';
 import './styles/auth.css';
@@ -25,6 +26,10 @@ function App() {
           <Route 
             path="/" 
             element={<Login />} 
+          />
+          <Route 
+            path="/restaurant-dashboard" 
+            element={<RestaurantDashboard />} 
           />
         </Routes>
       </div>
