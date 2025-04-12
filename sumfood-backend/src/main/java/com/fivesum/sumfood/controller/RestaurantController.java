@@ -24,6 +24,14 @@ public class RestaurantController {
     private final RestaurantService restaurantService;
     private final FoodItemService foodItemService;
 
+    @GetMapping("/profile")
+    public ResponseEntity<Restaurant> getProfile(@RequestHeader("Authorization") String token) {
+        System.out.println("===============");
+        System.out.println("restaurant profile");
+        String email = jwtService.extractUsername(token.substring(7));
+        return ResponseEntity.ok(restaurantService.getRestaurantProfile(email));
+    }
+
     @GetMapping("/items")
     public ResponseEntity<List<FoodItem>> addFoodItem(@RequestHeader("Authorization") String token) {
         String email = jwtService.extractUsername(token.substring(7));

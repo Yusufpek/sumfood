@@ -1,5 +1,6 @@
 package com.fivesum.sumfood.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -14,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.fivesum.sumfood.dto.RestaurantRegistrationRequest;
 import com.fivesum.sumfood.dto.AuthRequest;
+import com.fivesum.sumfood.model.FoodItem;
 import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.repository.RestaurantRepository;
 
@@ -24,6 +26,7 @@ import lombok.AllArgsConstructor;
 public class RestaurantService implements UserDetailsService {
 
     private final RestaurantRepository restaurantRepository;
+    private final FoodItemService foodItemService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
@@ -53,6 +56,17 @@ public class RestaurantService implements UserDetailsService {
                         request.getPassword()));
 
         return restaurantRepository.findByEmail(request.getEmail()).orElseThrow(null);
+    }
+
+    public Restaurant getRestaurantProfile(String email) {
+        Restaurant restaurant = restaurantRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
+        List<FoodItem> foodItems = foodItemService.getFoodItemByRestaurant(restaurant);
+        for (FoodItem foodItem : foodItems) {
+            foodItem.setRestaurant(null);
+        }
+        restaurant.setFoodItems(foodItems);
+        return restaurant;
     }
 
     @Override

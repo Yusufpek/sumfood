@@ -8,9 +8,10 @@ import javax.persistence.*;
 import com.fivesum.sumfood.model.base.UserBase;
 import com.fivesum.sumfood.model.enums.Role;
 
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+@Data
 @NoArgsConstructor
 @SuperBuilder
 @Entity
