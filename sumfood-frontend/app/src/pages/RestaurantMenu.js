@@ -150,7 +150,8 @@ function RestaurantMenu() {
 
       // Refresh food items - using the public endpoint from the controller
       const response = await axios.get('http://localhost:8080/api/food/public/items', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${token}`,
+        'Role': 'RESTAURANT' }
       });
       setFoodItems(response.data);
 
@@ -167,8 +168,9 @@ function RestaurantMenu() {
 
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`http://localhost:8080/api/restaurant/menu-items/${itemId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      await axios.delete(`http://localhost:8080/api/food/item/${itemId}`, {
+        headers: { 'Authorization': `Bearer ${token}`,
+        'Role': 'RESTAURANT' }
       });
 
       // Remove item from state
@@ -210,20 +212,39 @@ function RestaurantMenu() {
         {isFormOpen && (
           <div className="menu-form-overlay">
             <div className="menu-form-container">
-              <h2>{editingItem ? 'Edit Food Item' : 'Add New Food Item'}</h2>
+              <h2 className="form-title">{editingItem ? 'Edit Food Item' : 'Add New Food Item'}</h2>
               <form onSubmit={handleSubmit} className="menu-form">
-                <div className="form-group">
-                  <label htmlFor="name">Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                  />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="name">Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="categoryId">Category</label>
+                    <select
+                      id="categoryId"
+                      name="categoryId"
+                      value={formData.categoryId}
+                      onChange={handleInputChange}
+                      required
+                    >
+                      <option value="">Select Category</option>
+                      {Array.isArray(categories) && categories.map(category => (
+                        <option key={category.id} value={category.id}>{category.name}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div className="form-group">
+
+                <div className="form-group full-width">
                   <label htmlFor="description">Description</label>
                   <textarea
                     id="description"
@@ -231,47 +252,38 @@ function RestaurantMenu() {
                     value={formData.description}
                     onChange={handleInputChange}
                     required
+                    rows="3"
                   />
                 </div>
-                <div className="form-group">
-                  <label htmlFor="price">Price ($)</label>
-                  <input
-                    type="number"
-                    id="price"
-                    name="price"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    required
-                  />
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="price">Price ($)</label>
+                    <input
+                      type="number"
+                      id="price"
+                      name="price"
+                      step="0.01"
+                      value={formData.price}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="stock">Stock</label>
+                    <input
+                      type="number"
+                      id="stock"
+                      name="stock"
+                      value={formData.stock}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="stock">Stock</label>
-                  <input
-                    type="number"
-                    id="stock"
-                    name="stock"
-                    value={formData.stock}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="categoryId">Category</label>
-                  <select
-                    id="categoryId"
-                    name="categoryId"
-                    value={formData.categoryId}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Select Category</option>
-                    {Array.isArray(categories) && categories.map(category => (
-                      <option key={category.id} value={category.id}>{category.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group checkbox">
+                
+                <div className="form-group checkbox-container">
                   <input
                     type="checkbox"
                     id="isDonated"
@@ -279,8 +291,9 @@ function RestaurantMenu() {
                     checked={formData.isDonated}
                     onChange={handleInputChange}
                   />
-                  <label htmlFor="isDonated">Donation Item</label>
+                  <label htmlFor="isDonated" className="checkbox-label">Donation Item</label>
                 </div>
+                
                 <div className="form-buttons">
                   <button type="submit" className="save-button">
                     {editingItem ? 'Update' : 'Save'}
