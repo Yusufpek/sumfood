@@ -33,7 +33,8 @@ public class AuthController {
     @PostMapping("/register/customer")
     public ResponseEntity<Customer> registerCustomer(@RequestBody CustomerRegistrationRequest request) {
         // Check if email already exists
-        if (customerService.existsByEmail(request.getEmail())) {
+        if (customerService.existsByEmail(request.getEmail()) || courierService.existsByEmail(request.getEmail())
+                || restaurantService.existsByEmail(request.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
@@ -43,7 +44,8 @@ public class AuthController {
     @PostMapping("/register/courier")
     public ResponseEntity<Courier> registerCouirer(@RequestBody CourierRegistrationRequest request) {
         // Check if email already exists
-        if (courierService.existsByEmail(request.getEmail())) {
+        if (customerService.existsByEmail(request.getEmail()) || courierService.existsByEmail(request.getEmail())
+                || restaurantService.existsByEmail(request.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
@@ -53,7 +55,8 @@ public class AuthController {
     @PostMapping("/register/restaurant")
     public ResponseEntity<Restaurant> registerRestaurant(@RequestBody RestaurantRegistrationRequest request) {
         // Check if email already exists
-        if (restaurantService.existsByEmail(request.getEmail())) {
+        if (customerService.existsByEmail(request.getEmail()) || courierService.existsByEmail(request.getEmail())
+                || restaurantService.existsByEmail(request.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
