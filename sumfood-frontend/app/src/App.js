@@ -33,6 +33,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
           {}
           {}
           {}
@@ -47,10 +55,6 @@ function App() {
           <Route
             path="/"
             element={<Login />}
-          />
-          <Route 
-            path="/restaurant-dashboard/menu" 
-            element={<RestaurantMenu />} 
           />
           
         </Routes>
