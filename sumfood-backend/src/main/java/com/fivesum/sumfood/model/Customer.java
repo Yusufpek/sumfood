@@ -10,7 +10,11 @@ import com.fivesum.sumfood.model.enums.Role;
 
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import lombok.Setter;
+import lombok.Getter;
 
+@Getter
+@Setter
 @NoArgsConstructor
 @SuperBuilder
 @Entity
