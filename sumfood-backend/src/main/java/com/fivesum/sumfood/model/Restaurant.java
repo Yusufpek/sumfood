@@ -8,7 +8,7 @@ import javax.persistence.*;
 import com.fivesum.sumfood.model.base.UserBase;
 import com.fivesum.sumfood.model.enums.Role;
 
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @NoArgsConstructor
@@ -48,4 +48,25 @@ public class Restaurant extends UserBase {
     // Relation
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FoodItem> foodItems = new ArrayList<>();
+
+    // Getters
+    public String getTaxIdentificationNumber() {
+        return taxIdentificationNumber;
+    }
+
+    public String getBusinessName() {
+        return businessName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public boolean isValidated() {
+        return isValidated;
+    }
 }
