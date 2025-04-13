@@ -21,7 +21,7 @@ function RestaurantMenu() {
     description: '',
     price: '',
     stock: '',
-    categoryId: '',
+    category: '',
     isDonated: false
   });
 
@@ -45,21 +45,13 @@ function RestaurantMenu() {
         setRestaurantInfo(restaurantResponse.data);
         
         
-        // Ensure we're setting an array to the state
-        if (restaurantResponse.data.foodItems && Array.isArray(restaurantResponse.data.foodItems)) {
-          if (Array.isArray(restaurantResponse.data.foodItems)) {
-            setFoodItems(restaurantResponse.data.foodItems);
-          } else if (restaurantResponse.data.content && Array.isArray(restaurantResponse.data.content)) {
-            // If the data is nested in a content property (common pagination format)
-            setFoodItems(restaurantResponse.data.content);
-          } else {
-            console.error('Unexpected data format:', restaurantResponse.data);
-            setFoodItems([]); // Set empty array as fallback
-            setError('Received invalid data format from server');
-          }
-        } else {
-          setFoodItems([]);
-        }
+        // Fetch food items
+        const foodResponse = await axios.get('http://localhost:8080/api/food/items', {
+          headers: { 'Authorization': `Bearer ${token}`,
+          'Role': `RESTAURANT` }
+        });
+        console.log('API Food Items Response:', foodResponse);
+        setFoodItems(foodResponse.data || []);
 
         // Hardcoded categories instead of fetching from API
         const hardcodedCategories = [
@@ -108,7 +100,7 @@ function RestaurantMenu() {
       description: '',
       price: '',
       stock: '',
-      categoryId: '',
+      category: '',
       isDonated: false
     });
     setEditingItem(null);
@@ -122,9 +114,10 @@ function RestaurantMenu() {
         description: item.description,
         price: item.price,
         stock: item.stock,
-        categoryId: item.category?.id || '', // Use optional chaining and provide default value
+        category: item.category?.id || '', // Use optional chaining and provide default value
         isDonated: item.isDonated
       });
+      console.log('Editing item:', item);
       setEditingItem(item);
     } else {
       // Add mode
@@ -142,7 +135,9 @@ function RestaurantMenu() {
       const payload = {
         ...formData,
         price: parseFloat(formData.price),
-        stock: parseInt(formData.stock, 10)
+        stock: parseInt(formData.stock, 10),
+        // Ensure category is correctly formatted as an enum value
+        category: formData.category || null
       };
 
       console.log('Submitting with payload:', payload);
@@ -185,17 +180,17 @@ function RestaurantMenu() {
         }
       }
 
-      // Refresh food items
-      const restaurantResponse = await axios.get('http://localhost:8080/api/restaurant/profile', {
-        headers: { 'Authorization': `Bearer ${token}`,
-        'Role': `RESTAURANT` }
+      // Refresh food items after saving
+      const foodResponse = await axios.get('http://localhost:8080/api/food/items', {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Role': 'RESTAURANT' 
+        }
       });
-      console.log('API Restaurant Response after update:', restaurantResponse);
-      if (restaurantResponse.data.foodItems && Array.isArray(restaurantResponse.data.foodItems)) {
-        setFoodItems(restaurantResponse.data.foodItems);
-      }
-      setError(''); // Clear any previous error
-
+      
+      console.log('API Food Items Response after update:', foodResponse);
+      setFoodItems(foodResponse.data || []);
+      
       setIsFormOpen(false);
       resetForm();
     } catch (err) {
@@ -265,6 +260,29 @@ function RestaurantMenu() {
     setItemToDelete(null);
   };
 
+  const getCategoryDisplayName = (item) => {
+    if (item.categories && item.categories.length > 0) {
+      return item.categories.map(cat => {
+        // Handle both object format and string format
+        return typeof cat === 'object' ? cat.name : 
+          // Find the matching category in the categories array
+          categories.find(c => c.id === cat)?.name || cat;
+      }).join(', ');
+    }
+    
+    // Fallback for single category
+    if (item.category) {
+      if (typeof item.category === 'object') {
+        return item.category.name;
+      }
+      // Find the category name from our categories array
+      const categoryObj = categories.find(c => c.id === item.category);
+      return categoryObj ? categoryObj.name : item.category;
+    }
+    
+    return 'Uncategorized';
+  };
+
   if (loading) return (
     <>
       <RestaurantNavbar restaurantName="Loading..." currentPage="menu" />
@@ -312,11 +330,11 @@ function RestaurantMenu() {
                   </div>
                   
                   <div className="form-group">
-                    <label htmlFor="categoryId">Category</label>
+                    <label htmlFor="category">Category</label>
                     <select
-                      id="categoryId"
-                      name="categoryId"
-                      value={formData.categoryId}
+                      id="category"
+                      name="category"
+                      value={formData.category}
                       onChange={handleInputChange}
                       required
                     >
@@ -425,13 +443,7 @@ function RestaurantMenu() {
                   </div>
                   <h3>{item.name}</h3>
                   <p className="item-description">{item.description}</p>
-                  <p className="item-category">
-                    {item.categories && item.categories.length > 0 
-                      ? item.categories.map(cat => cat.name || cat).join(', ') 
-                      : item.category && item.category.name 
-                        ? item.category.name 
-                        : 'Uncategorized'}
-                  </p>
+                  <p className="item-category">{getCategoryDisplayName(item)}</p>
                   <p className="item-price">${item.price.toFixed(2)}</p>
                   <div className="item-actions">
                     <button
