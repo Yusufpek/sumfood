@@ -1,5 +1,6 @@
 package com.fivesum.sumfood.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -27,6 +28,10 @@ public class RestaurantService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
+    public List<Restaurant> getAll() {
+        return restaurantRepository.findAll();
+    }
+
     @Transactional
     public Restaurant registerRestaurant(RestaurantRegistrationRequest request) {
         Restaurant restaurant = Restaurant.builder()
@@ -53,6 +58,11 @@ public class RestaurantService implements UserDetailsService {
                         request.getPassword()));
 
         return restaurantRepository.findByEmail(request.getEmail()).orElseThrow(null);
+    }
+
+    public Restaurant getRestaurantProfile(String email) {
+        return restaurantRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
     }
 
     @Override

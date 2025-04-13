@@ -12,14 +12,16 @@ function RestaurantMenu() {
   const [restaurantInfo, setRestaurantInfo] = useState({});
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
     stock: '',
-    categoryId: '',
+    category: '',
     isDonated: false
   });
 
@@ -36,24 +38,43 @@ function RestaurantMenu() {
         setLoading(true);
         // Fetch restaurant profile
         const restaurantResponse = await axios.get('http://localhost:8080/api/restaurant/profile', {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 'Authorization': `Bearer ${token}`,
+          'Role': `RESTAURANT` }
         });
+        console.log('API Restaurant Response:', restaurantResponse);
         setRestaurantInfo(restaurantResponse.data);
         
+        
         // Fetch food items
-        const itemsResponse = await axios.get('http://localhost:8080/api/restaurant/menu-items', {
-          headers: { 'Authorization': `Bearer ${token}` }
+        const foodResponse = await axios.get('http://localhost:8080/api/food/items', {
+          headers: { 'Authorization': `Bearer ${token}`,
+          'Role': `RESTAURANT` }
         });
-        setFoodItems(itemsResponse.data);
-        
-        // Fetch categories
-        const categoriesResponse = await axios.get('http://localhost:8080/api/categories', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        // Ensure categories is always an array
-        const categoriesData = categoriesResponse.data;
-        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
-        
+        console.log('API Food Items Response:', foodResponse);
+        setFoodItems(foodResponse.data || []);
+
+        // Hardcoded categories instead of fetching from API
+        const hardcodedCategories = [
+          { id: 'PIZZA', name: 'Pizza' },
+          { id: 'DESERT', name: 'Desert' },
+          { id: 'STREET_FOOD', name: 'Street Food' },
+          { id: 'HAMBURGER', name: 'Hamburger' },
+          { id: 'DONER', name: 'Doner' },
+          { id: 'KEBAB', name: 'Kebab' },
+          { id: 'CHICKEN', name: 'Chicken' },
+          { id: 'PIDE_LAHMACUN', name: 'Pide & Lahmacun' },
+          { id: 'HOMEMADE', name: 'Homemade' },
+          { id: 'MEATBALL', name: 'Meatball' },
+          { id: 'VEGETARIAN', name: 'Vegetarian' },
+          { id: 'SALAD', name: 'Salad' },
+          { id: 'GLOBAL', name: 'Global' },
+          { id: 'MANTI', name: 'Manti' },
+          { id: 'PASTA', name: 'Pasta' },
+          { id: 'SEAFOOD', name: 'Seafood' },
+          { id: 'GRILL', name: 'Grill' }
+        ];
+        setCategories(hardcodedCategories);
+
         setLoading(false);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -79,7 +100,7 @@ function RestaurantMenu() {
       description: '',
       price: '',
       stock: '',
-      categoryId: '',
+      category: '',
       isDonated: false
     });
     setEditingItem(null);
@@ -93,9 +114,10 @@ function RestaurantMenu() {
         description: item.description,
         price: item.price,
         stock: item.stock,
-        categoryId: item.category.id,
+        category: item.category?.id || '', // Use optional chaining and provide default value
         isDonated: item.isDonated
       });
+      console.log('Editing item:', item);
       setEditingItem(item);
     } else {
       // Add mode
@@ -107,79 +129,182 @@ function RestaurantMenu() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    
+    setError(''); // Clear any previous error
+
     try {
       const payload = {
         ...formData,
         price: parseFloat(formData.price),
-        stock: parseInt(formData.stock, 10)
+        stock: parseInt(formData.stock, 10),
+        // Fix: Send category as a direct string value, not as an object with id property
+        category: formData.category
       };
+
+      console.log('Submitting with payload:', payload);
       
       if (editingItem) {
-        // Update existing item
-        await axios.put(`http://localhost:8080/api/restaurant/menu-items/${editingItem.id}`, payload, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        // Update existing item - fixed to match the controller parameter name
+        console.log('Updating item with ID:', editingItem.id);
+        try {
+          // Fix: We need to use 'editingItem.id' as the idString parameter
+          const response = await axios.put(`http://localhost:8080/api/food/item/${editingItem.id}`, payload, {
+            headers: { 
+              'Authorization': `Bearer ${token}`,
+              'Role': 'RESTAURANT'
+            }
+          });
+          console.log('Update response:', response.data);
+        } catch (updateErr) {
+          console.error('Error in update request:', updateErr);
+          if (updateErr.response) {
+            console.error('Response data:', updateErr.response.data);
+            console.error('Response status:', updateErr.response.status);
+          }
+          const errorMsg = getErrorMessage(updateErr);
+          throw new Error(errorMsg);
+        }
       } else {
         // Add new item
-        await axios.post('http://localhost:8080/api/restaurant/menu-items', payload, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        try {
+          const response = await axios.post('http://localhost:8080/api/food/item', payload, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Role': 'RESTAURANT'
+            }
+          });
+          console.log('Create response:', response.data);
+        } catch (createErr) {
+          console.error('Error in create request:', createErr);
+          const errorMsg = getErrorMessage(createErr);
+          throw new Error(errorMsg);
+        }
       }
-      
-      // Refresh food items
-      const response = await axios.get('http://localhost:8080/api/restaurant/menu-items', {
-        headers: { 'Authorization': `Bearer ${token}` }
+
+      // Refresh food items after saving
+      const foodResponse = await axios.get('http://localhost:8080/api/food/items', {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Role': 'RESTAURANT' 
+        }
       });
-      setFoodItems(response.data);
+      
+      console.log('API Food Items Response after update:', foodResponse);
+      setFoodItems(foodResponse.data || []);
       
       setIsFormOpen(false);
       resetForm();
     } catch (err) {
       console.error('Error saving food item:', err);
-      setError('Failed to save food item');
+      setError(`Failed to save food item: ${err.message}`);
     }
   };
 
-  const handleDelete = async (itemId) => {
-    if (!window.confirm('Are you sure you want to delete this item?')) return;
+  // Helper function to extract meaningful error messages from Axios errors
+  const getErrorMessage = (error) => {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      const responseData = error.response.data;
+      if (typeof responseData === 'string') {
+        return responseData;
+      } else if (responseData && typeof responseData.message === 'string') {
+        return responseData.message;
+      } else if (responseData && typeof responseData.error === 'string') {
+        return responseData.error;
+      } else {
+        return `Server error: ${error.response.status}`;
+      }
+    } else if (error.request) {
+      // The request was made but no response was received
+      return 'No response from server. Please check your connection.';
+    } else if (error.message) {
+      // Something happened in setting up the request that triggered an Error
+      return error.message;
+    } else {
+      return 'An unknown error occurred';
+    }
+  };
+
+  const handleDelete = (itemId) => {
+    // Find the item to delete by ID
+    const itemToRemove = foodItems.find(item => item.id === itemId);
+    setItemToDelete(itemToRemove);
+    setIsDeleteConfirmOpen(true);
+  };
+  
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
     
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`http://localhost:8080/api/restaurant/menu-items/${itemId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      await axios.delete(`http://localhost:8080/api/food/item/${itemToDelete.id}`, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Role': 'RESTAURANT' 
+        }
       });
-      
+
       // Remove item from state
-      setFoodItems(foodItems.filter(item => item.id !== itemId));
+      setFoodItems(foodItems.filter(item => item.id !== itemToDelete.id));
+      setIsDeleteConfirmOpen(false);
+      setItemToDelete(null);
     } catch (err) {
       console.error('Error deleting food item:', err);
       setError('Failed to delete food item');
+      setIsDeleteConfirmOpen(false);
     }
+  };
+  
+  const cancelDelete = () => {
+    setIsDeleteConfirmOpen(false);
+    setItemToDelete(null);
+  };
+
+  const getCategoryDisplayName = (item) => {
+    if (item.categories && item.categories.length > 0) {
+      return item.categories.map(cat => {
+        // Handle both object format and string format
+        return typeof cat === 'object' ? cat.name : 
+          // Find the matching category in the categories array
+          categories.find(c => c.id === cat)?.name || cat;
+      }).join(', ');
+    }
+    
+    // Fallback for single category
+    if (item.category) {
+      if (typeof item.category === 'object') {
+        return item.category.name;
+      }
+      // Find the category name from our categories array
+      const categoryObj = categories.find(c => c.id === item.category);
+      return categoryObj ? categoryObj.name : item.category;
+    }
+    
+    return 'Uncategorized';
   };
 
   if (loading) return (
     <>
-      <RestaurantNavbar restaurantName="Loading..." />
+      <RestaurantNavbar restaurantName="Loading..." currentPage="menu" />
       <div className="loading">Loading menu data...</div>
     </>
   );
-  
+
   if (error) return (
     <>
-      <RestaurantNavbar restaurantName="Error" />
+      <RestaurantNavbar restaurantName="Error" currentPage="menu" />
       <div className="error">{error}</div>
     </>
   );
 
   return (
     <>
-      <RestaurantNavbar restaurantName={restaurantInfo.name || 'Your Restaurant'} />
+      <RestaurantNavbar restaurantName={restaurantInfo.businessName || 'Your Restaurant'} currentPage="menu" />
       <div className="restaurant-menu-container">
         <header className="menu-header">
           <h1>Menu Management</h1>
-          <button 
-            className="add-item-button" 
+          <button
+            className="add-item-button"
             onClick={() => openForm()}
           >
             Add New Item
@@ -189,20 +314,39 @@ function RestaurantMenu() {
         {isFormOpen && (
           <div className="menu-form-overlay">
             <div className="menu-form-container">
-              <h2>{editingItem ? 'Edit Food Item' : 'Add New Food Item'}</h2>
+              <h2 className="form-title">{editingItem ? 'Edit Food Item' : 'Add New Food Item'}</h2>
               <form onSubmit={handleSubmit} className="menu-form">
-                <div className="form-group">
-                  <label htmlFor="name">Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                  />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="name">Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="category">Category</label>
+                    <select
+                      id="category"
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      required
+                    >
+                      <option value="">Select Category</option>
+                      {Array.isArray(categories) && categories.map(category => (
+                        <option key={category.id} value={category.id}>{category.name}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div className="form-group">
+
+                <div className="form-group full-width">
                   <label htmlFor="description">Description</label>
                   <textarea
                     id="description"
@@ -210,47 +354,38 @@ function RestaurantMenu() {
                     value={formData.description}
                     onChange={handleInputChange}
                     required
+                    rows="3"
                   />
                 </div>
-                <div className="form-group">
-                  <label htmlFor="price">Price ($)</label>
-                  <input
-                    type="number"
-                    id="price"
-                    name="price"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    required
-                  />
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="price">Price ($)</label>
+                    <input
+                      type="number"
+                      id="price"
+                      name="price"
+                      step="0.01"
+                      value={formData.price}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="stock">Stock</label>
+                    <input
+                      type="number"
+                      id="stock"
+                      name="stock"
+                      value={formData.stock}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="stock">Stock</label>
-                  <input
-                    type="number"
-                    id="stock"
-                    name="stock"
-                    value={formData.stock}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="categoryId">Category</label>
-                  <select
-                    id="categoryId"
-                    name="categoryId"
-                    value={formData.categoryId}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Select Category</option>
-                    {Array.isArray(categories) && categories.map(category => (
-                      <option key={category.id} value={category.id}>{category.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group checkbox">
+                
+                <div className="form-group checkbox-container">
                   <input
                     type="checkbox"
                     id="isDonated"
@@ -258,8 +393,9 @@ function RestaurantMenu() {
                     checked={formData.isDonated}
                     onChange={handleInputChange}
                   />
-                  <label htmlFor="isDonated">Donation Item</label>
+                  <label htmlFor="isDonated" className="checkbox-label">Donation Item</label>
                 </div>
+                
                 <div className="form-buttons">
                   <button type="submit" className="save-button">
                     {editingItem ? 'Update' : 'Save'}
@@ -273,8 +409,27 @@ function RestaurantMenu() {
           </div>
         )}
 
+        {/* Delete confirmation popup */}
+        {isDeleteConfirmOpen && (
+          <div className="menu-form-overlay">
+            <div className="delete-confirm-container">
+              <h2>Confirm Deletion</h2>
+              <p>Are you sure you want to delete "{itemToDelete?.name}"?</p>
+              <p>This action cannot be undone.</p>
+              <div className="form-buttons">
+                <button className="delete-button" onClick={confirmDelete}>
+                  Delete
+                </button>
+                <button className="cancel-button" onClick={cancelDelete}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="menu-items-container">
-          {foodItems.length === 0 ? (
+          {!Array.isArray(foodItems) || foodItems.length === 0 ? (
             <div className="empty-menu-message">
               <p>No menu items found. Add your first menu item to get started!</p>
             </div>
@@ -288,17 +443,17 @@ function RestaurantMenu() {
                   </div>
                   <h3>{item.name}</h3>
                   <p className="item-description">{item.description}</p>
-                  <p className="item-category">{item.category ? item.category.name : 'Uncategorized'}</p>
+                  <p className="item-category">{getCategoryDisplayName(item)}</p>
                   <p className="item-price">${item.price.toFixed(2)}</p>
                   <div className="item-actions">
-                    <button 
-                      className="edit-button" 
+                    <button
+                      className="edit-button"
                       onClick={() => openForm(item)}
                     >
                       Edit
                     </button>
-                    <button 
-                      className="delete-button" 
+                    <button
+                      className="delete-button"
                       onClick={() => handleDelete(item.id)}
                     >
                       Delete
