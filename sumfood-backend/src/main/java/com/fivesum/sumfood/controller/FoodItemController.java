@@ -41,6 +41,16 @@ public class FoodItemController {
         }
     }
 
+    @GetMapping("/items")
+    public ResponseEntity<List<FoodItem>> getFoodItemsByRestaurant(@RequestHeader("Authorization") String token) {
+        String email = jwtService.extractUsername(token.substring(7));
+        Optional<Restaurant> restaurant = restaurantService.findByEmail(email);
+        if (restaurant.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK).body(foodItemService.getFoodItemByRestaurant(restaurant.get()));
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
     @PostMapping("/item")
     public ResponseEntity<FoodItem> addFoodItem(@RequestHeader("Authorization") String token,
             @RequestBody FoodItemAddRequest request) {

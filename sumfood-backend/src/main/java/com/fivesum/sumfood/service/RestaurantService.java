@@ -59,14 +59,8 @@ public class RestaurantService implements UserDetailsService {
     }
 
     public Restaurant getRestaurantProfile(String email) {
-        Restaurant restaurant = restaurantRepository.findByEmail(email)
+        return restaurantRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
-        List<FoodItem> foodItems = foodItemService.getFoodItemByRestaurant(restaurant);
-        for (FoodItem foodItem : foodItems) {
-            foodItem.setRestaurant(null);
-        }
-        restaurant.setFoodItems(foodItems);
-        return restaurant;
     }
 
     @Override

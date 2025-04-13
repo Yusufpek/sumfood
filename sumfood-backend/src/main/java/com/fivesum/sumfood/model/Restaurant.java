@@ -11,7 +11,6 @@ import com.fivesum.sumfood.model.enums.Role;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-@Data
 @NoArgsConstructor
 @SuperBuilder
 @Entity
