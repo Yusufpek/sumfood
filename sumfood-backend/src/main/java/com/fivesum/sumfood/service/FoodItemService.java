@@ -1,5 +1,6 @@
 package com.fivesum.sumfood.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,8 +58,9 @@ public class FoodItemService {
                 .price(request.getPrice())
                 .stock(request.getStock())
                 .restaurant(restaurant)
+                .categories(new ArrayList<Category>())
                 .build();
-
+        foodItem.getCategories().add(request.getCategory());
         return foodItemRepository.save(foodItem);
     }
 
