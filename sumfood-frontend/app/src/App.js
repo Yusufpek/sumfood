@@ -4,6 +4,7 @@ import MainPage from './pages/MainPage/main';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import RestaurantDashboard from './pages/RestaurantDashboard';
+import RestaurantMenu from './pages/RestaurantMenu'; // Add this import
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 import './styles/global.css';
@@ -33,9 +34,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {}
-          {}
-          {}
+          <Route
+            path="/restaurant-dashboard/menu"
+            element={
+              <ProtectedRoute>
+                <RestaurantMenu />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/login"
             element={<Login />}

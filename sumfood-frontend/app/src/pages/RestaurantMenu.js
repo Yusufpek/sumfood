@@ -114,7 +114,7 @@ function RestaurantMenu() {
         description: item.description,
         price: item.price,
         stock: item.stock,
-        category: item.category?.id || '', // Use optional chaining and provide default value
+        category: item.categories[0] || '', // Use optional chaining and provide default value
         isDonated: item.isDonated
       });
       console.log('Editing item:', item);
