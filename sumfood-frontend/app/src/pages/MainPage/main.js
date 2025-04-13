@@ -4,8 +4,14 @@ import Navbar from '../../components/layout/Navbar';
 import HeroSection from '../../components/home/HeroSection';
 import FeaturedDeals from '../../components/home/FeaturedDeals';
 import Footer from '../../components/layout/Footer';
+import CategoryFilter from '../../components/home/CategoryFilter';
 import './MainPage.css';
 import axios from 'axios';
+
+const foodCategories = [
+  'All', 'Fast Food', 'Pizza', 'Burgers', 'Sushi', 'Chinese', 'Italian', 'Mexican', 'Healthy'
+];
+
 
 // --- Helper Function (keep as is) ---
 const groupItemsByCategory = (items) => {
@@ -28,6 +34,7 @@ const MainPage = () => {
   const [foodItems, setFoodItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
   // --- New state for restaurants ---
   const [restaurants, setRestaurants] = useState([]);
@@ -137,10 +144,11 @@ const MainPage = () => {
       <HeroSection onSearch={handleSearch} />
 
       <main className="main-content">
-        {/* Removed CategoryFilter; keeping FeaturedDeals */}
-        <div className="mid-section-container">
-          <FeaturedDeals />
-        </div>
+        <CategoryFilter 
+          categories={foodCategories} 
+          selectedCategory={selectedCategory} 
+          onSelectCategory={setSelectedCategory} 
+        />
 
         {/* Food Items Section */}
         <div className="food-items-container">
@@ -160,6 +168,7 @@ const MainPage = () => {
                   {groupedItems[categoryId].map(item => (
                     <div key={item.id} className="food-item-card-simple">
                       <h3>{item.name}</h3>
+                      <p>{item.categories}</p>
                       <p>{item.description}</p>
                       <p><strong>Price:</strong> ${item.price.toFixed(2)}</p>
                     </div>
@@ -198,6 +207,11 @@ const MainPage = () => {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Removed CategoryFilter; keeping FeaturedDeals */}
+        <div className="mid-section-container">
+          <FeaturedDeals />
         </div>
       </main>
 
