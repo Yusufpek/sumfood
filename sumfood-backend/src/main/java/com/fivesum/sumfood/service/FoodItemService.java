@@ -73,6 +73,10 @@ public class FoodItemService {
             foodItem.setDescription(request.getDescription());
             foodItem.setPrice(request.getPrice());
             foodItem.setStock(request.getStock());
+            if (request.getCategory() != null) {
+                foodItem.setCategories(new ArrayList<Category>());
+                foodItem.getCategories().add(request.getCategory());
+            }
 
             return foodItemRepository.save(foodItem);
         }
