@@ -40,28 +40,53 @@ const MainPage = () => {
     }
   }, []);
 
-  // Fetch ALL food items from the PUBLIC endpoint
+    // Fetch ALL food items from the PUBLIC endpoint
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const tokenExpiry = localStorage.getItem('tokenExpiry');
-  
     const fetchAllFoodItems = async () => {
       setLoading(true);
       setError(null);
-  
+
       try {
-        const response = await axios.get('http://localhost:8080/api/food/items');
-        console.log('Fetched food items:', response.data); // Debugging log
-        setFoodItems(Array.isArray(response.data) ? response.data : []); // Optional: update state
+        // Using axios as imported
+        const response = await axios.get('http://localhost:8080/api/food/public/items');
+        console.log('Fetched food items:', response.data);
+        setFoodItems(Array.isArray(response.data) ? response.data : []);
       } catch (err) {
-        setError(`Error: ${err.message}`);
+        console.error("Error fetching food items:", err); // Log the full error object
+
+        let displayError = 'Failed to load food items. An unexpected error occurred.'; // Default message
+
+        if (err.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.error("Error Response Status:", err.response.status);
+          console.error("Error Response Data:", err.response.data); // Log response data if any
+          displayError = `Failed to load items. Server error ${err.response.status}.`;
+          // Try to get a message from the backend's error response structure (if provided)
+          if (err.response.data && err.response.data.message) {
+            displayError += ` Message: ${err.response.data.message}`;
+          } else if (typeof err.response.data === 'string' && err.response.data.length < 200) {
+             // If data is a short string, maybe it's the message
+             displayError += ` Details: ${err.response.data}`;
+          }
+        } else if (err.request) {
+          // The request was made but no response received (network error)
+          displayError = 'Failed to load items. Cannot reach server.';
+        } else {
+          // Something happened setting up the request that triggered an Error
+          displayError = `Failed to load items: ${err.message}`;
+        }
+
+        setError(displayError); // Set the potentially more detailed error
+        setFoodItems([]); // Clear items on error
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchAllFoodItems();
-  }, []); // Runs once on component mountt
+  }, []); // Runs once on component mount
+
 
 
   // --- Event Handlers ---
