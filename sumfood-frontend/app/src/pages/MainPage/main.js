@@ -1,151 +1,200 @@
-import React, { useState, useEffect } from 'react';
-// Using fetch API as in previous examples, but you can use axios if preferred
-// import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Keep for potential future use
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
 import HeroSection from '../../components/home/HeroSection';
-import CategoryFilter from '../../components/home/CategoryFilter';
 import FeaturedDeals from '../../components/home/FeaturedDeals';
-// Removed RestaurantList import
 import Footer from '../../components/layout/Footer';
-import './MainPage.css'; // Ensure this file exists and has the necessary styles
+import './MainPage.css';
 import axios from 'axios';
 
+// --- Helper Function (keep as is) ---
+const groupItemsByCategory = (items) => {
+  if (!items) return {};
+  return items.reduce((acc, item) => {
+    const categoryId = item.category_id || 'uncategorized';
+    if (!acc[categoryId]) {
+      acc[categoryId] = [];
+    }
+    acc[categoryId].push(item);
+    return acc;
+  }, {});
+};
+
 const MainPage = () => {
-  // State
-  const [username, setUsername] = useState('Guest'); // Default to Guest
+  // --- State (Updated: Removed category list state) ---
+  const [username, setUsername] = useState('Guest');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // Removed userType state as it's not needed for displaying public items
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [foodItems, setFoodItems] = useState([]); // State for fetched food items
+  const [foodItems, setFoodItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Categories (as before)
-  const foodCategories = [
-    'All', 'Fast Food', 'Pizza', 'Burgers', 'Sushi', 'Chinese', 'Italian', 'Mexican', 'Healthy'
-  ];
+  // --- New state for restaurants ---
+  const [restaurants, setRestaurants] = useState([]);
+  const [restLoading, setRestLoading] = useState(true);
+  const [restError, setRestError] = useState(null);
 
-  // Check login status on mount (for Navbar display)
+  // --- Effects (keep as is) ---
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       setIsLoggedIn(true);
-      // TODO: Fetch actual username based on token if desired
-      setUsername('User'); // Update placeholder
+      setUsername('User');
     } else {
       setIsLoggedIn(false);
       setUsername('Guest');
     }
   }, []);
 
-    // Fetch ALL food items from the PUBLIC endpoint
   useEffect(() => {
     const fetchAllFoodItems = async () => {
       setLoading(true);
       setError(null);
-
       try {
-        // Using axios as imported
         const response = await axios.get('http://localhost:8080/api/food/public/items');
         console.log('Fetched food items:', response.data);
         setFoodItems(Array.isArray(response.data) ? response.data : []);
       } catch (err) {
-        console.error("Error fetching food items:", err); // Log the full error object
-
-        let displayError = 'Failed to load food items. An unexpected error occurred.'; // Default message
-
+        console.error("Error fetching food items:", err);
+        let displayError = 'Failed to load food items. An unexpected error occurred.';
         if (err.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
           console.error("Error Response Status:", err.response.status);
-          console.error("Error Response Data:", err.response.data); // Log response data if any
+          console.error("Error Response Data:", err.response.data);
           displayError = `Failed to load items. Server error ${err.response.status}.`;
-          // Try to get a message from the backend's error response structure (if provided)
           if (err.response.data && err.response.data.message) {
             displayError += ` Message: ${err.response.data.message}`;
           } else if (typeof err.response.data === 'string' && err.response.data.length < 200) {
-             // If data is a short string, maybe it's the message
-             displayError += ` Details: ${err.response.data}`;
+            displayError += ` Details: ${err.response.data}`;
           }
         } else if (err.request) {
-          // The request was made but no response received (network error)
           displayError = 'Failed to load items. Cannot reach server.';
         } else {
-          // Something happened setting up the request that triggered an Error
           displayError = `Failed to load items: ${err.message}`;
         }
-
-        setError(displayError); // Set the potentially more detailed error
-        setFoodItems([]); // Clear items on error
+        setError(displayError);
+        setFoodItems([]);
       } finally {
         setLoading(false);
       }
     };
-
     fetchAllFoodItems();
-  }, []); // Runs once on component mount
+  }, []);
 
+  // --- New effect for fetching restaurants ---
+  useEffect(() => {
+    const fetchRestaurants = async () => {
+      setRestLoading(true);
+      setRestError(null);
+      try {
+        const response = await axios.get('http://localhost:8080/api/restaurant/public/all');
+        console.log('Fetched restaurants:', response.data);
+        setRestaurants(Array.isArray(response.data) ? response.data : []);
+      } catch (err) {
+        console.error("Error fetching restaurants:", err);
+        let displayError = 'Failed to load restaurants. An unexpected error occurred.';
+        if (err.response) {
+          displayError = `Failed to load restaurants. Server error ${err.response.status}.`;
+          if (err.response.data && err.response.data.message) {
+            displayError += ` Message: ${err.response.data.message}`;
+          } else if (typeof err.response.data === 'string' && err.response.data.length < 200) {
+            displayError += ` Details: ${err.response.data}`;
+          }
+        } else if (err.request) {
+          displayError = 'Failed to load restaurants. Cannot reach server.';
+        } else {
+          displayError = `Failed to load restaurants: ${err.message}`;
+        }
+        setRestError(displayError);
+        setRestaurants([]);
+      } finally {
+        setRestLoading(false);
+      }
+    };
+    fetchRestaurants();
+  }, []);
 
-
-  // --- Event Handlers ---
+  // --- Event Handlers (keep as is) ---
   const handleSearch = (term) => {
     setSearchTerm(term);
   };
 
-  // --- Filtering Logic (for food items) ---
-  const filteredItems = foodItems.filter(item => {
-    const matchesSearch = searchTerm === '' ||
-                          item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
+  // --- Derived State and Grouping (Updated: Removed category filtering) ---
+  const searchedItems = useMemo(() => {
+    if (!foodItems) return [];
+    return foodItems.filter(item =>
+      searchTerm === '' ||
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [foodItems, searchTerm]);
 
-    // Basic category check
-    const matchesCategory = selectedCategory === 'All';
-    // TODO: Implement better category filtering using item.category_id
-
-    return matchesSearch && matchesCategory;
-  });
+  const groupedItems = useMemo(() => groupItemsByCategory(searchedItems), [searchedItems]);
 
   // --- Render Logic ---
   return (
     <div className="app-container">
-      {/* Navbar shows login status */}
       <Navbar isLoggedIn={isLoggedIn} username={username} />
       <HeroSection onSearch={handleSearch} />
 
       <main className="main-content">
-        <CategoryFilter
-          categories={foodCategories}
-          selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
-        />
-        <FeaturedDeals />
+        {/* Removed CategoryFilter; keeping FeaturedDeals */}
+        <div className="mid-section-container">
+          <FeaturedDeals />
+        </div>
 
-        {/* Section to display all available food items */}
-        <h2 style={{ marginTop: '30px' }}>Available Food Items</h2>
-
-        {/* Conditional Rendering */}
-        {loading ? (
-          <p>Loading items...</p>
-        ) : error ? (
-          <p className="error-message">{error}</p>
-        ) : filteredItems.length === 0 ? (
-          <p>No food items available or none match the current filter.</p>
-        ) : (
-          // Display fetched food items
-          <div className="food-item-grid"> {/* Use CSS from previous example */}
-            {filteredItems.map(item => (
-              <div key={item.id} className="food-item-card-simple"> {/* Use CSS from previous example */}
-                <h3>{item.name}</h3>
-                <p>{item.description}</p>
-                <p><strong>Price:</strong> ${item.price.toFixed(2)}</p>
-                {/* Display stock only if relevant for customers */}
-                {/* <p><small>Stock: {item.stock}</small></p> */}
+        {/* Food Items Section */}
+        <div className="food-items-container">
+          <h2 style={{ textAlign: 'center' }}>Available Food Items</h2>
+          {loading ? (
+            <p style={{ textAlign: 'center' }}>Loading items...</p>
+          ) : error ? (
+            <p className="error-message">{error}</p>
+          ) : Object.keys(groupedItems).length === 0 ? (
+            foodItems.length === 0 ?
+              <p style={{ textAlign: 'center' }}>No food items available at the moment.</p> :
+              <p style={{ textAlign: 'center' }}>No food items match your current search.</p>
+          ) : (
+            Object.keys(groupedItems).map(categoryId => (
+              <div key={categoryId} className="category-group">
+                <div className="food-item-grid">
+                  {groupedItems[categoryId].map(item => (
+                    <div key={item.id} className="food-item-card-simple">
+                      <h3>{item.name}</h3>
+                      <p>{item.description}</p>
+                      <p><strong>Price:</strong> ${item.price.toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
+
+        {/* Restaurants Section with Card Style */}
+        <div className="restaurants-container">
+          <h2 style={{ textAlign: 'center' }}>Available Restaurants</h2>
+          {restLoading ? (
+            <p style={{ textAlign: 'center' }}>Loading restaurants...</p>
+          ) : restError ? (
+            <p className="error-message">{restError}</p>
+          ) : restaurants.length === 0 ? (
+            <p style={{ textAlign: 'center' }}>No restaurants available at the moment.</p>
+          ) : (
+            <div className="restaurant-grid">
+              {restaurants.map((restaurant) => (
+                <div key={restaurant.id} className="restaurant-card-simple">
+                  <h3>{restaurant.name}</h3>
+                  {restaurant.description && <p>{restaurant.description}</p>}
+                  {restaurant.address && (
+                    <p>
+                      <strong>Address:</strong> {restaurant.address}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
 
       <Footer />

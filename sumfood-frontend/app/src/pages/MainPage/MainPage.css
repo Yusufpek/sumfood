@@ -1,19 +1,102 @@
-.app-container {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .main-content {
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 20px;
-    flex: 1;
-  }
-  
-  @media (max-width: 768px) {
-    .main-content {
-      margin: 20px auto;
-    }
-  }
-  
+/* Add this to MainPage.css or your global styles */
+
+/* Container for CategoryFilter and FeaturedDeals */
+.mid-section-container {
+  max-width: 1200px; /* Match the food items container or adjust */
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 30px; /* Add space above this section */
+  margin-bottom: 40px; /* Add space below this section */
+  /* If CategoryFilter/FeaturedDeals need internal centering, style them directly */
+}
+
+
+/* Styles for centering food items container (keep from previous) */
+.food-items-container {
+  max-width: 1200px;
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 20px;
+  padding-bottom: 40px;
+}
+
+.food-items-container > h2 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Styles for category groups (keep from previous) */
+.category-group {
+  margin-bottom: 40px;
+}
+
+.category-group-title {
+  font-size: 1.5em;
+  color: #444;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #eee;
+}
+
+/* Styles for the grid and cards (keep from previous) */
+.food-item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.food-item-card-simple {
+  border: 1px solid #e0e0e0;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.food-item-card-simple:hover {
+   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.food-item-card-simple h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.15em;
+  color: #333;
+}
+
+.food-item-card-simple p {
+  margin-bottom: 8px;
+  color: #555;
+  font-size: 0.9em;
+  line-height: 1.4;
+  flex-grow: 1;
+}
+
+.food-item-card-simple p:last-of-type {
+  margin-bottom: 0;
+  margin-top: auto;
+  padding-top: 10px;
+  font-weight: bold;
+}
+
+.food-item-card-simple p strong {
+  color: #333;
+}
+
+/* Error message styling (keep from previous) */
+.error-message {
+  color: #dc3545;
+  text-align: center;
+  padding: 20px;
+  font-weight: bold;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 5px;
+  margin: 20px auto;
+  max-width: 80%;
+}
