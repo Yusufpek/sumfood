@@ -29,7 +29,7 @@ public class RestaurantService implements UserDetailsService {
     private final AuthenticationManager authenticationManager;
 
     public List<Restaurant> getAll() {
-        return restaurantRepository.findAll();
+        return restaurantRepository.getByIsValidated(true);
     }
 
     @Transactional
