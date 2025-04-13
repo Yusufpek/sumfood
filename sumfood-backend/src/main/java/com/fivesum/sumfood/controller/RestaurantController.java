@@ -1,5 +1,7 @@
 package com.fivesum.sumfood.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -18,6 +20,11 @@ import lombok.RequiredArgsConstructor;
 public class RestaurantController {
     private final JwtService jwtService;
     private final RestaurantService restaurantService;
+
+    @GetMapping("/public/all")
+    public ResponseEntity<List<Restaurant>> getAllFoodItems() {
+        return ResponseEntity.ok(restaurantService.getAll());
+    }
 
     @GetMapping("/profile")
     public ResponseEntity<Restaurant> getProfile(@RequestHeader("Authorization") String token) {

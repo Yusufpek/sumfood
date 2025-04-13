@@ -15,7 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.fivesum.sumfood.dto.RestaurantRegistrationRequest;
 import com.fivesum.sumfood.dto.AuthRequest;
-import com.fivesum.sumfood.model.FoodItem;
 import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.repository.RestaurantRepository;
 
@@ -26,9 +25,12 @@ import lombok.AllArgsConstructor;
 public class RestaurantService implements UserDetailsService {
 
     private final RestaurantRepository restaurantRepository;
-    private final FoodItemService foodItemService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+
+    public List<Restaurant> getAll() {
+        return restaurantRepository.findAll();
+    }
 
     @Transactional
     public Restaurant registerRestaurant(RestaurantRegistrationRequest request) {
