@@ -136,8 +136,8 @@ function RestaurantMenu() {
         ...formData,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock, 10),
-        // Ensure category is correctly formatted as an enum value
-        category: formData.category || null
+        // Fix: Send category as a direct string value, not as an object with id property
+        category: formData.category
       };
 
       console.log('Submitting with payload:', payload);
