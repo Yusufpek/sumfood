@@ -8,11 +8,6 @@ import CategoryFilter from '../../components/home/CategoryFilter';
 import './MainPage.css';
 import axios from 'axios';
 
-const foodCategories = [
-  'All', 'Fast Food', 'Pizza', 'Burgers', 'Sushi', 'Chinese', 'Italian', 'Mexican', 'Healthy'
-];
-
-
 // --- Helper Function (keep as is) ---
 const groupItemsByCategory = (items) => {
   if (!items) return {};
@@ -144,12 +139,6 @@ const MainPage = () => {
       <HeroSection onSearch={handleSearch} />
 
       <main className="main-content">
-        <CategoryFilter 
-          categories={foodCategories} 
-          selectedCategory={selectedCategory} 
-          onSelectCategory={setSelectedCategory} 
-        />
-
         {/* Food Items Section */}
         <div className="food-items-container">
           <h2 style={{ textAlign: 'center' }}>Available Food Items</h2>
