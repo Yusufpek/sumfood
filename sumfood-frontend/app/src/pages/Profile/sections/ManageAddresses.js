@@ -1,54 +1,68 @@
 import React, { useState, useEffect } from 'react';
 import './ManageAddresses.css';
 import StandardizedInput from '../../../components/common/StandardizedInput';
+import axios from 'axios';
 
 const ManageAddresses = () => {
-    // TODO: Replace with API data when backend is connected
-    const [addresses, setAddresses] = useState([
-        {
-            id: 1,
-            addressLine1: '123 Main St',
-            addressLine2: 'Apt 4B',
-            postalCode: '10001',
-            isDefault: true
-        },
-        {
-            id: 2,
-            addressLine1: '456 Business Ave',
-            addressLine2: 'Floor 3',
-            postalCode: '10002',
-            isDefault: false
-        }
-    ]);
-
+    const [addresses, setAddresses] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({
-        addressLine1: '',
+        addressLine: '',
         addressLine2: '',
         postalCode: ''
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [addressToDelete, setAddressToDelete] = useState(null);
     
-    // TODO: API Integration - Fetch addresses from backend on component mount
+    // Function to fetch addresses from the server
+    const fetchAddresses = async () => {
+        try {
+            setLoading(true);
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setMessage({ type: 'error', text: 'Not authenticated' });
+                return;
+            }
+            
+            const response = await axios.get('http://localhost:8080/api/customer/address/', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Role': 'CUSTOMER'
+                }
+            });
+            
+            // Ensure we're working with an array
+            if (Array.isArray(response.data)) {
+                setAddresses(response.data);
+            } else {
+                console.error('Expected an array but received:', response.data);
+                // Try to find addresses array if nested in response
+                if (response.data && Array.isArray(response.data.addresses)) {
+                    setAddresses(response.data.addresses);
+                } else {
+                    // Fallback to empty array
+                    setAddresses([]);
+                    setMessage({ 
+                        type: 'error', 
+                        text: 'Invalid data format received from server' 
+                    });
+                }
+            }
+        } catch (error) {
+            setMessage({ 
+                type: 'error', 
+                text: error.response?.data?.message || error.message || 'Failed to load addresses' 
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    // Fetch addresses from backend on component mount
     useEffect(() => {
-        // TODO: Implement API call to fetch addresses
-        // GET /api/sections/addresses
-        // Example:
-        // const fetchAddresses = async () => {
-        //     try {
-        //         setLoading(true);
-        //         const response = await fetch('/api/sections/addresses');
-        //         const data = await response.json();
-        //         setAddresses(data);
-        //     } catch (error) {
-        //         setMessage({ type: 'error', text: 'Failed to load addresses' });
-        //     } finally {
-        //         setLoading(false);
-        //     }
-        // };
-        // 
-        // fetchAddresses();
+        fetchAddresses();
     }, []);
 
     const handleInputChange = (e) => {
@@ -63,127 +77,121 @@ const ManageAddresses = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        // TODO: API Integration - Create or update address
-        // Example:
-        // const saveAddress = async () => {
-        //     try {
-        //         setLoading(true);
-        //         const method = editingId ? 'PUT' : 'POST';
-        //         const endpoint = editingId 
-        //             ? `/api/sections/addresses/${editingId}` 
-        //             : '/api/sections/addresses';
-        //         
-        //         const response = await fetch(endpoint, {
-        //             method,
-        //             headers: {
-        //                 'Content-Type': 'application/json',
-        //                 'Authorization': `Bearer ${authToken}`
-        //             },
-        //             body: JSON.stringify(formData)
-        //         });
-        //         
-        //         if (response.ok) {
-        //             const data = await response.json();
-        //             if (editingId) {
-        //                 setAddresses(prevAddresses => 
-        //                     prevAddresses.map(address => 
-        //                         address.id === editingId ? data : address
-        //                     )
-        //                 );
-        //                 setMessage({ type: 'success', text: 'Address updated successfully' });
-        //             } else {
-        //                 setAddresses(prevAddresses => [...prevAddresses, data]);
-        //                 setMessage({ type: 'success', text: 'Address added successfully' });
-        //             }
-        //             resetForm();
-        //         } else {
-        //             const errorData = await response.json();
-        //             setMessage({ type: 'error', text: errorData.message || 'Failed to save address' });
-        //         }
-        //     } catch (error) {
-        //         setMessage({ type: 'error', text: 'An error occurred while saving the address' });
-        //     } finally {
-        //         setLoading(false);
-        //     }
-        // };
-        //
-        // saveAddress();
+        const saveAddress = async () => {
+            try {
+                setLoading(true);
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    setMessage({ type: 'error', text: 'Not authenticated' });
+                    return;
+                }
+
+                const endpoint = editingId 
+                    ? `http://localhost:8080/api/customer/address/${editingId}` 
+                    : 'http://localhost:8080/api/customer/address/';
+                
+                let response;
+                if (editingId) {
+                    response = await axios.put(endpoint, formData, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Role': 'CUSTOMER'
+                        }
+                    });
+                } else {
+                    response = await axios.post(endpoint, formData, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Role': 'CUSTOMER'
+                        }
+                    });
+                }
+                
+                // Refresh the addresses list directly from the server
+                await fetchAddresses();
+                
+                setMessage({ 
+                    type: 'success', 
+                    text: editingId ? 'Address updated successfully' : 'Address added successfully' 
+                });
+                resetForm();
+            } catch (error) {
+                setMessage({ 
+                    type: 'error', 
+                    text: error.response?.data?.message || 'An error occurred while saving the address' 
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
         
-        // Temporary implementation until API is connected
-        if (editingId) {
-            setAddresses(prevAddresses => 
-                prevAddresses.map(address => 
-                    address.id === editingId ? { id: editingId, ...formData } : address
-                )
-            );
-            setMessage({ type: 'success', text: 'Address updated successfully' });
-        } else {
-            setAddresses(prevAddresses => [
-                ...prevAddresses,
-                { id: Date.now(), ...formData }
-            ]);
-            setMessage({ type: 'success', text: 'Address added successfully' });
-        }
-        resetForm();
+        saveAddress();
     };
 
     const handleEdit = (address) => {
         setEditingId(address.id);
         setFormData({
-            addressLine1: address.addressLine1,
+            addressLine: address.addressLine,
             addressLine2: address.addressLine2,
             postalCode: address.postalCode
         });
     };
 
-    const handleDelete = (id) => {
-        // TODO: API Integration - Delete address
-        // Example:
-        // const deleteAddress = async () => {
-        //     try {
-        //         setLoading(true);
-        //         const response = await fetch(`/api/sections/addresses/${id}`, {
-        //             method: 'DELETE',
-        //             headers: {
-        //                 'Authorization': `Bearer ${authToken}`
-        //             }
-        //         });
-        //         
-        //         if (response.ok) {
-        //             setAddresses(prevAddresses => 
-        //                 prevAddresses.filter(address => address.id !== id)
-        //             );
-        //             if (editingId === id) {
-        //                 resetForm();
-        //             }
-        //             setMessage({ type: 'success', text: 'Address deleted successfully' });
-        //         } else {
-        //             const errorData = await response.json();
-        //             setMessage({ type: 'error', text: errorData.message || 'Failed to delete address' });
-        //         }
-        //     } catch (error) {
-        //         setMessage({ type: 'error', text: 'An error occurred while deleting the address' });
-        //     } finally {
-        //         setLoading(false);
-        //     }
-        // };
-        //
-        // deleteAddress();
+    // Open delete confirmation dialog
+    const initiateDelete = (id) => {
+        setAddressToDelete(id);
+        setShowDeleteConfirm(true);
+    };
+    
+    // Cancel deletion
+    const cancelDelete = () => {
+        setShowDeleteConfirm(false);
+        setAddressToDelete(null);
+    };
+
+    const handleDelete = () => {
+        const deleteAddress = async () => {
+            try {
+                setLoading(true);
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    setMessage({ type: 'error', text: 'Not authenticated' });
+                    return;
+                }
+
+                await axios.delete(`http://localhost:8080/api/customer/address/${addressToDelete}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Role': 'CUSTOMER'
+                    }
+                });
+                
+                // Refresh addresses from server
+                await fetchAddresses();
+                
+                if (editingId === addressToDelete) {
+                    resetForm();
+                }
+                setMessage({ type: 'success', text: 'Address deleted successfully' });
+                setShowDeleteConfirm(false);
+                setAddressToDelete(null);
+            } catch (error) {
+                setMessage({ 
+                    type: 'error', 
+                    text: error.response?.data?.message || 'An error occurred while deleting the address' 
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
         
-        // Temporary implementation until API is connected
-        setAddresses(prevAddresses => 
-            prevAddresses.filter(address => address.id !== id)
-        );
-        if (editingId === id) {
-            resetForm();
-        }
-        setMessage({ type: 'success', text: 'Address deleted successfully' });
+        deleteAddress();
     };
 
     const resetForm = () => {
         setEditingId(null);
         setFormData({
-            addressLine1: '',
+            addressLine: '',
             addressLine2: '',
             postalCode: ''
         });
@@ -193,7 +201,6 @@ const ManageAddresses = () => {
         <div className="manage-addresses">
             <h2>Manage Addresses</h2>
             
-            {/* TODO: Add loading indicator when fetching or updating data */}
             {loading && <div className="loading-indicator">Loading...</div>}
             
             {message.text && (
@@ -202,11 +209,37 @@ const ManageAddresses = () => {
                 </div>
             )}
             
+            {/* Delete confirmation popup */}
+            {showDeleteConfirm && (
+                <div className="delete-confirm-overlay">
+                    <div className="delete-confirm-popup">
+                        <h3>Confirm Deletion</h3>
+                        <p>Are you sure you want to delete this address?</p>
+                        <div className="delete-confirm-buttons">
+                            <button 
+                                className="confirm-delete-btn" 
+                                onClick={handleDelete}
+                                disabled={loading}
+                            >
+                                {loading ? 'Deleting...' : 'Yes, Delete'}
+                            </button>
+                            <button 
+                                className="cancel-delete-btn" 
+                                onClick={cancelDelete}
+                                disabled={loading}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             <form className="address-form" onSubmit={handleSubmit}>
                 <StandardizedInput
                     label="Address Line 1"
-                    name="addressLine1"
-                    value={formData.addressLine1}
+                    name="addressLine"
+                    value={formData.addressLine}
                     onChange={handleInputChange}
                     required
                     maxLength={100}
@@ -255,12 +288,12 @@ const ManageAddresses = () => {
             </form>
 
             <div className="addresses-list">
-                {addresses.map(address => (
+                {Array.isArray(addresses) ? addresses.map(address => (
                     <div key={address.id} className="address-card">
                         <div className="address-info">
                             <p>
                                 <span className="field-label">Address Line 1:</span>
-                                <span className="field-value">{address.addressLine1}</span>
+                                <span className="field-value">{address.addressLine}</span>
                             </p>
                             {address.addressLine2 && (
                                 <p>
@@ -283,17 +316,17 @@ const ManageAddresses = () => {
                             </button>
                             <button 
                                 className="delete-btn" 
-                                onClick={() => handleDelete(address.id)}
+                                onClick={() => initiateDelete(address.id)}
                                 disabled={loading}
                             >
                                 Delete
                             </button>
                         </div>
                     </div>
-                ))}
+                )) : <p>No addresses found</p>}
             </div>
         </div>
     );
 };
 
-export default ManageAddresses; 
+export default ManageAddresses;
