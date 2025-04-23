@@ -1,18 +1,24 @@
 package com.fivesum.sumfood.controller;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.fivesum.sumfood.constants.ImagePath;
 import com.fivesum.sumfood.dto.FoodItemAddRequest;
 import com.fivesum.sumfood.model.FoodItem;
 import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.model.enums.Category;
 import com.fivesum.sumfood.service.FoodItemService;
+import com.fivesum.sumfood.service.ImageService;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.RestaurantService;
 
@@ -23,8 +29,23 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FoodItemController {
     private final FoodItemService foodItemService;
+    private final ImageService imageService;
     private final JwtService jwtService;
     private final RestaurantService restaurantService;
+
+    @GetMapping("/public/image/{restaurantName}/{imageName}")
+    public ResponseEntity<byte[]> getImage(
+            @PathVariable String restaurantName,
+            @PathVariable String imageName) throws IOException {
+        String imagePath = ImagePath.getFootItemImagePathByRestaurant(restaurantName);
+        byte[] image = imageService.getImage(imagePath, imageName);
+        if (image != null) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
+                    .body(image);
+        }
+        return ResponseEntity.notFound().build();
+    }
 
     @GetMapping("/public/items")
     public ResponseEntity<List<FoodItem>> getAllFoodItems() {
@@ -51,14 +72,28 @@ public class FoodItemController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
-    @PostMapping("/item")
-    public ResponseEntity<FoodItem> addFoodItem(@RequestHeader("Authorization") String token,
-            @RequestBody FoodItemAddRequest request) {
+    @PostMapping(value = "/item", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<FoodItem> addFoodItem(
+            @RequestHeader("Authorization") String token,
+            @RequestPart("foodItem") FoodItemAddRequest request,
+            @RequestPart("file") MultipartFile file) {
+        System.out.println("Add item");
         String email = jwtService.extractUsername(token.substring(7));
-        Optional<Restaurant> restaurant = restaurantService.findByEmail(email);
-        if (restaurant.isPresent()) {
+        Optional<Restaurant> restaurantOpt = restaurantService.findByEmail(email);
+        if (restaurantOpt.isPresent()) {
+            Restaurant restaurant = restaurantOpt.get();
+            String imagePath;
+            try {
+                imagePath = restaurant.getName() + imageService
+                        .saveImageToStorage(ImagePath.getFootItemImagePathByRestaurant(restaurant.getName()), file);
+            } catch (IOException exception) {
+                imagePath = ImagePath.DEFAULT_FOOD_ITEM_PATH;
+            }
+
+            request.setImagePath(imagePath);
+
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(foodItemService.addFoodItem(request, restaurant.get()));
+                    .body(foodItemService.addFoodItem(request, restaurant));
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
