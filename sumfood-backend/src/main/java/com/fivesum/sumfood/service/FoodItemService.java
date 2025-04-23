@@ -58,6 +58,7 @@ public class FoodItemService {
                 .price(request.getPrice())
                 .stock(request.getStock())
                 .restaurant(restaurant)
+                .imageName(request.getImagePath())
                 .categories(new ArrayList<Category>())
                 .build();
         foodItem.getCategories().add(request.getCategory());
