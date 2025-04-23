@@ -127,6 +127,9 @@ public class FoodItemController {
         if (restaurant.isPresent()) {
             try {
                 FoodItem toBeDeleted = foodItemService.getById(Long.valueOf(itemId));
+                imageService.deleteImage(
+                        ImagePath.getFootItemImagePathByRestaurant(toBeDeleted.getRestaurant().getBusinessName()),
+                        toBeDeleted.getImageName());
                 boolean response = foodItemService.deleteFoodItem(toBeDeleted);
                 if (response) {
                     return ResponseEntity.status(HttpStatus.OK).body("Deleted succesfully");
