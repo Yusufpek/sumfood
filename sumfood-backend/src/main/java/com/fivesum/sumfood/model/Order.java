@@ -7,9 +7,11 @@ import com.fivesum.sumfood.model.enums.OrderStatus;
 import com.fivesum.sumfood.model.enums.PaymentStatus;
 
 import lombok.experimental.SuperBuilder;
+import lombok.NoArgsConstructor;
 
 @SuperBuilder
 @Entity
+@NoArgsConstructor
 @Table(name = "orders")
 public class Order extends EntityBase {
 
@@ -29,4 +31,22 @@ public class Order extends EntityBase {
     @Column(nullable = false)
     private OrderStatus orderStatus;
 
+    public void setShoppingCart(ShoppingCart shoppingCart) {
+        this.shoppingCart = shoppingCart;
+    }
+    public ShoppingCart getShoppingCart() {
+        return shoppingCart;
+    }
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+    public PaymentStatus getPaymentStatus() {
+        return paymentStatus;
+    }
+    public void setOrderStatus(OrderStatus orderStatus) {
+        this.orderStatus = orderStatus;
+    }
+    public OrderStatus getOrderStatus() {
+        return orderStatus;
+    }
 }
