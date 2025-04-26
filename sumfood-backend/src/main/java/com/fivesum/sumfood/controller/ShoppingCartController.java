@@ -1,8 +1,13 @@
 package com.fivesum.sumfood.controller;
 
 import com.fivesum.sumfood.dto.ShoppingCartCreateRequest;
+import com.fivesum.sumfood.dto.ShoppingCartUpdateRequest;
+import com.fivesum.sumfood.exception.ConflictException;
+import com.fivesum.sumfood.exception.InvalidRequestException;
+import com.fivesum.sumfood.exception.UnauthorizedAccessException;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.ShoppingCart;
+import com.fivesum.sumfood.responses.ShoppingCartResponse;
 import com.fivesum.sumfood.service.CustomerService;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.ShoppingCartService;
@@ -36,6 +41,32 @@ public class ShoppingCartController {
             return ResponseEntity.status(HttpStatus.CREATED).body(order);
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
     }
+
+    @Transactional
+    @PostMapping("/update")
+    public ResponseEntity<?> updateShoppingCart(@RequestBody ShoppingCartUpdateRequest request,
+            @RequestHeader("Authorization") String token) {
+        String email = jwtService.extractUsername(token.replace("Bearer ", ""));
+
+        Optional<Customer> customer = customerService.findByEmail(email);
+        if (customer.isPresent()) {
+            try {
+                ShoppingCart cart = shoppingCartService.updateShoppingCart(request, customer.get());
+                ShoppingCartResponse response = shoppingCartService.mapToDTO(cart);
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            } catch (InvalidRequestException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            } catch (UnauthorizedAccessException e) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+            } catch (ConflictException e) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("An unexpected error occurred: " + e.getMessage());
+            }
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
 }
