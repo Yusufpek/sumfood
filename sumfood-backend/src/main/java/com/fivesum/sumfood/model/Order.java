@@ -1,16 +1,11 @@
 package com.fivesum.sumfood.model;
 
 import com.fivesum.sumfood.model.base.EntityBase;
-import com.fivesum.sumfood.model.enums.OrderState;
 import com.fivesum.sumfood.model.enums.PaymentStatus;
 import javax.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.fivesum.sumfood.model.OrderItem;
 
 @SuperBuilder
 @Entity
