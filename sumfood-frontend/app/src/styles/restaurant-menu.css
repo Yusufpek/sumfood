@@ -41,20 +41,22 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   padding: 20px;
   position: relative;
+  display: flex; /* Use flexbox for layout */
+  flex-direction: column; /* Stack elements vertically */
+}
+
+.menu-item-image {
+  width: 100%; /* Make image take full width of card */
+  height: 180px; /* Fixed height for consistency */
+  object-fit: cover; /* Cover the area, cropping if needed */
+  border-radius: 4px; /* Slightly rounded corners */
+  margin-bottom: 15px; /* Space below image */
 }
 
 .menu-item-status {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end; /* Changed from space-between as donation badge is removed */
   margin-bottom: 15px;
-}
-
-.donation-badge {
-  background-color: #ff9800;
-  color: white;
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
 }
 
 .stock-info {
@@ -192,30 +194,36 @@
   width: 100%;
 }
 
+.form-group input[type="file"] {
+  padding: 8px; /* Adjust padding for file input */
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.form-group input[type="file"]:hover {
+  background-color: #eee;
+}
+
+.file-info {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 5px;
+}
+
+.form-error {
+  color: #f44336;
+  background-color: #ffebee;
+  border: 1px solid #f44336;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
 .form-group textarea {
   min-height: 100px;
-}
-
-.form-group.checkbox {
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-}
-
-.checkbox-container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-}
-
-.checkbox-container input[type="checkbox"] {
-  width: auto;
-  margin-right: 8px;
-}
-
-.checkbox-label {
-  margin-left: 0;
 }
 
 .form-buttons {
