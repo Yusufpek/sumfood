@@ -28,7 +28,7 @@ public class ShoppingCart extends EntityBase {
     private Restaurant restaurant;
 
     @Column(nullable = false)
-    private int totalPrice;
+    private double totalPrice;
 
     // Relations
     @OneToMany(mappedBy = "shoppingCart", cascade = CascadeType.ALL, orphanRemoval = true)
