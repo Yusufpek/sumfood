@@ -36,6 +36,9 @@ const MainPage = () => {
   const [restLoading, setRestLoading] = useState(true);
   const [restError, setRestError] = useState(null);
 
+  // Cart
+  const [cart, setCart] = useState([]);
+
   // --- Effects (keep as is) ---
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -132,6 +135,33 @@ const MainPage = () => {
 
   const groupedItems = useMemo(() => groupItemsByCategory(searchedItems), [searchedItems]);
 
+  // Place Order
+  const placeOrder = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      await axios.post('http://localhost:8080/api/order', { items: cart }, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      alert('Order placed!');
+      setCart([]);
+    } catch (err) {
+      alert('Order failed: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  // Cart Management
+  const addToCart = (item) => {
+    setCart(prev => {
+      const found = prev.find(i => i.id === item.id);
+      if (found) {
+        // Increase quantity if already in cart
+        return prev.map(i => i.id === item.id ? { ...i, qty: (i.qty || 1) + 1 } : i);
+      }
+      // Add new item with qty 1
+      return [...prev, { ...item, qty: 1 }];
+    });
+  };
+
   // --- Render Logic ---
   return (
     <div className="app-container">
@@ -154,14 +184,15 @@ const MainPage = () => {
             Object.keys(groupedItems).map(categoryId => (
               <div key={categoryId} className="category-group">
                 <div className="food-item-grid">
-                  {groupedItems[categoryId].map(item => (
-                    <div key={item.id} className="food-item-card-simple">
-                      <h3>{item.name}</h3>
-                      <p>{item.categories}</p>
-                      <p>{item.description}</p>
-                      <p><strong>Price:</strong> ${item.price.toFixed(2)}</p>
-                    </div>
-                  ))}
+                {groupedItems[categoryId].map(item => (
+                  <div key={item.id} className="food-item-card-simple">
+                    <h3>{item.name}</h3>
+                    <p>{item.categories}</p>
+                    <p>{item.description}</p>
+                    <p><strong>Price:</strong> ${item.price.toFixed(2)}</p>
+                    <button onClick={() => addToCart(item)}>Add to Cart</button>
+                  </div>
+                ))}
                 </div>
               </div>
             ))
@@ -202,6 +233,23 @@ const MainPage = () => {
         <div className="mid-section-container">
           <FeaturedDeals />
         </div>
+
+        <div className="cart-container" style={{ margin: '30px 0', padding: '20px', border: '1px solid #ccc' }}>
+        <h3>Cart</h3>
+        {cart.length === 0 ? (
+          <p>Your cart is empty.</p>
+        ) : (
+          <ul>
+            {cart.map(item => (
+              <li key={item.id}>
+                {item.name} x {item.qty}
+              </li>
+            ))}
+          </ul>
+        )}
+        <button disabled={cart.length === 0} onClick={placeOrder}>Place Order</button>
+      </div>
+
       </main>
 
       <Footer />
