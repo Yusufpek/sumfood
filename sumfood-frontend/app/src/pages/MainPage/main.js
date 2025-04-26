@@ -255,10 +255,9 @@ const MainPage = () => {
                 {groupedItems[categoryId].map(item => (
                   <div key={item.id} className="food-item-card-simple">
                     <h3>{item.name}</h3>
-                    <p>{item.categories}</p>
                     <p>{item.description}</p>
                     <p><strong>Price:</strong> ${item.price.toFixed(2)}</p>
-                    <button onClick={() => addToCart(item)}>Add to Cart</button>
+                    <button className='btn btn-add-cart' onClick={() => addToCart(item)}>Add to Cart</button>
                   </div>
                 ))}
                 </div>
@@ -301,22 +300,60 @@ const MainPage = () => {
         <div className="mid-section-container">
           <FeaturedDeals />
         </div>
-
-        <div className="cart-container" style={{ margin: '30px 0', padding: '20px', border: '1px solid #ccc' }}>
-        <h3>Cart</h3>
-        {cart.length === 0 ? (
-          <p>Your cart is empty.</p>
-        ) : (
-          <ul>
-            {cart.map(item => (
-              <li key={item.id}>
-                {item.name} x {item.qty}
-              </li>
-            ))}
-          </ul>
-        )}
-        <button disabled={cart.length === 0} onClick={placeOrder}>Place Order</button>
-      </div>
+        
+        <div className="cart-section-container"> {/* New container for centering */}
+          <div className="cart-container">
+            <h2>Your Cart</h2>
+            {orderStatus.error && <p className="cart-error-message">{orderStatus.error}</p>}
+            {orderStatus.success && <p className="cart-success-message">{orderStatus.success}</p>}
+            {cart.length === 0 && !orderStatus.success ? ( // Show empty message only if no success message
+              <p>Your cart is empty. Add some items!</p>
+            ) : cart.length > 0 ? ( // Only show table if cart has items
+              <>
+                <table className="cart-table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Price</th>
+                      <th>Quantity</th>
+                      <th>Subtotal</th>
+                      <th>Remove</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cart.map(item => (
+                      <tr key={item.id} className="cart-item">
+                        <td>{item.name}</td>
+                        <td>${item.price.toFixed(2)}</td>
+                        <td>
+                          <div className="quantity-controls">
+                            <button onClick={() => updateQuantity(item.id, -1)} disabled={item.qty <= 1}>-</button>
+                            <span>{item.qty}</span>
+                            <button onClick={() => updateQuantity(item.id, 1)}>+</button>
+                          </div>
+                        </td>
+                        <td>${(item.price * item.qty).toFixed(2)}</td>
+                        <td>
+                          <button className="btn-remove" onClick={() => removeFromCart(item.id)}>×</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="cart-total">
+                  <strong>Total: ${cartTotal.toFixed(2)}</strong>
+                </div>
+                <button
+                  className="btn btn-place-order"
+                  disabled={cart.length === 0 || orderStatus.loading} // Disable if cart empty or order placing
+                  onClick={placeOrder}
+                >
+                  {orderStatus.loading ? 'Placing Order...' : 'Place Order'}
+                </button>
+              </>
+            ) : null /* Don't show table/total/button if cart is empty after success */}
+          </div>
+        </div>
 
       </main>
 

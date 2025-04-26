@@ -139,7 +139,7 @@ p:contains("Loading restaurants...") {
   background-color: #007bff;
   color: white;
   margin-top: auto; /* Push button to bottom of card */
-  align-self: flex-start; /* Align button left within card */
+  align-self: center; /* Align button left within card */
   padding-top: 10px; /* Add space above button */
 }
 
