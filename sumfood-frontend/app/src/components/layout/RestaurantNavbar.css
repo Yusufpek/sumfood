@@ -1,0 +1,154 @@
+.restaurant-navbar {
+  background: #1e3a8a;
+  color: white;
+  padding: 0 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.restaurant-navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+}
+
+.restaurant-navbar-logo a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+.restaurant-portal {
+  font-size: 1rem;
+  margin-left: 8px;
+  padding: 3px 8px;
+  background-color: #ff6b00;
+  border-radius: 4px;
+  font-weight: normal;
+}
+
+.restaurant-navbar-menu {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.restaurant-navbar-menu li {
+  margin: 0 1rem;
+}
+
+.restaurant-navbar-menu li a {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 0;
+  display: inline-block;
+  position: relative;
+}
+
+.restaurant-navbar-menu li a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  background: #ff6b00;
+  left: 0;
+  bottom: 0;
+  transition: width 0.3s;
+}
+
+.restaurant-navbar-menu li:hover a::after,
+.restaurant-navbar-menu li.active a::after {
+  width: 100%;
+}
+
+.restaurant-navbar-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 21px;
+  cursor: pointer;
+}
+
+.restaurant-navbar-toggle span {
+  display: block;
+  width: 25px;
+  height: 3px;
+  background: white;
+  border-radius: 3px;
+  transition: all 0.3s;
+}
+
+.restaurant-navbar-user {
+  display: flex;
+  align-items: center;
+}
+
+.restaurant-name {
+  margin-right: 15px;
+  font-weight: 500;
+}
+
+.logout-btn {
+  background-color: #ff6b00;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+  background-color: #e65100;
+}
+
+@media (max-width: 768px) {
+  .restaurant-navbar-toggle {
+    display: flex;
+  }
+  
+  .restaurant-navbar-menu {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    flex-direction: column;
+    background: #1e3a8a;
+    width: 100%;
+    text-align: center;
+    transform: translateY(-100%);
+    transition: transform 0.3s;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 999;
+  }
+  
+  .restaurant-navbar-menu.active {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .restaurant-navbar-menu li {
+    margin: 1rem 0;
+  }
+  
+  .restaurant-navbar-user {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  
+  .restaurant-name {
+    margin-right: 0;
+    margin-bottom: 5px;
+    font-size: 0.8rem;
+  }
+}
