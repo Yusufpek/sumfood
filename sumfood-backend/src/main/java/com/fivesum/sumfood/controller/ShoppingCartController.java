@@ -37,8 +37,8 @@ public class ShoppingCartController {
 
         Optional<Customer> customer = customerService.findByEmail(email);
         if (customer.isPresent()) {
-            ShoppingCart order = shoppingCartService.createShoppingCart(request, customer.get());
-            return ResponseEntity.status(HttpStatus.CREATED).body(order);
+            ShoppingCartResponse response = shoppingCartService.createShoppingCart(request, customer.get());
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }

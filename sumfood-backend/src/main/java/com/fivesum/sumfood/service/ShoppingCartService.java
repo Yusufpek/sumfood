@@ -28,7 +28,7 @@ public class ShoppingCartService {
     private final FoodItemService foodItemService;
 
     @Transactional
-    public ShoppingCart createShoppingCart(ShoppingCartCreateRequest request, Customer customer) {
+    public ShoppingCartResponse createShoppingCart(ShoppingCartCreateRequest request, Customer customer) {
         // 2. Process Items, Calculate Total, Determine Restaurant
         double calculatedTotalPrice = 0;
         Restaurant orderRestaurant = null;
@@ -47,18 +47,25 @@ public class ShoppingCartService {
                 .totalPrice(calculatedTotalPrice)
                 .items(new ArrayList<>())
                 .build();
-
         shoppingCartRepository.save(shoppingCart);
 
-        ShoppingCartFoodItemRelation shoppingCardItem = ShoppingCartFoodItemRelation.builder()
+        ShoppingCartFoodItemRelation shoppingCartItem = ShoppingCartFoodItemRelation.builder()
                 .shoppingCart(shoppingCart)
                 .foodItem(foodItem)
                 .amount(request.getFoodItemCount())
                 .build();
 
-        shoppingCartItemRepository.save(shoppingCardItem);
+        shoppingCartItemRepository.save(shoppingCartItem);
 
-        return shoppingCart;
+        List<ShoppingCartFoodItemRelation> items = shoppingCart.getItems();
+        items.add(shoppingCartItem);
+        shoppingCart.setItems(items);
+        shoppingCartRepository.save(shoppingCart);
+
+        System.out.println("================");
+        System.out.println(shoppingCart.getItems());
+
+        return mapToDTO(shoppingCart);
     }
 
     @Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class,
@@ -133,7 +140,7 @@ public class ShoppingCartService {
         List<ShoppingCartItemResponse> items = cart.getItems().stream()
                 .map(item -> ShoppingCartItemResponse.builder()
                         .foodItemId(item.getFoodItem().getId())
-                        .foodItemName(item.getFoodItem().getName()) // assuming you have name field
+                        .foodItemName(item.getFoodItem().getName())
                         .amount(item.getAmount())
                         .build())
                 .collect(Collectors.toList());
