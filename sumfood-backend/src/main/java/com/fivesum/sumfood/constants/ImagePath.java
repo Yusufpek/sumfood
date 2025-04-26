@@ -6,7 +6,7 @@ public class ImagePath {
     // Food Item
     public static final String FOOD_ITEM_PATH = IMAGE_BASE + "food_items/";
 
-    public static String getFootItemImagePathByRestaurant(String restaurantName) {
+    public static String getFoodItemImagePathByRestaurant(String restaurantName) {
         restaurantName = restaurantName.replace(" ", "_");
         return FOOD_ITEM_PATH + restaurantName + "/";
     }

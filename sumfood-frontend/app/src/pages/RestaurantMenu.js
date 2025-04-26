@@ -142,65 +142,53 @@ function RestaurantMenu() {
     const token = localStorage.getItem('token');
     setError(''); // Clear any previous error
 
+    // Create FormData object for both add and update
+    const data = new FormData();
+    const foodItemData = {
+      ...formData,
+      price: parseFloat(formData.price),
+      stock: parseInt(formData.stock, 10),
+      category: formData.category
+    };
+    // Append food item data as a JSON blob
+    data.append('foodItem', new Blob([JSON.stringify(foodItemData)], { type: 'application/json' }));
+
+    // Append the file only if it's selected (for both add and update)
+    if (selectedFile) {
+      data.append('file', selectedFile);
+    }
+
     try {
+      let response;
       if (editingItem) {
-        // Update existing item (PUT request - does not handle file upload currently)
-        // Backend PUT endpoint expects application/json, not multipart/form-data
-        console.log('Updating item with ID:', editingItem.id);
-        const payload = {
-          ...formData,
-          price: parseFloat(formData.price),
-          stock: parseInt(formData.stock, 10),
-          category: formData.category
-        };
+        // Update existing item (PUT request with FormData)
+        console.log('Updating item with ID:', editingItem.id, 'using FormData');
         try {
-          const response = await axios.put(`http://localhost:8080/api/food/item/${editingItem.id}`, payload, {
+          response = await axios.put(`http://localhost:8080/api/food/item/${editingItem.id}`, data, {
             headers: {
               'Authorization': `Bearer ${token}`,
-              'Role': 'RESTAURANT',
-              'Content-Type': 'application/json' // Explicitly set for PUT
+              'Role': 'RESTAURANT'
+              // Axios sets Content-Type to multipart/form-data automatically
             }
           });
           console.log('Update response:', response.data);
         } catch (updateErr) {
           console.error('Error in update request:', updateErr);
-          if (updateErr.response) {
-            console.error('Response data:', updateErr.response.data);
-            console.error('Response status:', updateErr.response.status);
-          }
           const errorMsg = getErrorMessage(updateErr);
           throw new Error(errorMsg);
         }
       } else {
-        // Add new item (POST request - handles file upload)
+        // Add new item (POST request with FormData)
         if (!selectedFile) {
-          setError('Please select an image file.');
-          return; // Prevent submission without a file
+          setError('Please select an image file for the new item.');
+          return; // Prevent submission without a file for new items
         }
-
-        const foodItemData = {
-          ...formData,
-          price: parseFloat(formData.price),
-          stock: parseInt(formData.stock, 10),
-          category: formData.category
-        };
-
-        // Create FormData object
-        const data = new FormData();
-        // Append food item data as a JSON blob
-        data.append('foodItem', new Blob([JSON.stringify(foodItemData)], { type: 'application/json' }));
-        // Append the file
-        data.append('file', selectedFile);
-
         console.log('Submitting new item with FormData...');
-
         try {
-          // Send POST request with FormData
-          const response = await axios.post('http://localhost:8080/api/food/item', data, {
+          response = await axios.post('http://localhost:8080/api/food/item', data, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Role': 'RESTAURANT'
-              // 'Content-Type': 'multipart/form-data' // Axios sets this automatically for FormData
             }
           });
           console.log('Create response:', response.data);
@@ -211,22 +199,22 @@ function RestaurantMenu() {
         }
       }
 
-      // Refresh food items after saving
+      // Refresh food items after successful save/update
       const foodResponse = await axios.get('http://localhost:8080/api/food/items', {
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
-          'Role': 'RESTAURANT' 
+          'Role': 'RESTAURANT'
         }
       });
-      
+
       console.log('API Food Items Response after save/update:', foodResponse);
       setFoodItems(foodResponse.data || []);
-      
+
       setIsFormOpen(false);
       resetForm();
     } catch (err) {
       console.error('Error saving food item:', err);
-      setError(`Failed to save food item: ${err.message}`);
+      setError(`Failed to save food item: ${err.message || 'Unknown error'}`);
     }
   };
 
@@ -407,21 +395,29 @@ function RestaurantMenu() {
                   </div>
                 </div>
                 
-                {!editingItem && (
-                  <div className="form-group full-width">
-                    <label htmlFor="image">Image</label>
-                    <input
-                      type="file"
-                      id="image"
-                      name="image"
-                      accept="image/png, image/jpeg, image/jpg"
-                      onChange={handleInputChange}
-                      ref={fileInputRef}
-                      required
-                    />
-                    {selectedFile && <p className="file-info">Selected: {selectedFile.name}</p>}
-                  </div>
-                )}
+                <div className="form-group full-width">
+                  <label htmlFor="image">Image {editingItem && '(Optional: Leave blank to keep current image)'}</label>
+                  <input
+                    type="file"
+                    id="image"
+                    name="image"
+                    accept="image/png, image/jpeg, image/jpg"
+                    onChange={handleInputChange}
+                    ref={fileInputRef}
+                    required={!editingItem} // Only required when adding a new item
+                  />
+                  {selectedFile && <p className="file-info">Selected: {selectedFile.name}</p>}
+                  {editingItem && !selectedFile && editingItem.imageName && (
+                    <div className="current-image-preview">
+                      <p>Current Image:</p>
+                      <img
+                        src={`http://localhost:8080/api/food/public/image/${restaurantInfo.businessName}/${editingItem.imageName}`}
+                        alt="Current item"
+                        style={{ maxWidth: '100px', maxHeight: '100px', marginTop: '10px' }}
+                      />
+                    </div>
+                  )}
+                </div>
 
                 <div className="form-buttons">
                   <button type="submit" className="save-button">

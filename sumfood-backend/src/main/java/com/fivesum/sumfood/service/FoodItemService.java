@@ -79,6 +79,10 @@ public class FoodItemService {
                 foodItem.getCategories().add(request.getCategory());
             }
 
+            if (request.getImagePath() != null && !request.getImagePath().isEmpty()) {
+                foodItem.setImageName(request.getImagePath());
+            }
+
             return foodItemRepository.save(foodItem);
         }
         return null;
