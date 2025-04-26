@@ -11,5 +11,5 @@ public class FoodItemAddRequest {
     double price;
     int stock;
     Category category;
-
+    String imagePath;
 }

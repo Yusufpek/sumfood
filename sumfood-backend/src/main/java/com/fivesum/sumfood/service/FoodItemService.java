@@ -58,6 +58,7 @@ public class FoodItemService {
                 .price(request.getPrice())
                 .stock(request.getStock())
                 .restaurant(restaurant)
+                .imageName(request.getImagePath())
                 .categories(new ArrayList<Category>())
                 .build();
         foodItem.getCategories().add(request.getCategory());
@@ -76,6 +77,10 @@ public class FoodItemService {
             if (request.getCategory() != null) {
                 foodItem.setCategories(new ArrayList<Category>());
                 foodItem.getCategories().add(request.getCategory());
+            }
+
+            if (request.getImagePath() != null && !request.getImagePath().isEmpty()) {
+                foodItem.setImageName(request.getImagePath());
             }
 
             return foodItemRepository.save(foodItem);
