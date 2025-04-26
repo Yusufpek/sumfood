@@ -194,7 +194,6 @@ const MainPage = () => {
     };
 
     try {
-      // ** IMPORTANT: Use the correct backend endpoint for creating orders **
       // Assuming '/api/orders' or '/api/customer/orders' based on previous discussion
       const response = await axios.post('http://localhost:8080/api/orders', orderPayload, {
         headers: { 'Authorization': `Bearer ${token}` }
