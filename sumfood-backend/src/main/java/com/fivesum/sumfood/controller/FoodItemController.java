@@ -84,8 +84,9 @@ public class FoodItemController {
             Restaurant restaurant = restaurantOpt.get();
             String imagePath;
             try {
-                imagePath = restaurant.getName() + imageService
-                        .saveImageToStorage(ImagePath.getFootItemImagePathByRestaurant(restaurant.getName()), file);
+                imagePath = imageService.saveImageToStorage(
+                        ImagePath.getFootItemImagePathByRestaurant(restaurant.getBusinessName()),
+                        file);
             } catch (IOException exception) {
                 imagePath = ImagePath.DEFAULT_FOOD_ITEM_PATH;
             }

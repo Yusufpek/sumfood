@@ -156,7 +156,7 @@ const MainPage = () => {
               <div key={categoryId} className="category-group">
                 <div className="food-item-grid">
                   {groupedItems[categoryId].map(item => {
-                    const image = FOOD_IMAGE_BASE + item.restaurant.name.replace(" ", "_") + "/" + item.imageName;
+                    const image = FOOD_IMAGE_BASE + item.restaurant.bussinesName.replace(" ", "_") + "/" + item.imageName;
                     return (
                       <div key={item.id} className="food-item-card-simple">
                         <h3>{item.name}</h3>
