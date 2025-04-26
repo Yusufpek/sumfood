@@ -36,8 +36,9 @@ const MainPage = () => {
   const [restLoading, setRestLoading] = useState(true);
   const [restError, setRestError] = useState(null);
 
-  // Cart
+  // --- Cart State ---
   const [cart, setCart] = useState([]);
+  const [orderStatus, setOrderStatus] = useState({ loading: false, error: null, success: null });
 
   // --- Effects (keep as is) ---
   useEffect(() => {
@@ -123,6 +124,23 @@ const MainPage = () => {
     setSearchTerm(term);
   };
 
+  // Cart Management
+  const addToCart = (item) => {
+    setOrderStatus({ loading: false, error: null, success: null }); // Clear order status on new add
+    setCart(prevCart => {
+      const existingItem = prevCart.find(cartItem => cartItem.id === item.id);
+      if (existingItem) {
+        // Increase quantity if item already exists
+        return prevCart.map(cartItem =>
+          cartItem.id === item.id ? { ...cartItem, qty: cartItem.qty + 1 } : cartItem
+        );
+      } else {
+        const { id, name, price} = item;
+        return [...prevCart, { id, name, price, qty: 1 }];
+      }
+    });
+  };
+
   // --- Derived State and Grouping (Updated: Removed category filtering) ---
   const searchedItems = useMemo(() => {
     if (!foodItems) return [];
@@ -149,18 +167,7 @@ const MainPage = () => {
     }
   };
 
-  // Cart Management
-  const addToCart = (item) => {
-    setCart(prev => {
-      const found = prev.find(i => i.id === item.id);
-      if (found) {
-        // Increase quantity if already in cart
-        return prev.map(i => i.id === item.id ? { ...i, qty: (i.qty || 1) + 1 } : i);
-      }
-      // Add new item with qty 1
-      return [...prev, { ...item, qty: 1 }];
-    });
-  };
+  
 
   // --- Render Logic ---
   return (
