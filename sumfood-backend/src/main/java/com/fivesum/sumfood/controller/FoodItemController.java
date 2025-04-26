@@ -23,8 +23,6 @@ import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.RestaurantService;
 
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/food")
@@ -34,8 +32,6 @@ public class FoodItemController {
     private final ImageService imageService;
     private final JwtService jwtService;
     private final RestaurantService restaurantService;
-
-    private static final Logger logger = LoggerFactory.getLogger(FoodItemController.class);
 
     @GetMapping("/public/image/{restaurantName}/{imageName}")
     public ResponseEntity<byte[]> getImage(
@@ -107,12 +103,12 @@ public class FoodItemController {
     public ResponseEntity<?> updateFoodItem(@RequestHeader("Authorization") String token,
             @RequestPart("foodItem") FoodItemAddRequest request, @PathVariable() String itemId,
             @RequestPart(value = "file", required = false) MultipartFile file) { // Make file optional
-        logger.info("Update item request received for ID: {}", itemId);
+        System.out.printf("Update item request received for ID: %s%n", itemId);
         String email = jwtService.extractUsername(token.substring(7));
         Optional<Restaurant> restaurantOpt = restaurantService.findByEmail(email);
 
         if (!restaurantOpt.isPresent()) {
-            logger.warn("Restaurant not found for email: {}", email);
+            System.out.printf("Restaurant not found for email: %s%n", email);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Restaurant not found or token invalid.");
         }
 
@@ -122,7 +118,7 @@ public class FoodItemController {
         try {
             id = Long.parseLong(itemId);
         } catch (NumberFormatException e) {
-            logger.warn("Invalid item ID format: {}", itemId);
+            System.out.printf("Invalid item ID format: %s%n", itemId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid item ID format.");
         }
         try {
@@ -140,7 +136,6 @@ public class FoodItemController {
 
         // Handle image update
         String imagePath = existingFoodItem.getImageName(); // Keep existing path by default
-        boolean imageUpdated = false;
 
         if (file != null && !file.isEmpty()) {
             System.out.println("New image file provided for item ID: " + id);
@@ -164,44 +159,31 @@ public class FoodItemController {
 
             } catch (IOException e) {
                 System.err.println("Error processing image for item ID " + id + ": " + e.getMessage());
-                // Decide if you want to fail the whole request or continue without image update
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update image.");
             }
         } else {
-             // If no new file, ensure the request DTO uses the existing path
-             // This depends on how updateFoodItem service method works.
-             // If it updates fields only if they are non-null in the DTO, this might not be needed.
-             // If it overwrites with null, then we need to set the existing path.
-             // Let's assume the service handles partial updates correctly and we only set imagePath if it changed.
-             // If not, uncomment the line below:
-             // request.setImagePath(existingFoodItem.getImageName());
              System.out.println("No new image file provided for item ID: " + id + ". Keeping existing image path: " + existingFoodItem.getImageName());
         }
 
-
         try {
             System.out.println("Attempting to update food item with ID: " + id);
-            // Ensure the service method handles partial updates or uses the imagePath from the request
             FoodItem updatedFoodItem = foodItemService.updateFoodItem(request, id);
 
             if (updatedFoodItem != null) {
                 System.out.println("Food item updated successfully: ID " + id);
                 return ResponseEntity.status(HttpStatus.OK).body(updatedFoodItem);
             } else {
-                // This case might indicate an issue within the service layer update logic
                 System.err.println("Food item update returned null for ID: " + id);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update food item.");
             }
         } catch (Exception e) {
-            // Catch potential exceptions during the update process (e.g., database errors)
             System.err.println("Exception during food item update for ID " + id + ": " + e.getMessage());
-            // If image was updated, we might have an orphaned new image. Consider adding cleanup logic here if necessary.
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while updating the food item.");
         }
     }
 
     @DeleteMapping("/item/{itemId}")
-    public ResponseEntity<?> deleteFoodItem(@RequestHeader("Authorization") String token, // Changed method name for clarity
+    public ResponseEntity<?> deleteFoodItem(@RequestHeader("Authorization") String token,
             @PathVariable("itemId") String itemId) {
         String email = jwtService.extractUsername(token.substring(7));
         Optional<Restaurant> restaurant = restaurantService.findByEmail(email);
