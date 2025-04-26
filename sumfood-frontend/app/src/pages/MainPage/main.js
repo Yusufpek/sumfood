@@ -153,6 +153,15 @@ const MainPage = () => {
     });
   };
 
+  const removeFromCart = (itemId) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== itemId));
+  };
+
+  // --- Calculate Cart Total ---
+  const cartTotal = useMemo(() => {
+    return cart.reduce((total, item) => total + item.price * item.qty, 0);
+  }, [cart]);
+
   // --- Derived State and Grouping (Updated: Removed category filtering) ---
   const searchedItems = useMemo(() => {
     if (!foodItems) return [];
