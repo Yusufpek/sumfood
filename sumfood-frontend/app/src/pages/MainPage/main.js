@@ -141,6 +141,18 @@ const MainPage = () => {
     });
   };
 
+  const updateQuantity = (itemId, amount) => {
+    setCart(prevCart => {
+      return prevCart.map(item => {
+        if (item.id === itemId) {
+          const newQty = item.qty + amount;
+          return newQty > 0 ? { ...item, qty: newQty } : null; // Return null if qty becomes 0 or less
+        }
+        return item;
+      }).filter(item => item !== null); // Filter out items marked as null (removed)
+    });
+  };
+
   // --- Derived State and Grouping (Updated: Removed category filtering) ---
   const searchedItems = useMemo(() => {
     if (!foodItems) return [];
