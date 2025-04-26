@@ -195,7 +195,7 @@ const MainPage = () => {
 
     try {
       // Assuming '/api/orders' or '/api/customer/orders' based on previous discussion
-      const response = await axios.post('http://localhost:8080/api/orders', orderPayload, {
+      const response = await axios.post('http://localhost:8080/api/shopping_cart', orderPayload, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
