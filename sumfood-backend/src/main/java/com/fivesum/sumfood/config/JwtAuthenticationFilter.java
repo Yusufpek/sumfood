@@ -6,6 +6,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,6 +16,9 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.stereotype.Component;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
 
 import com.fivesum.sumfood.service.CourierService;
 import com.fivesum.sumfood.service.CustomerService;
@@ -26,17 +31,18 @@ import java.io.IOException;
 @AllArgsConstructor
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final HandlerExceptionResolver handlerExceptionResolver;
     private final JwtService jwtService;
     private final CourierService courierService;
     private final CustomerService customerService;
     private final RestaurantService restaurantService;
+    private final CustomAuthEntryPoint customAuthEntryPoint; // Added this
 
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
+
         final String authHeader = request.getHeader("Authorization");
         final String role = request.getHeader("Role");
 
@@ -45,39 +51,53 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        final String jwt = authHeader.substring(7);
+        String userEmail = null;
+
         try {
-            final String jwt = authHeader.substring(7);
-            final String userEmail = jwtService.extractUsername(jwt);
+            userEmail = jwtService.extractUsername(jwt);
+        } catch (ExpiredJwtException e) {
+            handleAuthException(request, response, "Token expired");
+            return;
+        } catch (SignatureException e) {
+            handleAuthException(request, response, "Invalid token signature");
+            return;
+        } catch (MalformedJwtException e) {
+            handleAuthException(request, response, "Malformed token");
+            return;
+        } catch (Exception e) {
+            handleAuthException(request, response, "Invalid token");
+            return;
+        }
 
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = null;
 
-            if (userEmail != null && authentication == null) {
-                UserDetails userDetails;
-
-                if (role.equals("CUSTOMER")) {
-                    userDetails = customerService.loadUserByUsername(userEmail);
-                } else if (role.equals("COURIER")) {
-                    userDetails = courierService.loadUserByUsername(userEmail);
-                } else if (role.equals("RESTAURANT")) {
-                    userDetails = restaurantService.loadUserByUsername(userEmail);
-                } else {
-                    userDetails = null;
-                }
-
-                if (jwtService.isTokenValid(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities());
-
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
+            if ("CUSTOMER".equals(role)) {
+                userDetails = customerService.loadUserByUsername(userEmail);
+            } else if ("COURIER".equals(role)) {
+                userDetails = courierService.loadUserByUsername(userEmail);
+            } else if ("RESTAURANT".equals(role)) {
+                userDetails = restaurantService.loadUserByUsername(userEmail);
             }
 
-            filterChain.doFilter(request, response);
-        } catch (Exception exception) {
-            handlerExceptionResolver.resolveException(request, response, null, exception);
+            if (userDetails != null && jwtService.isTokenValid(jwt, userDetails)) {
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                handleAuthException(request, response, "Invalid or expired token");
+                return;
+            }
         }
+        filterChain.doFilter(request, response);
+    }
+
+    private void handleAuthException(HttpServletRequest request, HttpServletResponse response, String message) throws IOException, ServletException {
+        SecurityContextHolder.clearContext();
+        customAuthEntryPoint.commence(request, response, new AuthenticationCredentialsNotFoundException(message));
     }
 }
