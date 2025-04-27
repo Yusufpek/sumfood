@@ -104,6 +104,8 @@ public class RestaurantService implements UserDetailsService {
                 .displayName(restaurant.getDisplayName())
                 .description(restaurant.getDescription())
                 .address(restaurant.getAddress())
+                .latitude(restaurant.getLatitude())
+                .longitude(restaurant.getLongitude())
                 .build();
     }
 

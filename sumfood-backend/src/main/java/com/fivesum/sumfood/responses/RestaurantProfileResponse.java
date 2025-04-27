@@ -8,5 +8,7 @@ import lombok.experimental.SuperBuilder;
 public class RestaurantProfileResponse {
     private String displayName;
     private String description;
+    private double longitude;
+    private double latitude;
     private String address;
 }
