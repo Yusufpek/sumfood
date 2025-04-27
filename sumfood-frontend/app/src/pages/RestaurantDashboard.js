@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import RestaurantNavbar from '../components/layout/RestaurantNavbar';
 import '../styles/restaurant-dashboard.css';
+import { Map, Marker } from '@vis.gl/react-google-maps';
 
 function RestaurantDashboard() {
   const [restaurantInfo, setRestaurantInfo] = useState({});
@@ -93,6 +94,19 @@ function RestaurantDashboard() {
         <div className="restaurant-info">
           <h2>{restaurantInfo.address || 'Your Restaurant'}</h2>
           <p className="restaurant-description">{restaurantInfo.description || 'Restaurant description'}</p>
+        </div>
+
+        <div className="map-container">
+          <Map
+            defaultCenter={{ lat: restaurantInfo.latitude || 0, lng: restaurantInfo.longitude || 0 }}
+            defaultZoom={17}
+            style={{ width: '100%', height: '400px'}}
+          >
+            <Marker
+              position={{ lat: restaurantInfo.latitude || 0, lng: restaurantInfo.longitude || 0 }}
+              title={restaurantInfo.displayName || 'Restaurant Location'}
+            />
+          </Map>
         </div>
 
         <div className="dashboard-cards">
