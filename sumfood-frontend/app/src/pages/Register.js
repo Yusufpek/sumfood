@@ -19,6 +19,8 @@ function Register() {
   const [businessName, setBusinessName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [description, setDescription] = useState('');
+  const [city, setCity] = useState('');
+  const [address, setAddress] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
@@ -31,7 +33,7 @@ function Register() {
       phoneNumber,
       password,
       ...(userType === 'courier' && { driverLicenceId, birthDate, vehicleType }),
-      ...(userType === 'restaurant' && { taxId, businessName, displayName, description }),
+      ...(userType === 'restaurant' && { taxId, businessName, displayName, description, city, address }),
     };
 
     register(userData)
@@ -221,6 +223,24 @@ function Register() {
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label>City</label>
+                <input
+                  type="text"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label>Address</label>
+                <textarea
+                  style={{ height: '100px' }}
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
                   required
                 />
               </div>
