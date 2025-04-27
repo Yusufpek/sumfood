@@ -100,8 +100,9 @@ public class FoodItemService {
                 .description(item.getDescription())
                 .imageName(item.getImageName())
                 .price(item.getPrice())
+                .stock(item.getStock())
                 .restaurantId(itemRestaurant.getId())
-                .restaurantName(itemRestaurant.getName())
+                .restaurantName(itemRestaurant.getBusinessName())
                 .categories(item.getCategories())
                 .build();
     }

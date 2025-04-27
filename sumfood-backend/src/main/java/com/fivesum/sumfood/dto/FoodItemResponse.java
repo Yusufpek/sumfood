@@ -18,6 +18,7 @@ public class FoodItemResponse {
     private Long restaurantId;
     private String restaurantName;
     private String imageName;
+    private int stock;
     private double price;
     private List<Category> categories;
 }
