@@ -79,7 +79,7 @@ function RestaurantDashboard() {
 
   return (
     <>
-      <RestaurantNavbar restaurantName={restaurantInfo.businessName || 'Your Restaurant'} currentPage="dashboard" />
+      <RestaurantNavbar restaurantName={restaurantInfo.displayName || 'Your Restaurant'} currentPage="dashboard" />
       <div className="restaurant-dashboard">
         <header className="dashboard-header">
           <h1>Restaurant Dashboard</h1>
@@ -91,7 +91,7 @@ function RestaurantDashboard() {
         </header>
 
         <div className="restaurant-info">
-          <h2>{restaurantInfo.displayName || 'Your Restaurant'}</h2>
+          <h2>{restaurantInfo.address || 'Your Restaurant'}</h2>
           <p className="restaurant-description">{restaurantInfo.description || 'Restaurant description'}</p>
         </div>
 
