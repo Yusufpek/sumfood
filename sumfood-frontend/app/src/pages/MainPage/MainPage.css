@@ -125,3 +125,179 @@ p:contains("Loading restaurants...") {
   font-size: 1.1em;
   color: #555;
 }
+
+.btn {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-add-cart {
+  background-color: #007bff;
+  color: white;
+  margin-top: auto; /* Push button to bottom of card */
+  align-self: center; /* Align button left within card */
+  padding-top: 10px; /* Add space above button */
+}
+
+.btn-add-cart:hover {
+  background-color: #0056b3;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-place-order {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  font-size: 1.1em;
+  margin-top: 20px;
+  display: block; /* Make it block to center easily if needed */
+  margin-left: auto; /* Center button */
+  margin-right: auto; /* Center button */
+}
+
+.btn-place-order:hover:not(:disabled) {
+  background-color: #218838;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.btn-place-order:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+
+/* --- Cart Section Styles --- */
+.cart-section-container {
+  max-width: 1200px; /* Match other containers */
+  width: 90%;
+  margin: 40px auto; /* Add vertical margin and center */
+}
+
+.cart-container {
+  background-color: #f8f9fa; /* Light background for cart */
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+}
+
+.cart-container h2 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 25px;
+  color: #343a40;
+}
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse; /* Remove gaps between cells */
+  margin-bottom: 20px;
+}
+
+.cart-table th,
+.cart-table td {
+  text-align: left;
+  padding: 12px 8px; /* More padding */
+  border-bottom: 1px solid #dee2e6; /* Separator lines */
+}
+
+.cart-table th {
+  font-weight: 600; /* Bolder headers */
+  color: #495057;
+  font-size: 0.95em;
+}
+
+.cart-table td {
+  vertical-align: middle; /* Align content vertically */
+  font-size: 0.9em;
+}
+
+.cart-item td:nth-child(3) { /* Target quantity cell */
+  text-align: center;
+}
+.cart-item td:nth-child(4), /* Target subtotal cell */
+.cart-item td:nth-child(2) { /* Target price cell */
+  text-align: right;
+  min-width: 80px; /* Ensure price columns have enough width */
+}
+.cart-item td:last-child { /* Target remove button cell */
+   text-align: center;
+}
+
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center buttons/span */
+  gap: 8px;
+}
+
+.quantity-controls button {
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  color: #495057;
+  border-radius: 4px;
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  line-height: 1; /* Adjust for better vertical centering */
+  padding: 0;
+}
+.quantity-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quantity-controls span {
+  min-width: 20px; /* Ensure space for quantity number */
+  text-align: center;
+  font-weight: 500;
+}
+
+.btn-remove {
+  background: none;
+  border: none;
+  color: #dc3545; /* Red color */
+  font-size: 1.4em;
+  cursor: pointer;
+  padding: 0 5px;
+  line-height: 1;
+}
+.btn-remove:hover {
+  color: #a71d2a;
+}
+
+.cart-total {
+  text-align: right;
+  margin-top: 20px;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #343a40;
+}
+
+/* Cart feedback messages */
+.cart-error-message {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.cart-success-message {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
