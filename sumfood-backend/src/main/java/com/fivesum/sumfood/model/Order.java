@@ -1,33 +1,37 @@
 package com.fivesum.sumfood.model;
 
-import com.fivesum.sumfood.model.base.EntityBase;
-import com.fivesum.sumfood.model.enums.PaymentStatus;
 import javax.persistence.*;
-import lombok.*;
+
+import com.fivesum.sumfood.model.base.EntityBase;
+import com.fivesum.sumfood.model.enums.OrderStatus;
+import com.fivesum.sumfood.model.enums.PaymentStatus;
+
 import lombok.experimental.SuperBuilder;
-import java.math.BigDecimal;
+import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 @SuperBuilder
 @Entity
-@Table(name = "orders")
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "orders")
 public class Order extends EntityBase {
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "customer_id", referencedColumnName = "id")
     private Customer customer;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "restaurant_id", nullable = false)
-    private Restaurant restaurant;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal totalPrice;
+    @OneToOne
+    @JoinColumn(name = "shopping_cart_id", referencedColumnName = "id", unique = true)
+    private ShoppingCart shoppingCart;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaymentStatus paymentStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus orderStatus;
 }
