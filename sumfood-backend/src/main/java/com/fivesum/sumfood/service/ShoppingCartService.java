@@ -131,6 +131,10 @@ public class ShoppingCartService {
                 .orElseThrow(() -> new InvalidRequestException("Shopping cart not found"));
     }
 
+    public ShoppingCart getCartByCustomer(Customer customer) {
+        return shoppingCartRepository.findByCustomerId(customer.getId()).orElse(null);
+    }
+
     public ShoppingCartFoodItemRelation getShoppingItemInCart(Long shoppingCartId, Long foodItemId) {
         return shoppingCartItemRepository.findByShoppingCartIdAndFoodItemId(shoppingCartId, foodItemId)
                 .orElse(null);

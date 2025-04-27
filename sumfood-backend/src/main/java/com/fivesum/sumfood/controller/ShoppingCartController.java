@@ -69,4 +69,20 @@ public class ShoppingCartController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    @GetMapping("/")
+    public ResponseEntity<?> getShoppingCart(@RequestHeader("Authorization") String token) {
+        String email = jwtService.extractUsername(token.replace("Bearer ", ""));
+        Optional<Customer> customer = customerService.findByEmail(email);
+        if (customer.isPresent()) {
+            ShoppingCart cart = shoppingCartService.getCartByCustomer(customer.get());
+            if(cart != null){
+                ShoppingCartResponse response = shoppingCartService.mapToDTO(cart);
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+            }
+            else{
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Shopping cart not found.");
+            }
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
 }
