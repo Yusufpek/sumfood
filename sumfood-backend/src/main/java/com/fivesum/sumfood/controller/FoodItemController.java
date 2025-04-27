@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fivesum.sumfood.constants.ImagePath;
 import com.fivesum.sumfood.dto.FoodItemAddRequest;
+import com.fivesum.sumfood.dto.FoodItemResponse;
 import com.fivesum.sumfood.model.FoodItem;
 import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.model.enums.Category;
@@ -63,7 +64,8 @@ public class FoodItemController {
     }
 
     @GetMapping("/items")
-    public ResponseEntity<List<FoodItem>> getFoodItemsByRestaurant(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<List<FoodItemResponse>> getFoodItemsByRestaurant(
+            @RequestHeader("Authorization") String token) {
         String email = jwtService.extractUsername(token.substring(7));
         Optional<Restaurant> restaurant = restaurantService.findByEmail(email);
         if (restaurant.isPresent()) {
@@ -73,7 +75,7 @@ public class FoodItemController {
     }
 
     @PostMapping(value = "/item", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<FoodItem> addFoodItem(
+    public ResponseEntity<FoodItemResponse> addFoodItem(
             @RequestHeader("Authorization") String token,
             @RequestPart("foodItem") FoodItemAddRequest request,
             @RequestPart("file") MultipartFile file) {
@@ -141,8 +143,10 @@ public class FoodItemController {
             System.out.println("New image file provided for item ID: " + id);
             try {
                 // Delete old image if it's not the default one
-                if (existingFoodItem.getImageName() != null && !existingFoodItem.getImageName().equals(ImagePath.DEFAULT_FOOD_ITEM_PATH)) {
-                    System.out.println("Deleting old image: " + existingFoodItem.getImageName() + " in path: " + ImagePath.getFoodItemImagePathByRestaurant(restaurant.getBusinessName()));
+                if (existingFoodItem.getImageName() != null
+                        && !existingFoodItem.getImageName().equals(ImagePath.DEFAULT_FOOD_ITEM_PATH)) {
+                    System.out.println("Deleting old image: " + existingFoodItem.getImageName() + " in path: "
+                            + ImagePath.getFoodItemImagePathByRestaurant(restaurant.getBusinessName()));
                     imageService.deleteImage(
                             ImagePath.getFoodItemImagePathByRestaurant(restaurant.getBusinessName()),
                             existingFoodItem.getImageName());
@@ -161,12 +165,13 @@ public class FoodItemController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update image.");
             }
         } else {
-             System.out.println("No new image file provided for item ID: " + id + ". Keeping existing image path: " + existingFoodItem.getImageName());
+            System.out.println("No new image file provided for item ID: " + id + ". Keeping existing image path: "
+                    + existingFoodItem.getImageName());
         }
 
         try {
             System.out.println("Attempting to update food item with ID: " + id);
-            FoodItem updatedFoodItem = foodItemService.updateFoodItem(request, id);
+            FoodItemResponse updatedFoodItem = foodItemService.updateFoodItem(request, id);
 
             if (updatedFoodItem != null) {
                 System.out.println("Food item updated successfully: ID " + id);
@@ -177,7 +182,8 @@ public class FoodItemController {
             }
         } catch (Exception e) {
             System.err.println("Exception during food item update for ID " + id + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while updating the food item.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while updating the food item.");
         }
     }
 
