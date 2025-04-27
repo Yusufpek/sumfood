@@ -154,7 +154,6 @@ public class FoodItemController {
                         ImagePath.getFoodItemImagePathByRestaurant(restaurant.getBusinessName()),
                         file);
                 request.setImagePath(imagePath); // Set new path in the request DTO
-                imageUpdated = true;
                 System.out.println("New image saved at path: " + imagePath);
 
             } catch (IOException e) {
