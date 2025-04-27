@@ -37,10 +37,20 @@ public class ShoppingCartController {
 
         Optional<Customer> customer = customerService.findByEmail(email);
         if (customer.isPresent()) {
-            ShoppingCartResponse response = shoppingCartService.createShoppingCart(request, customer.get());
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            try {
+                ShoppingCartResponse response = shoppingCartService.createShoppingCart(request, customer.get());
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            } catch (ConflictException e) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            } catch (InvalidRequestException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("An unexpected error occurred: " + e.getMessage());
+            }
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
     }
 
     @Transactional
@@ -52,8 +62,7 @@ public class ShoppingCartController {
         Optional<Customer> customer = customerService.findByEmail(email);
         if (customer.isPresent()) {
             try {
-                ShoppingCart cart = shoppingCartService.updateShoppingCart(request, customer.get());
-                ShoppingCartResponse response = shoppingCartService.mapToDTO(cart);
+                ShoppingCartResponse response = shoppingCartService.updateShoppingCart(request, customer.get());
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
             } catch (InvalidRequestException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -74,12 +83,11 @@ public class ShoppingCartController {
         String email = jwtService.extractUsername(token.replace("Bearer ", ""));
         Optional<Customer> customer = customerService.findByEmail(email);
         if (customer.isPresent()) {
-            ShoppingCart cart = shoppingCartService.getCartByCustomer(customer.get());
-            if(cart != null){
+            ShoppingCart cart = shoppingCartService.getActiveCartByCustomer(customer.get());
+            if (cart != null) {
                 ShoppingCartResponse response = shoppingCartService.mapToDTO(cart);
                 return ResponseEntity.status(HttpStatus.OK).body(response);
-            }
-            else{
+            } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Shopping cart not found.");
             }
         }

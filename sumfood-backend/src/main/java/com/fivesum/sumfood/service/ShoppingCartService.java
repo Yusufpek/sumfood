@@ -27,14 +27,19 @@ public class ShoppingCartService {
     private final RestaurantService restaurantService;
     private final FoodItemService foodItemService;
 
-    @Transactional
+    @Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class,
+            ConflictException.class })
     public ShoppingCartResponse createShoppingCart(ShoppingCartCreateRequest request, Customer customer) {
         // 2. Process Items, Calculate Total, Determine Restaurant
         double calculatedTotalPrice = 0;
         Restaurant orderRestaurant = null;
 
         if (request.getFoodItemId() == null || request.getRestaurantId() == null) {
-            throw new IllegalArgumentException("Invalid request!");
+            throw new InvalidRequestException("Invalid request!");
+        }
+
+        if (getActiveCartByCustomer(customer) != null) {
+            throw new ConflictException("Customer has active shopping cart already.");
         }
         orderRestaurant = restaurantService.getRestaurantById(request.getRestaurantId());
 
@@ -45,6 +50,7 @@ public class ShoppingCartService {
                 .customer(customer)
                 .restaurant(orderRestaurant)
                 .totalPrice(calculatedTotalPrice)
+                .isActive(true)
                 .items(new ArrayList<>())
                 .build();
         shoppingCartRepository.save(shoppingCart);
@@ -70,7 +76,7 @@ public class ShoppingCartService {
 
     @Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class,
             UnauthorizedAccessException.class, ConflictException.class })
-    public ShoppingCart updateShoppingCart(ShoppingCartUpdateRequest request, Customer customer) {
+    public ShoppingCartResponse updateShoppingCart(ShoppingCartUpdateRequest request, Customer customer) {
         double calculatedTotalPrice = 0;
 
         if (request.getFoodItemId() == null || request.getShoppingCartId() == null) {
@@ -123,7 +129,7 @@ public class ShoppingCartService {
         shoppingCart.setTotalPrice(calculatedTotalPrice);
         shoppingCartRepository.save(shoppingCart);
 
-        return shoppingCart;
+        return mapToDTO(shoppingCart);
     }
 
     public ShoppingCart getShoppingCartById(Long id) {
@@ -131,8 +137,8 @@ public class ShoppingCartService {
                 .orElseThrow(() -> new InvalidRequestException("Shopping cart not found"));
     }
 
-    public ShoppingCart getCartByCustomer(Customer customer) {
-        return shoppingCartRepository.findByCustomerId(customer.getId()).orElse(null);
+    public ShoppingCart getActiveCartByCustomer(Customer customer) {
+        return shoppingCartRepository.findByCustomerIdAndIsActive(customer.getId(), true).orElse(null);
     }
 
     public ShoppingCartFoodItemRelation getShoppingItemInCart(Long shoppingCartId, Long foodItemId) {
