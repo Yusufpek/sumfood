@@ -39,17 +39,21 @@ function RestaurantMenu() {
         setLoading(true);
         // Fetch restaurant profile
         const restaurantResponse = await axios.get('http://localhost:8080/api/restaurant/profile', {
-          headers: { 'Authorization': `Bearer ${token}`,
-          'Role': `RESTAURANT` }
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Role': `RESTAURANT`
+          }
         });
         console.log('API Restaurant Response:', restaurantResponse);
         setRestaurantInfo(restaurantResponse.data);
-        
-        
+
+
         // Fetch food items
         const foodResponse = await axios.get('http://localhost:8080/api/food/items', {
-          headers: { 'Authorization': `Bearer ${token}`,
-          'Role': `RESTAURANT` }
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Role': `RESTAURANT`
+          }
         });
         console.log('API Food Items Response:', foodResponse);
         setFoodItems(foodResponse.data || []);
@@ -162,9 +166,9 @@ function RestaurantMenu() {
       let response;
       if (editingItem) {
         // Update existing item (PUT request with FormData)
-        console.log('Updating item with ID:', editingItem.id, 'using FormData');
+        console.log('Updating item with ID:', editingItem.foodItemId, 'using FormData');
         try {
-          response = await axios.put(`http://localhost:8080/api/food/item/${editingItem.id}`, data, {
+          response = await axios.put(`http://localhost:8080/api/food/item/${editingItem.foodItemId}`, data, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Role': 'RESTAURANT'
@@ -245,16 +249,16 @@ function RestaurantMenu() {
     setItemToDelete(itemToRemove);
     setIsDeleteConfirmOpen(true);
   };
-  
+
   const confirmDelete = async () => {
     if (!itemToDelete) return;
-    
+
     const token = localStorage.getItem('token');
     try {
       await axios.delete(`http://localhost:8080/api/food/item/${itemToDelete.id}`, {
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
-          'Role': 'RESTAURANT' 
+          'Role': 'RESTAURANT'
         }
       });
 
@@ -267,7 +271,7 @@ function RestaurantMenu() {
       setIsDeleteConfirmOpen(false);
     }
   };
-  
+
   const cancelDelete = () => {
     setIsDeleteConfirmOpen(false);
     setItemToDelete(null);
@@ -276,11 +280,11 @@ function RestaurantMenu() {
   const getCategoryDisplayName = (item) => {
     if (item.categories && item.categories.length > 0) {
       return item.categories.map(cat => {
-        return typeof cat === 'object' ? cat.name : 
+        return typeof cat === 'object' ? cat.name :
           categories.find(c => c.id === cat)?.name || cat;
       }).join(', ');
     }
-    
+
     if (item.category) {
       if (typeof item.category === 'object') {
         return item.category.name;
@@ -288,7 +292,7 @@ function RestaurantMenu() {
       const categoryObj = categories.find(c => c.id === item.category);
       return categoryObj ? categoryObj.name : item.category;
     }
-    
+
     return 'Uncategorized';
   };
 
@@ -338,7 +342,7 @@ function RestaurantMenu() {
                       required
                     />
                   </div>
-                  
+
                   <div className="form-group">
                     <label htmlFor="category">Category</label>
                     <select
@@ -381,7 +385,7 @@ function RestaurantMenu() {
                       required
                     />
                   </div>
-                  
+
                   <div className="form-group">
                     <label htmlFor="stock">Stock</label>
                     <input
@@ -394,7 +398,7 @@ function RestaurantMenu() {
                     />
                   </div>
                 </div>
-                
+
                 <div className="form-group full-width">
                   <label htmlFor="image">Image {editingItem && '(Optional: Leave blank to keep current image)'}</label>
                   <input
@@ -463,7 +467,7 @@ function RestaurantMenu() {
                     src={`http://localhost:8080/api/food/public/image/${item.restaurantName}/${item.imageName}`}
                     alt={item.name}
                     className="menu-item-image"
-                    onError={(e) => { e.target.onerror = null; e.target.src="/path/to/default/image.png" }}
+                    onError={(e) => { e.target.onerror = null; e.target.src = "/path/to/default/image.png" }}
                   />
                   <div className="menu-item-status">
                     <span className="stock-info">{item.stock > 0 ? `${item.stock} in stock` : 'Out of stock'}</span>

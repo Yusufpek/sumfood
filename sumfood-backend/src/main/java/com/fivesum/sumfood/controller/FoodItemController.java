@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpHeaders;
@@ -49,15 +50,21 @@ public class FoodItemController {
     }
 
     @GetMapping("/public/items")
-    public ResponseEntity<List<FoodItem>> getAllFoodItems() {
-        return ResponseEntity.ok(foodItemService.getAllFoodItems());
+    public ResponseEntity<List<FoodItemResponse>> getAllFoodItems() {
+        List<FoodItem> foodItems = foodItemService.getAllFoodItems();
+        List<FoodItemResponse> response = foodItems.stream().map(item -> foodItemService.toResponseDTO(item))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/public/items/{categoryStr}")
-    public ResponseEntity<List<FoodItem>> getFoodItemByCategory(@PathVariable() String categoryStr) {
+    public ResponseEntity<List<FoodItemResponse>> getFoodItemByCategory(@PathVariable() String categoryStr) {
         try {
             Category category = Category.valueOf(categoryStr.toUpperCase());
-            return ResponseEntity.ok(foodItemService.getItemsByCategory(category));
+            List<FoodItem> foodItems = foodItemService.getItemsByCategory(category);
+            List<FoodItemResponse> response = foodItems.stream().map(item -> foodItemService.toResponseDTO(item))
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(response);
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(Collections.emptyList());
         }
