@@ -87,7 +87,7 @@ const OrdersPage = () => {
 
   return (
     <div className="orders-page-container">
-      {/* Pass the required props to Navbar */}
+      {}
       <Navbar isLoggedIn={isLoggedIn} username={username} />
       
       <main className="orders-main-content">
@@ -125,7 +125,7 @@ const OrdersPage = () => {
               </thead>
               <tbody>
                 {orders.map(order => (
-                  <tr key={order.id || Math.random().toString(36).substring(7)}>
+                  <tr key={order.id}>
                     <td>{order.id || 'N/A'}</td>
                     <td>{order.restaurantName || 'Unknown Restaurant'}</td>
                     <td>{formatDate(order.createdAt)}</td>
@@ -144,7 +144,7 @@ const OrdersPage = () => {
                               order.items.map((item, idx) => (
                                 <li key={idx} className="order-item">
                                   <span className="item-name">{item.name || item.foodItemName || 'Unknown Item'}</span>
-                                  <span className="item-quantity">× {item.qty || item.quantity || 1}</span>
+                                  <span className="item-quantity">× {item.qty || 1}</span>
                                   <span className="item-price">${(item.price || 0).toFixed(2)}</span>
                                 </li>
                               ))
