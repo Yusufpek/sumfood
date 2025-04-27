@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import RestaurantDashboard from './pages/RestaurantDashboard';
 import RestaurantMenu from './pages/RestaurantMenu'; // Add this import
 import ProtectedRoute from './components/ProtectedRoute';
+import OrdersPage from './pages/OrdersPage/OrderPage'; // Add this import
 import './App.css';
 import './styles/global.css';
 import './styles/auth.css';
@@ -60,6 +61,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute>
+                <OrdersPage />
               </ProtectedRoute>
             }
           />

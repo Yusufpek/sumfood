@@ -1,0 +1,164 @@
+/* OrdersPage.css */
+
+.orders-page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  .orders-main-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  
+  .orders-main-content h2 {
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  
+  .loading-container, 
+  .error-container, 
+  .no-orders-container {
+    text-align: center;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  .error-message {
+    color: #dc3545;
+    font-weight: 500;
+  }
+  
+  .browse-foods-btn {
+    margin-top: 1rem;
+    padding: 0.5rem 1.5rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  
+  .browse-foods-btn:hover {
+    background-color: #0069d9;
+  }
+  
+  .orders-table-container {
+    overflow-x: auto;
+  }
+  
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .orders-table th, 
+  .orders-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .orders-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+  }
+  
+  .orders-table tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  
+  .status-pending {
+    background-color: #ffeeba;
+    color: #856404;
+  }
+  
+  .status-processing {
+    background-color: #b8daff;
+    color: #004085;
+  }
+  
+  .status-delivered {
+    background-color: #c3e6cb;
+    color: #155724;
+  }
+  
+  .status-cancelled {
+    background-color: #f5c6cb;
+    color: #721c24;
+  }
+  
+  /* Order details when expanded */
+  .order-details-panel {
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    margin-top: 8px;
+  }
+  
+  .order-items-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .order-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+  }
+  
+  .item-name {
+    flex: 2;
+  }
+  
+  .item-quantity {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .item-price {
+    flex: 1;
+    text-align: right;
+  }
+  
+  .delivery-info {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e0e0e0;
+    font-size: 0.9rem;
+  }
+  
+  /* Make the page responsive */
+  @media (max-width: 768px) {
+    .orders-table th, 
+    .orders-table td {
+      padding: 8px 10px;
+      font-size: 0.9rem;
+    }
+    
+    .status-badge {
+      padding: 3px 6px;
+      font-size: 0.75rem;
+    }
+  }
+  
