@@ -184,19 +184,13 @@ const MainPage = () => {
   
     setOrderStatus({ loading: true, error: null, success: null });
   
-    let lastOrderResponse = null; // To store the last successful order response
-    // Place an order for each item in the cart (one by one)
+    let lastOrderResponse = null;
+
     for (const item of cart) {
       const orderPayload = {
         foodItemId: item.id,
         foodItemCount: item.qty,
         restaurantId: item.restaurantId,
-      };
-
-      let lastOrderResponse = {
-        id: Math.floor(Math.random() * 10000) + 1, // Random order ID
-        restaurantName: cart[0]?.restaurantName || "Sample Restaurant",
-        totalPrice: cart.reduce((total, item) => total + (item.price * item.qty), 0)
       };
   
       try {
@@ -227,7 +221,6 @@ const MainPage = () => {
     }
 
     if (lastOrderResponse) {
-      // Set a brief success message
       setOrderStatus({ 
         loading: false, 
         error: null, 
@@ -237,7 +230,6 @@ const MainPage = () => {
       // Clear cart
       setCart([]);
       
-      // Redirect after a short delay (so user sees success message briefly)
       setTimeout(() => {
         navigate('/orders');
       }, 1000); // 1-second delay
