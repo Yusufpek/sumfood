@@ -65,6 +65,11 @@ public class RestaurantService implements UserDetailsService {
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
     }
 
+    public Restaurant getRestaurantById(Long id) {
+        return restaurantRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
+    }
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return restaurantRepository.findByEmail(email)
