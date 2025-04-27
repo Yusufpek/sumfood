@@ -308,7 +308,7 @@ function RestaurantMenu() {
 
   return (
     <>
-      <RestaurantNavbar restaurantName={restaurantInfo.businessName || 'Your Restaurant'} currentPage="menu" />
+      <RestaurantNavbar restaurantName={restaurantInfo.displayName || 'Your Restaurant'} currentPage="menu" />
       <div className="restaurant-menu-container">
         <header className="menu-header">
           <h1>Menu Management</h1>
@@ -411,7 +411,7 @@ function RestaurantMenu() {
                     <div className="current-image-preview">
                       <p>Current Image:</p>
                       <img
-                        src={`http://localhost:8080/api/food/public/image/${restaurantInfo.businessName}/${editingItem.imageName}`}
+                        src={`http://localhost:8080/api/food/public/image/${editingItem.restaurantName}/${editingItem.imageName}`}
                         alt="Current item"
                         style={{ maxWidth: '100px', maxHeight: '100px', marginTop: '10px' }}
                       />
@@ -460,7 +460,7 @@ function RestaurantMenu() {
               {foodItems.map(item => (
                 <div key={item.id} className="menu-item-card">
                   <img
-                    src={`http://localhost:8080/api/food/public/image/${restaurantInfo.businessName}/${item.imageName}`}
+                    src={`http://localhost:8080/api/food/public/image/${item.restaurantName}/${item.imageName}`}
                     alt={item.name}
                     className="menu-item-image"
                     onError={(e) => { e.target.onerror = null; e.target.src="/path/to/default/image.png" }}
