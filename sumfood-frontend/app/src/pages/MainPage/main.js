@@ -40,6 +40,8 @@ const MainPage = () => {
   const [cart, setCart] = useState([]);
   const [orderStatus, setOrderStatus] = useState({ loading: false, error: null, success: null });
 
+  const navigate = useNavigate();
+
   // --- Effects (keep as is) ---
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -168,6 +170,11 @@ const MainPage = () => {
       setOrderStatus({ loading: false, error: "Please log in to place an order.", success: null });
       return;
     }
+
+    if (cart.length === 0) {
+      setOrderStatus({ loading: false, error: "Your cart is empty.", success: null });
+      return;
+    }
   
     const token = localStorage.getItem('token');
     if (!token) {
@@ -177,6 +184,7 @@ const MainPage = () => {
   
     setOrderStatus({ loading: true, error: null, success: null });
   
+    let lastOrderResponse = null; // To store the last successful order response
     // Place an order for each item in the cart (one by one)
     for (const item of cart) {
       const orderPayload = {
@@ -184,17 +192,26 @@ const MainPage = () => {
         foodItemCount: item.qty,
         restaurantId: item.restaurantId,
       };
+
+      let lastOrderResponse = {
+        id: Math.floor(Math.random() * 10000) + 1, // Random order ID
+        restaurantName: cart[0]?.restaurantName || "Sample Restaurant",
+        totalPrice: cart.reduce((total, item) => total + (item.price * item.qty), 0)
+      };
   
       try {
         const response = await axios.post('http://localhost:8080/api/shopping_cart/', orderPayload, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 'Authorization': `Bearer ${token}`,
+          "Role": "CUSTOMER" },
         });
-  
-        setOrderStatus({
-          loading: false,
-          error: null,
-          success: `Order placed! Cart ID: ${response.data.id}, Restaurant: ${response.data.restaurantName}, Total: $${response.data.totalPrice}`
-        });
+
+        console.log("Order placed successfully:", response.data);
+        lastOrderResponse = response.data;
+        
+
+        //setCart([]); // Clear cart after each order
+        // navigate('/orders');
+        // return;
       } catch (err) {
         let orderError = 'Order failed. Please try again.';
         if (err.response) {
@@ -208,8 +225,24 @@ const MainPage = () => {
         return;
       }
     }
-  
-    setCart([]); // Clear cart after all orders
+
+    if (lastOrderResponse) {
+      // Set a brief success message
+      setOrderStatus({ 
+        loading: false, 
+        error: null, 
+        success: `Order placed successfully! Redirecting...`
+      });
+      
+      // Clear cart
+      setCart([]);
+      
+      // Redirect after a short delay (so user sees success message briefly)
+      setTimeout(() => {
+        navigate('/orders');
+      }, 1000); // 1-second delay
+    }
+
   };
 
   // --- Derived State and Grouping (Updated: Removed category filtering) ---
