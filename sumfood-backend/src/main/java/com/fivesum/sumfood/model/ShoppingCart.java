@@ -16,7 +16,8 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "shopping_carts")
+@Table(name = "shopping_carts",
+       uniqueConstraints = @UniqueConstraint(columnNames = {"customer_id" }))
 public class ShoppingCart extends EntityBase {
 
     @ManyToOne(optional = false)
