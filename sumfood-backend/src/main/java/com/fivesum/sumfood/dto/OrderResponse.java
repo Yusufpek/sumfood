@@ -3,13 +3,10 @@ package com.fivesum.sumfood.dto;
 import java.util.Date;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
-import com.fivesum.sumfood.dto.FoodItemShoppingCartDTO;
-
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -21,5 +18,6 @@ public class OrderResponse {
     private String paymentStatus;
     private double totalPrice;
     private String restaurantName;
+    private String address;
     private List<FoodItemShoppingCartDTO> foodItems;
 }
