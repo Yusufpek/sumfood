@@ -10,7 +10,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class FoodItem {
+public class FoodItemShoppingCartDTO {
+    private Long foodItemId;
     private String name;
     private int quantity;
     private double price;

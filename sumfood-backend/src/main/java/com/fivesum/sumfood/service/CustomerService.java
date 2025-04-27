@@ -19,7 +19,7 @@ import com.fivesum.sumfood.dto.CustomerUpdateRequest;
 import com.fivesum.sumfood.dto.AuthRequest;
 import com.fivesum.sumfood.dto.AddressRequest;
 import com.fivesum.sumfood.dto.OrderResponse;
-import com.fivesum.sumfood.dto.FoodItem;
+import com.fivesum.sumfood.dto.FoodItemShoppingCartDTO;
 import com.fivesum.sumfood.model.Order;
 import com.fivesum.sumfood.model.ShoppingCart;
 import com.fivesum.sumfood.model.ShoppingCartFoodItemRelation;
@@ -142,9 +142,10 @@ public class CustomerService implements UserDetailsService {
             orderResponse.setPaymentStatus(order.getPaymentStatus().name());
             orderResponse.setTotalPrice(order.getShoppingCart().getTotalPrice());
             orderResponse.setRestaurantName(order.getShoppingCart().getRestaurant().getName());
-            List<FoodItem> foodItemsInCart = new ArrayList<>();
+            List<FoodItemShoppingCartDTO> foodItemsInCart = new ArrayList<>();
             for (ShoppingCartFoodItemRelation relation : order.getShoppingCart().getItems()) {
-                foodItemsInCart.add(new FoodItem(
+                foodItemsInCart.add(new FoodItemShoppingCartDTO(
+                        relation.getFoodItem().getId(),
                         relation.getFoodItem().getName(),
                         relation.getAmount(),
                         relation.getFoodItem().getPrice()

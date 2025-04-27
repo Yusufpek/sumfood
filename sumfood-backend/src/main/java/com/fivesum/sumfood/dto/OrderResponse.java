@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import com.fivesum.sumfood.dto.FoodItem;
+import com.fivesum.sumfood.dto.FoodItemShoppingCartDTO;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,5 +21,5 @@ public class OrderResponse {
     private String paymentStatus;
     private double totalPrice;
     private String restaurantName;
-    private List<FoodItem> foodItems;
+    private List<FoodItemShoppingCartDTO> foodItems;
 }
