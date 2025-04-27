@@ -164,57 +164,52 @@ const MainPage = () => {
 
   // --- Place Order Function ---
   const placeOrder = async () => {
-    // Ensure user is logged in before placing order
     if (!isLoggedIn) {
-        setOrderStatus({ loading: false, error: "Please log in to place an order.", success: null });
-        // Optionally redirect to login: navigate('/login');
-        return;
+      setOrderStatus({ loading: false, error: "Please log in to place an order.", success: null });
+      return;
     }
-
+  
     const token = localStorage.getItem('token');
     if (!token) {
-        setOrderStatus({ loading: false, error: "Authentication token not found. Please log in again.", success: null });
-        return;
+      setOrderStatus({ loading: false, error: "Authentication token not found. Please log in again.", success: null });
+      return;
     }
-
-    setOrderStatus({ loading: true, error: null, success: null }); // Set loading state
-
-    // ** IMPORTANT: Adjust payload based on backend expectations **
-    // Example: Sending only IDs and quantities
-    const orderPayload = {
-      // Assuming backend expects a list of items with foodItemId and quantity
-      items: cart.map(item => ({
+  
+    setOrderStatus({ loading: true, error: null, success: null });
+  
+    // Place an order for each item in the cart (one by one)
+    for (const item of cart) {
+      const orderPayload = {
         foodItemId: item.id,
-        quantity: item.qty
-      })),
-      // Add other required fields like deliveryAddress, contactPhone etc.
-      // These would typically come from a checkout form
-      deliveryAddress: "123 Test St, Example City", // Placeholder
-      contactPhone: "555-1234" // Placeholder
-    };
-
-    try {
-      // Assuming '/api/orders' or '/api/customer/orders' based on previous discussion
-      const response = await axios.post('http://localhost:8080/api/shopping_cart', orderPayload, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      console.log("Order placed successfully:", response.data);
-      setOrderStatus({ loading: false, error: null, success: `Order placed successfully! Order ID: ${response.data.id || 'N/A'}` }); // Adjust based on response structure
-      setCart([]); // Clear cart on success
-
-    } catch (err) {
-      console.error('Order failed:', err);
-      let orderError = 'Order failed. Please try again.';
-      if (err.response) {
-        orderError = `Order failed: ${err.response.data?.message || `Server error ${err.response.status}`}`;
-      } else if (err.request) {
-        orderError = 'Order failed: Could not reach server.';
-      } else {
-        orderError = `Order failed: ${err.message}`;
+        foodItemCount: item.qty,
+        restaurantId: item.restaurantId,
+      };
+  
+      try {
+        const response = await axios.post('http://localhost:8080/api/shopping_cart/', orderPayload, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+  
+        setOrderStatus({
+          loading: false,
+          error: null,
+          success: `Order placed! Cart ID: ${response.data.id}, Restaurant: ${response.data.restaurantName}, Total: $${response.data.totalPrice}`
+        });
+      } catch (err) {
+        let orderError = 'Order failed. Please try again.';
+        if (err.response) {
+          orderError = `Order failed: ${err.response.data?.message || `Server error ${err.response.status}`}`;
+        } else if (err.request) {
+          orderError = 'Order failed: Could not reach server.';
+        } else {
+          orderError = `Order failed: ${err.message}`;
+        }
+        setOrderStatus({ loading: false, error: orderError, success: null });
+        return;
       }
-      setOrderStatus({ loading: false, error: orderError, success: null });
     }
+  
+    setCart([]); // Clear cart after all orders
   };
 
   // --- Derived State and Grouping (Updated: Removed category filtering) ---
