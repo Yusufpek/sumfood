@@ -363,7 +363,7 @@ const MainPage = () => {
                           <button className="btn-remove" onClick={() => removeFromCart(item.id)}>×</button>
                         </td>
                       </tr>
-                    ))}
+                    )})}
                   </tbody>
                 </table>
                 <div className="cart-total">
