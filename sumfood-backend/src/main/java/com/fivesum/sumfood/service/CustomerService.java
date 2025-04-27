@@ -32,6 +32,7 @@ public class CustomerService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final AddressRepository addressRepository;
+    private final GoogleMapsService googleMapsService;
 
     @Transactional
     public Customer registerCustomer(CustomerRegistrationRequest request) {
@@ -66,20 +67,32 @@ public class CustomerService implements UserDetailsService {
 
     public CustomerGetResponse getCustomerResponse(Customer customer) {
         return new CustomerGetResponse(
-            customer.getName(),
-            customer.getLastName(),
-            customer.getEmail(),
-            customer.getPhoneNumber()
-        );
+                customer.getName(),
+                customer.getLastName(),
+                customer.getEmail(),
+                customer.getPhoneNumber());
     }
 
     @Transactional
     public Address addAddress(AddressRequest request, Customer customer) {
+        double latitude = 0;
+        double longitude = 0;
+        try {
+            String addressStr = request.getAddressLine() + request.getAddressLine2();
+            double[] points = googleMapsService.getLatLongByAddress(addressStr);
+            latitude = points[0];
+            longitude = points[1];
+        } catch (Exception e) {
+            System.out.println("Error in updating address " + e.getMessage());
+        }
+
         Address address = Address.builder()
                 .customer(customer)
                 .addressLine(request.getAddressLine())
                 .addressLine2(request.getAddressLine2())
                 .postalCode(request.getPostalCode())
+                .latitude(latitude)
+                .longitude(longitude)
                 .build();
 
         customer.getAddresses().add(address);
@@ -92,14 +105,28 @@ public class CustomerService implements UserDetailsService {
         if (!customer.getAddresses().contains(address)) {
             throw new IllegalArgumentException("Address not found in customer's address list");
         }
+        boolean isChanged = false;
         if (request.getAddressLine() != null) {
             address.setAddressLine(request.getAddressLine());
+            isChanged = true;
         }
         if (request.getAddressLine2() != null) {
             address.setAddressLine2(request.getAddressLine2());
+            isChanged = true;
         }
         if (request.getPostalCode() != null) {
             address.setPostalCode(request.getPostalCode());
+        }
+
+        if (isChanged) {
+            try {
+                String addressStr = address.getAddressLine() + address.getAddressLine2();
+                double[] points = googleMapsService.getLatLongByAddress(addressStr);
+                address.setLatitude(points[0]);
+                address.setLongitude(points[1]);
+            } catch (Exception e) {
+                System.out.println("Error in updating address " + e.getMessage());
+            }
         }
 
         return addressRepository.save(address);
