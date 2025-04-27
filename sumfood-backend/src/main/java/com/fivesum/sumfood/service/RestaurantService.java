@@ -103,7 +103,7 @@ public class RestaurantService implements UserDetailsService {
         return RestaurantProfileResponse.builder()
                 .displayName(restaurant.getDisplayName())
                 .description(restaurant.getDescription())
-                .displayName(restaurant.getAddress())
+                .address(restaurant.getAddress())
                 .build();
     }
 
