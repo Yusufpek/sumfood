@@ -146,6 +146,17 @@ public class ShoppingCartService {
                 .orElse(null);
     }
 
+    public boolean disableShoppingCart(ShoppingCart cart) {
+        try {
+
+            cart.setActive(false);
+            shoppingCartRepository.save(cart);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public ShoppingCartResponse mapToDTO(ShoppingCart cart) {
         List<ShoppingCartItemResponse> items = cart.getItems().stream()
                 .map(item -> ShoppingCartItemResponse.builder()
