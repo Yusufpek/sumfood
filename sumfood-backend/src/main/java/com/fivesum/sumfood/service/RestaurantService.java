@@ -42,7 +42,7 @@ public class RestaurantService implements UserDetailsService {
         double latitude = 0;
 
         try {
-            double[] points = googleMapsService.getLongLatByAddress(request.getAddress());
+            double[] points = googleMapsService.getLatLongByAddress(request.getAddress());
             latitude = points[0];
             longitude = points[1];
         } catch (Exception e) {
@@ -103,7 +103,7 @@ public class RestaurantService implements UserDetailsService {
         return RestaurantProfileResponse.builder()
                 .displayName(restaurant.getDisplayName())
                 .description(restaurant.getDescription())
-                .displayName(restaurant.getAddress())
+                .address(restaurant.getAddress())
                 .build();
     }
 

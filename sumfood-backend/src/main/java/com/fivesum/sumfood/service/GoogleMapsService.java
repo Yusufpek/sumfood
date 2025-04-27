@@ -19,7 +19,7 @@ public class GoogleMapsService {
     }
 
     // Latitude, Longitude
-    public double[] getLongLatByAddress(String address) throws Exception {
+    public double[] getLatLongByAddress(String address) throws Exception {
         GeocodingResult[] results = GeocodingApi.geocode(context, address).await();
         double[] geometry = new double[2];
         geometry[0] = results[0].geometry.location.lat;
