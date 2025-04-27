@@ -16,8 +16,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "shopping_carts",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"customer_id" }))
+@Table(name = "shopping_carts")
 public class ShoppingCart extends EntityBase {
 
     @ManyToOne(optional = false)
@@ -30,6 +29,9 @@ public class ShoppingCart extends EntityBase {
 
     @Column(nullable = false)
     private double totalPrice;
+
+    @Column(nullable = true)
+    private boolean isActive;
 
     // Relations
     @OneToMany(mappedBy = "shoppingCart", cascade = CascadeType.ALL, orphanRemoval = true)
