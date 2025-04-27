@@ -167,74 +167,71 @@ const MainPage = () => {
 
   // --- Place Order Function ---
   const placeOrder = async () => {
-    if (!isLoggedIn) {
-      setOrderStatus({ loading: false, error: "Please log in to place an order.", success: null });
-      return;
-    }
+    navigate('/orders'); // Redirect to orders page
+    // if (!isLoggedIn) {
+    //   setOrderStatus({ loading: false, error: "Please log in to place an order.", success: null });
+    //   return;
+    // }
 
-    if (cart.length === 0) {
-      setOrderStatus({ loading: false, error: "Your cart is empty.", success: null });
-      return;
-    }
+    // if (cart.length === 0) {
+    //   setOrderStatus({ loading: false, error: "Your cart is empty.", success: null });
+    //   return;
+    // }
   
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setOrderStatus({ loading: false, error: "Authentication token not found. Please log in again.", success: null });
-      return;
-    }
+    // const token = localStorage.getItem('token');
+    // if (!token) {
+    //   setOrderStatus({ loading: false, error: "Authentication token not found. Please log in again.", success: null });
+    //   return;
+    // }
   
-    setOrderStatus({ loading: true, error: null, success: null });
+    // setOrderStatus({ loading: true, error: null, success: null });
   
-    let lastOrderResponse = null;
+    // let lastOrderResponse = null;
+    
+    // for (const item of cart) {
+    //   const orderPayload = {
+    //     foodItemId: item.id,
+    //     foodItemCount: item.qty,
+    //     restaurantId: item.restaurantId,
+    //   };
+  
+    //   try {
+    //     navigate('/orders');
+    //     // const response = await axios.post('http://localhost:8080/api/shopping_cart/', orderPayload, {
+    //     //   headers: { 
+    //     //     'Authorization': `Bearer ${token}`,
+    //     //     'Role': 'CUSTOMER'
+    //     //   }
+    //     // });
 
-    for (const item of cart) {
-      const orderPayload = {
-        foodItemId: item.id,
-        foodItemCount: item.qty,
-        restaurantId: item.restaurantId,
-      };
-  
-      try {
-        const response = await axios.post('http://localhost:8080/api/shopping_cart/', orderPayload, {
-          headers: { 'Authorization': `Bearer ${token}`,
-          "Role": "CUSTOMER" },
-        });
-
-        console.log("Order placed successfully:", response.data);
-        lastOrderResponse = response.data;
+    //     setCart([]); // Clear cart after each order
         
 
-        //setCart([]); // Clear cart after each order
-        // navigate('/orders');
-        // return;
-      } catch (err) {
-        let orderError = 'Order failed. Please try again.';
-        if (err.response) {
-          orderError = `Order failed: ${err.response.data?.message || `Server error ${err.response.status}`}`;
-        } else if (err.request) {
-          orderError = 'Order failed: Could not reach server.';
-        } else {
-          orderError = `Order failed: ${err.message}`;
-        }
-        setOrderStatus({ loading: false, error: orderError, success: null });
-        return;
-      }
-    }
+    //     console.log("Order placed successfully:", response.data);
+    //     lastOrderResponse = response.data;
+    //     return;
+    //   } catch (err) {
+    //     let orderError = 'Order failed. Please try again.';
+    //     if (err.response) {
+    //       orderError = `Order failed: ${err.response.data?.message || `Server error ${err.response.status}`}`;
+    //     } else if (err.request) {
+    //       orderError = 'Order failed: Could not reach server.';
+    //     } else {
+    //       orderError = `Order failed: ${err.message}`;
+    //     }
+    //     setOrderStatus({ loading: false, error: orderError, success: null });
+    //     return;
+    //   }
+      
+    // }
+    // if (lastOrderResponse) {
+    //   setOrderStatus({ 
+    //     loading: false, 
+    //     error: null, 
+    //     success: `Order placed successfully! Redirecting...`
+    //   });
 
-    if (lastOrderResponse) {
-      setOrderStatus({ 
-        loading: false, 
-        error: null, 
-        success: `Order placed successfully! Redirecting...`
-      });
-      
-      // Clear cart
-      setCart([]);
-      
-      setTimeout(() => {
-        navigate('/orders');
-      }, 1000); // 1-second delay
-    }
+    // }
 
   };
 
@@ -273,15 +270,24 @@ const MainPage = () => {
               <div key={categoryId} className="category-group">
                 <div className="food-item-grid">
                   {groupedItems[categoryId].map(item => {
-                    const image = FOOD_IMAGE_BASE + item.restaurant.bussinesName.replace(" ", "_") + "/" + item.imageName;
+                    //const image = FOOD_IMAGE_BASE + item.restaurant.businessName.replace(" ", "_") + "/" + item.imageName;
                     return (
                       <div key={item.id} className="food-item-card-simple">
                         <h3>{item.name}</h3>
-                        <img src={image} alt="" />
+                        
                         <p>{item.categories}</p>
                         <p>{item.description}</p>
                         <p><strong>Price:</strong> ${item.price.toFixed(2)}</p>
-                      </div>
+                        <button
+                        className="btn btn-add-to-cart"
+                        onClick={() => addToCart({
+                          ...item,
+                          restaurantId: item.restaurantId
+                        })}
+                      >
+                        Add to Cart
+                      </button>
+                  </div>
                     );
                   })}
                 </div>
@@ -345,7 +351,7 @@ const MainPage = () => {
                   </thead>
                   <tbody>
                     {cart.map(item => {
-                      const image = FOOD_IMAGE_BASE + item.restaurant.bussinesName.replace(" ", "_") + "/" + item.imageName;
+                      //const image = FOOD_IMAGE_BASE + item.restaurant.bussinesName.replace(" ", "_") + "/" + item.imageName;
 
                       return (
                       <tr key={item.id} className="cart-item">
