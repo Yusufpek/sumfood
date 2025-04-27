@@ -35,6 +35,9 @@ public class FoodItem extends EntityBase {
     @Column(nullable = false)
     private boolean isDonated = false;
 
+    @Column(nullable = false)
+    private String imageName;
+
     @ElementCollection(targetClass = Category.class)
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "food_item_categories", joinColumns = @JoinColumn(name = "food_item_id"))

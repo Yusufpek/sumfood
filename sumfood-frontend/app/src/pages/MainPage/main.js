@@ -23,6 +23,7 @@ const groupItemsByCategory = (items) => {
 
 const MainPage = () => {
   // --- State (Updated: Removed category list state) ---
+  const FOOD_IMAGE_BASE = "http://localhost:8080/api/food/public/image/";
   const [username, setUsername] = useState('Guest');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -246,14 +247,18 @@ const MainPage = () => {
             Object.keys(groupedItems).map(categoryId => (
               <div key={categoryId} className="category-group">
                 <div className="food-item-grid">
-                {groupedItems[categoryId].map(item => (
-                  <div key={item.id} className="food-item-card-simple">
-                    <h3>{item.name}</h3>
-                    <p>{item.description}</p>
-                    <p><strong>Price:</strong> ${item.price.toFixed(2)}</p>
-                    <button className='btn btn-add-cart' onClick={() => addToCart(item)}>Add to Cart</button>
-                  </div>
-                ))}
+                  {groupedItems[categoryId].map(item => {
+                    const image = FOOD_IMAGE_BASE + item.restaurant.bussinesName.replace(" ", "_") + "/" + item.imageName;
+                    return (
+                      <div key={item.id} className="food-item-card-simple">
+                        <h3>{item.name}</h3>
+                        <img src={image} alt="" />
+                        <p>{item.categories}</p>
+                        <p>{item.description}</p>
+                        <p><strong>Price:</strong> ${item.price.toFixed(2)}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))
@@ -261,8 +266,7 @@ const MainPage = () => {
         </div>
 
         {/* Restaurants Section with Card Style */}
-                {/* Restaurants Section with Card Style */}
-                <div className="restaurants-container"> {/* Container for centering */}
+        <div className="restaurants-container"> {/* Container for centering */}
           <h2 style={{ textAlign: 'center' }}>Available Restaurants</h2>
           {restLoading ? (
             <p style={{ textAlign: 'center' }}>Loading restaurants...</p>
@@ -315,7 +319,10 @@ const MainPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {cart.map(item => (
+                    {cart.map(item => {
+                      const image = FOOD_IMAGE_BASE + item.restaurant.bussinesName.replace(" ", "_") + "/" + item.imageName;
+
+                      return (
                       <tr key={item.id} className="cart-item">
                         <td>{item.name}</td>
                         <td>${item.price.toFixed(2)}</td>
