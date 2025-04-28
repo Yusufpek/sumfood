@@ -213,3 +213,56 @@
         flex: 1;
     }
 }
+
+.default-badge {
+    background-color: #28a745;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+.default-btn {
+    padding: 0.5rem 1rem;
+    background-color: #ffc107;
+    color: #212529;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+}
+
+.default-btn:hover {
+    background-color: #e0a800;
+}
+
+.default-btn:disabled {
+    background-color: #6c757d;
+    color: white;
+    cursor: not-allowed;
+}
+
+/* Update the address-actions to accommodate the new button */
+.address-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* For smaller screens, adjust button sizes */
+@media (max-width: 600px) {
+    .address-actions {
+        width: 100%;
+    }
+
+    .edit-btn,
+    .default-btn,
+    .delete-btn {
+        flex: 1;
+        min-width: 80px;
+    }
+}
