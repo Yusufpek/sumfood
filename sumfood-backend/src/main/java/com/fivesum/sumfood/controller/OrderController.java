@@ -58,7 +58,27 @@ public class OrderController {
             }
 
             Customer customer = customerOpt.get();
-            List<OrderResponse> orders = orderService.getOrders(customer);
+            List<OrderResponse> orders = orderService.getOrdersByCustomer(customer);
+
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/orders/{orderStatus}")
+    public ResponseEntity<?> getOrders(@RequestHeader("Authorization") String token,
+            @PathVariable() String orderStatus) {
+        try {
+            String email = jwtService.extractUsername(token.substring(7));
+            Optional<Customer> customerOpt = customerService.findByEmail(email);
+
+            if (!customerOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
+            }
+
+            Customer customer = customerOpt.get();
+            List<OrderResponse> orders = orderService.getOrdersByCustomerByStatus(customer, orderStatus);
 
             return ResponseEntity.ok(orders);
         } catch (Exception e) {

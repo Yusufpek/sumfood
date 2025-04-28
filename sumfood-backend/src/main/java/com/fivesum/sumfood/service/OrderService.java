@@ -5,10 +5,10 @@ import com.fivesum.sumfood.dto.OrderResponse;
 import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.model.*;
 import com.fivesum.sumfood.model.enums.OrderStatus;
+import com.fivesum.sumfood.model.enums.OrderType;
 import com.fivesum.sumfood.model.enums.PaymentStatus;
 import com.fivesum.sumfood.repository.OrderRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,7 +49,8 @@ public class OrderService {
 				.longitude(address.getLongitude())
 				.customer(customer)
 				.paymentStatus(paymentStatus)
-				.orderStatus(OrderStatus.REGULAR)
+				.orderStatus(OrderStatus.PENDING)
+				.orderType(OrderType.REGULAR)
 				.build();
 		shoppingCartService.disableShoppingCart(shoppingCart);
 		orderRepository.save(order);
@@ -59,6 +60,24 @@ public class OrderService {
 
 	public PaymentStatus getPayment(double totalPrice) {
 		return PaymentStatus.SUCCESSFUL;
+	}
+
+	@Transactional
+	public List<OrderResponse> getOrdersByCustomer(Customer customer) {
+		List<Order> orders = orderRepository.findByCustomer(customer);
+		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
+	}
+
+	@Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class })
+	public List<OrderResponse> getOrdersByCustomerByStatus(Customer customer, String status) {
+		OrderStatus orderStatus;
+		try {
+			orderStatus = OrderStatus.valueOf(status);
+		} catch (Exception e) {
+			throw new InvalidRequestException("Status " + status + " is not valid!");
+		}
+		List<Order> orders = orderRepository.findByCustomerAndByOrderStatus(customer, orderStatus);
+		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
 	}
 
 	public OrderResponse toResponseDTO(Order order) {
@@ -76,39 +95,11 @@ public class OrderService {
 				.id(order.getId())
 				.createdAt(order.getCreateAt())
 				.orderStatus(order.getOrderStatus().toString())
+				.orderType(order.getOrderType().toString())
 				.paymentStatus(order.getPaymentStatus().toString())
 				.totalPrice(order.getShoppingCart().getTotalPrice())
 				.restaurantName(order.getShoppingCart().getRestaurant().getDisplayName())
 				.foodItems(items)
 				.build();
 	}
-
-	@Transactional
-	public List<OrderResponse> getOrders(Customer customer) {
-		List<Order> orders = orderRepository.findByCustomer(customer);
-		List<OrderResponse> orderResponses = new ArrayList<>();
-
-		for (Order order : orders) {
-			OrderResponse orderResponse = new OrderResponse();
-			orderResponse.setId(order.getId());
-			orderResponse.setCreatedAt(order.getCreateAt());
-			orderResponse.setOrderStatus(order.getOrderStatus().name());
-			orderResponse.setPaymentStatus(order.getPaymentStatus().name());
-			orderResponse.setTotalPrice(order.getShoppingCart().getTotalPrice());
-			orderResponse.setRestaurantName(order.getShoppingCart().getRestaurant().getName());
-			List<FoodItemShoppingCartDTO> foodItemsInCart = new ArrayList<>();
-			for (ShoppingCartFoodItemRelation relation : order.getShoppingCart().getItems()) {
-				foodItemsInCart.add(new FoodItemShoppingCartDTO(
-						relation.getFoodItem().getId(),
-						relation.getFoodItem().getName(),
-						relation.getAmount(),
-						relation.getFoodItem().getPrice()));
-			}
-			orderResponse.setFoodItems(foodItemsInCart);
-			orderResponses.add(orderResponse);
-		}
-
-		return orderResponses;
-	}
-
 }
