@@ -2,6 +2,7 @@ package com.fivesum.sumfood.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -17,6 +18,7 @@ import com.fivesum.sumfood.dto.RestaurantRegistrationRequest;
 import com.fivesum.sumfood.dto.AuthRequest;
 import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.repository.RestaurantRepository;
+import com.fivesum.sumfood.responses.RestaurantProfileResponse;
 
 import lombok.AllArgsConstructor;
 
@@ -27,13 +29,26 @@ public class RestaurantService implements UserDetailsService {
     private final RestaurantRepository restaurantRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final GoogleMapsService googleMapsService;
 
-    public List<Restaurant> getAll() {
-        return restaurantRepository.getByIsValidated(true);
+    public List<RestaurantProfileResponse> getAll() {
+        List<Restaurant> restaurants = restaurantRepository.getByIsValidated(true);
+        return restaurants.stream().map(res -> toProfileResponse(res)).collect(Collectors.toList());
     }
 
     @Transactional
     public Restaurant registerRestaurant(RestaurantRegistrationRequest request) {
+        double longitude = 0;
+        double latitude = 0;
+
+        try {
+            double[] points = googleMapsService.getLatLongByAddress(request.getAddress());
+            latitude = points[0];
+            longitude = points[1];
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
         Restaurant restaurant = Restaurant.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -44,6 +59,10 @@ public class RestaurantService implements UserDetailsService {
                 .businessName(request.getBusinessName())
                 .displayName(request.getDisplayName())
                 .description(request.getDescription())
+                .address(request.getAddress())
+                .city(request.getCity())
+                .longitude(longitude)
+                .latitude(latitude)
                 .isValidated(false)
                 .build();
 
@@ -52,6 +71,7 @@ public class RestaurantService implements UserDetailsService {
 
     @Transactional
     public Restaurant authenticate(AuthRequest request) {
+        System.out.println(request.getEmail());
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -62,6 +82,11 @@ public class RestaurantService implements UserDetailsService {
 
     public Restaurant getRestaurantProfile(String email) {
         return restaurantRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
+    }
+
+    public Restaurant getRestaurantById(Long id) {
+        return restaurantRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
     }
 
@@ -78,4 +103,15 @@ public class RestaurantService implements UserDetailsService {
     public boolean existsByEmail(String email) {
         return restaurantRepository.existsByEmail(email);
     }
+
+    public RestaurantProfileResponse toProfileResponse(Restaurant restaurant) {
+        return RestaurantProfileResponse.builder()
+                .displayName(restaurant.getDisplayName())
+                .description(restaurant.getDescription())
+                .address(restaurant.getAddress())
+                .latitude(restaurant.getLatitude())
+                .longitude(restaurant.getLongitude())
+                .build();
+    }
+
 }

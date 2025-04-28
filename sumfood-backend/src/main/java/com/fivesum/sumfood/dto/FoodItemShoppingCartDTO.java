@@ -1,12 +1,11 @@
 package com.fivesum.sumfood.dto;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
+@SuperBuilder
 @AllArgsConstructor
 @Getter
 @Setter
