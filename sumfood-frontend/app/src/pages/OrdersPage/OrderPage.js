@@ -32,13 +32,13 @@ const OrdersPage = () => {
       setError(null);
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8080/api/customer/orders/', {
+        const response = await axios.get('http://localhost:8080/api/shopping_cart/', {
           headers: { 
             'Authorization': `Bearer ${token}`,
             'Role': 'CUSTOMER'
           }
         });
-        
+        console.log("Orders response:", response.data); // Debugging line
         const ordersData = Array.isArray(response.data) ? response.data : [];
         setOrders(ordersData);
         
