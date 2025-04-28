@@ -32,7 +32,7 @@ const OrdersPage = () => {
       setError(null);
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8080/api/shopping_cart/', {
+        const response = await axios.get('http://localhost:8080/api/customer/orders', {
           headers: { 
             'Authorization': `Bearer ${token}`,
             'Role': 'CUSTOMER'
@@ -118,7 +118,8 @@ const OrdersPage = () => {
                   <th>Order #</th>
                   <th>Restaurant</th>
                   <th>Date</th>
-                  <th>Status</th>
+                  <th>Order Status</th>
+                  <th>Payment Status</th>
                   <th>Total</th>
                   <th>Details</th>
                 </tr>
@@ -134,18 +135,18 @@ const OrdersPage = () => {
                         {order.status || 'Processing'}
                       </span>
                     </td>
-                    <td>${(order.totalPrice || 0).toFixed(2)}</td>
+                    <td>${Number(order.totalPrice || 0).toFixed(2)}</td>
                     <td>
                       <details>
                         <summary>View Items</summary>
                         <div className="order-details-panel">
                           <ul className="order-items-list">
-                            {order.items && order.items.length > 0 ? (
-                              order.items.map((item, idx) => (
+                            {order.foodItems && order.foodItems.length > 0 ? (
+                              order.foodItems.map((item, idx) => (
                                 <li key={idx} className="order-item">
                                   <span className="item-name">{item.name || item.foodItemName || 'Unknown Item'}</span>
                                   <span className="item-quantity">× {item.qty || 1}</span>
-                                  <span className="item-price">${(item.price || 0).toFixed(2)}</span>
+                                  <span className="item-price">${Number(item.price || 0).toFixed(2)}</span>
                                 </li>
                               ))
                             ) : (
@@ -154,7 +155,7 @@ const OrdersPage = () => {
                           </ul>
                           {order.deliveryAddress && (
                             <div className="delivery-info">
-                              <strong>Delivery Address:</strong> {order.deliveryAddress}
+                              <strong>Delivery Address:</strong> {order.address}
                             </div>
                           )}
                         </div>
