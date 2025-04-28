@@ -121,7 +121,7 @@ const OrdersPage = () => {
                   <th>Order Status</th>
                   <th>Payment Status</th>
                   <th>Total</th>
-                  <th>Details</th>
+                  {/* <th>Details</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -145,7 +145,7 @@ const OrdersPage = () => {
                               order.foodItems.map((item, idx) => (
                                 <li key={idx} className="order-item">
                                   <span className="item-name">{item.name || item.foodItemName || 'Unknown Item'}</span>
-                                  <span className="item-quantity">× {item.qty || 1}</span>
+                                  <span className="item-quantity">× {item.quantity || 1}</span>
                                   <span className="item-price">${Number(item.price || 0).toFixed(2)}</span>
                                 </li>
                               ))
