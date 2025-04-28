@@ -40,7 +40,8 @@ public class CustomerController {
     private final JwtService jwtService;
 
     @PutMapping("/")
-    public ResponseEntity<?> updateCustomer(@RequestBody CustomerUpdateRequest request, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> updateCustomer(@RequestBody CustomerUpdateRequest request,
+            @RequestHeader("Authorization") String token) {
         try {
             String email = jwtService.extractUsername(token.substring(7));
             Optional<Customer> customerOpt = customerService.findByEmail(email);
@@ -79,7 +80,8 @@ public class CustomerController {
     }
 
     @PostMapping("/address/")
-    public ResponseEntity<?> addAddress(@RequestBody AddressRequest request, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> addAddress(@RequestBody AddressRequest request,
+            @RequestHeader("Authorization") String token) {
         try {
             String email = jwtService.extractUsername(token.substring(7));
             Optional<Customer> customerOpt = customerService.findByEmail(email);
@@ -92,6 +94,53 @@ public class CustomerController {
             customerService.addAddress(request, customer);
 
             return ResponseEntity.ok("Address added successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("address/default/")
+    public ResponseEntity<?> getDefaultAddress(@RequestHeader("Authorization") String token) {
+        try {
+            String email = jwtService.extractUsername(token.substring(7));
+            Optional<Customer> customerOpt = customerService.findByEmail(email);
+
+            if (!customerOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
+            }
+
+            Customer customer = customerOpt.get();
+            Address address = customerService.getDefaultAddressByCustomer(customer);
+            if (address == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Default Address is not defined");
+            }
+
+            return ResponseEntity.ok(address);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("address/default/")
+    public ResponseEntity<?> updateDefaultAddress(@RequestHeader("Authorization") String token,
+            @PathVariable() String addressId) {
+        try {
+            String email = jwtService.extractUsername(token.substring(7));
+            Optional<Customer> customerOpt = customerService.findByEmail(email);
+
+            if (!customerOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
+            }
+
+            Customer customer = customerOpt.get();
+            Address address = customerService.getDefaultAddressByCustomer(customer);
+            if (address == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Default Address is not defined");
+            }
+
+            return ResponseEntity.ok(address);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
@@ -117,7 +166,8 @@ public class CustomerController {
     }
 
     @PutMapping("/address/{addressIdStr}")
-    public ResponseEntity<?> updateAddress(@PathVariable String addressIdStr, @RequestBody AddressRequest request, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> updateAddress(@PathVariable String addressIdStr, @RequestBody AddressRequest request,
+            @RequestHeader("Authorization") String token) {
         try {
             String email = jwtService.extractUsername(token.substring(7));
             Optional<Customer> customerOpt = customerService.findByEmail(email);
@@ -142,7 +192,8 @@ public class CustomerController {
     }
 
     @DeleteMapping("/address/{addressIdStr}")
-    public ResponseEntity<?> deleteAddress(@PathVariable String addressIdStr, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> deleteAddress(@PathVariable String addressIdStr,
+            @RequestHeader("Authorization") String token) {
         try {
             String email = jwtService.extractUsername(token.substring(7));
             Optional<Customer> customerOpt = customerService.findByEmail(email);

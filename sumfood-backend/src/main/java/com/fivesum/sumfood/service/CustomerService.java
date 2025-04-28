@@ -21,7 +21,6 @@ import com.fivesum.sumfood.dto.AddressRequest;
 import com.fivesum.sumfood.dto.OrderResponse;
 import com.fivesum.sumfood.dto.FoodItemShoppingCartDTO;
 import com.fivesum.sumfood.model.Order;
-import com.fivesum.sumfood.model.ShoppingCart;
 import com.fivesum.sumfood.model.ShoppingCartFoodItemRelation;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.Address;
@@ -102,7 +101,13 @@ public class CustomerService implements UserDetailsService {
                 .postalCode(request.getPostalCode())
                 .latitude(latitude)
                 .longitude(longitude)
+                .isDefault(request.isDefault())
                 .build();
+
+        if (address.getIsDefault()) {
+            // set all others isDefault=false before saving new one
+            addressRepository.updateDefaultAddressFalse(customer.getId());
+        }
 
         customer.getAddresses().add(address);
         customerRepository.save(customer);
@@ -127,6 +132,10 @@ public class CustomerService implements UserDetailsService {
             address.setPostalCode(request.getPostalCode());
         }
 
+        if (request.isDefault()) {
+            addressRepository.updateDefaultAddressFalse(customer.getId());
+        }
+
         if (isChanged) {
             try {
                 String addressStr = address.getAddressLine() + address.getAddressLine2();
@@ -139,6 +148,28 @@ public class CustomerService implements UserDetailsService {
         }
 
         return addressRepository.save(address);
+    }
+
+    public Address updateDefaultAddressByCustomer(Customer customer, String addressIdString) {
+        Long addressId;
+        try {
+            addressId = Long.parseLong(addressIdString);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Address Id is not valid!");
+        }
+        Optional<Address> addressOpt = addressRepository.findById(addressId);
+        if (!addressOpt.isPresent()) {
+            throw new IllegalArgumentException("Address Id is not valid!");
+        }
+        Address address = addressOpt.get();
+        addressRepository.updateDefaultAddressFalse(customer.getId());
+        address.setIsDefault(true);
+
+        return addressRepository.save(address);
+    }
+
+    public Address getDefaultAddressByCustomer(Customer customer) {
+        return addressRepository.getDefaultAddressByCustomerId(customer.getId()).orElse(null);
     }
 
     @Transactional
@@ -175,8 +206,7 @@ public class CustomerService implements UserDetailsService {
                         relation.getFoodItem().getId(),
                         relation.getFoodItem().getName(),
                         relation.getAmount(),
-                        relation.getFoodItem().getPrice()
-                        ));
+                        relation.getFoodItem().getPrice()));
             }
             orderResponse.setFoodItems(foodItemsInCart);
             orderResponses.add(orderResponse);
