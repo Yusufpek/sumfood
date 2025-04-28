@@ -17,6 +17,9 @@ public class Address extends EntityBase {
     private Customer customer;
 
     @Column(nullable = false)
+    private boolean isDefault;
+
+    @Column(nullable = false)
     private String addressLine;
 
     @Column(nullable = true)
@@ -30,6 +33,14 @@ public class Address extends EntityBase {
 
     @Column(nullable = true)
     private double latitude;
+
+    public boolean getIsDefault() {
+        return isDefault;
+    }
+
+    public void setIsDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
 
     public String getAddressLine() {
         return addressLine;
