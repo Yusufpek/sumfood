@@ -1,6 +1,5 @@
 package com.fivesum.sumfood.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,15 +17,10 @@ import com.fivesum.sumfood.dto.CustomerRegistrationRequest;
 import com.fivesum.sumfood.dto.CustomerUpdateRequest;
 import com.fivesum.sumfood.dto.AuthRequest;
 import com.fivesum.sumfood.dto.AddressRequest;
-import com.fivesum.sumfood.dto.OrderResponse;
-import com.fivesum.sumfood.dto.FoodItemShoppingCartDTO;
-import com.fivesum.sumfood.model.Order;
-import com.fivesum.sumfood.model.ShoppingCartFoodItemRelation;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.Address;
 import com.fivesum.sumfood.repository.CustomerRepository;
 import com.fivesum.sumfood.repository.AddressRepository;
-import com.fivesum.sumfood.repository.OrderRepository;
 import com.fivesum.sumfood.responses.CustomerGetResponse;
 
 import lombok.AllArgsConstructor;
@@ -39,7 +33,6 @@ public class CustomerService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final AddressRepository addressRepository;
-    private final OrderRepository orderRepository;
     private final GoogleMapsService googleMapsService;
 
     @Transactional
@@ -191,34 +184,6 @@ public class CustomerService implements UserDetailsService {
     public Address findAddressById(Long addressId) {
         return addressRepository.findById(addressId)
                 .orElseThrow(() -> new IllegalArgumentException("Address not found with id: " + addressId));
-    }
-
-    @Transactional
-    public List<OrderResponse> getOrders(Customer customer) {
-        List<Order> orders = orderRepository.findByCustomer(customer);
-        List<OrderResponse> orderResponses = new ArrayList<>();
-
-        for (Order order : orders) {
-            OrderResponse orderResponse = new OrderResponse();
-            orderResponse.setId(order.getId());
-            orderResponse.setCreatedAt(order.getCreateAt());
-            orderResponse.setOrderStatus(order.getOrderStatus().name());
-            orderResponse.setPaymentStatus(order.getPaymentStatus().name());
-            orderResponse.setTotalPrice(order.getShoppingCart().getTotalPrice());
-            orderResponse.setRestaurantName(order.getShoppingCart().getRestaurant().getName());
-            List<FoodItemShoppingCartDTO> foodItemsInCart = new ArrayList<>();
-            for (ShoppingCartFoodItemRelation relation : order.getShoppingCart().getItems()) {
-                foodItemsInCart.add(new FoodItemShoppingCartDTO(
-                        relation.getFoodItem().getId(),
-                        relation.getFoodItem().getName(),
-                        relation.getAmount(),
-                        relation.getFoodItem().getPrice()));
-            }
-            orderResponse.setFoodItems(foodItemsInCart);
-            orderResponses.add(orderResponse);
-        }
-
-        return orderResponses;
     }
 
     @Transactional

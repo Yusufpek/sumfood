@@ -8,6 +8,7 @@ import com.fivesum.sumfood.model.enums.OrderStatus;
 import com.fivesum.sumfood.model.enums.PaymentStatus;
 import com.fivesum.sumfood.repository.OrderRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 public class OrderService {
 	private final ShoppingCartService shoppingCartService;
 	private final OrderRepository orderRepository;
+	private final CustomerService customerService;
 
 	@Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class })
 	public OrderResponse createOrder(Customer customer) {
@@ -33,9 +35,18 @@ public class OrderService {
 		double totalPrice = shoppingCart.getTotalPrice();
 		PaymentStatus paymentStatus = getPayment(totalPrice);
 
+		// Order Address
+		Address address = customerService.getDefaultAddressByCustomer(customer);
+		if (address == null) {
+			throw new InvalidRequestException("Default address is not defined!");
+		}
+		String addresString = address.getAddressLine() + " " + address.getAddressLine2();
+
 		Order order = Order.builder()
 				.shoppingCart(shoppingCart)
-				.address("")
+				.address(addresString)
+				.latitude(address.getLatitude())
+				.longitude(address.getLongitude())
 				.customer(customer)
 				.paymentStatus(paymentStatus)
 				.orderStatus(OrderStatus.REGULAR)
@@ -70,6 +81,34 @@ public class OrderService {
 				.restaurantName(order.getShoppingCart().getRestaurant().getDisplayName())
 				.foodItems(items)
 				.build();
+	}
+
+	@Transactional
+	public List<OrderResponse> getOrders(Customer customer) {
+		List<Order> orders = orderRepository.findByCustomer(customer);
+		List<OrderResponse> orderResponses = new ArrayList<>();
+
+		for (Order order : orders) {
+			OrderResponse orderResponse = new OrderResponse();
+			orderResponse.setId(order.getId());
+			orderResponse.setCreatedAt(order.getCreateAt());
+			orderResponse.setOrderStatus(order.getOrderStatus().name());
+			orderResponse.setPaymentStatus(order.getPaymentStatus().name());
+			orderResponse.setTotalPrice(order.getShoppingCart().getTotalPrice());
+			orderResponse.setRestaurantName(order.getShoppingCart().getRestaurant().getName());
+			List<FoodItemShoppingCartDTO> foodItemsInCart = new ArrayList<>();
+			for (ShoppingCartFoodItemRelation relation : order.getShoppingCart().getItems()) {
+				foodItemsInCart.add(new FoodItemShoppingCartDTO(
+						relation.getFoodItem().getId(),
+						relation.getFoodItem().getName(),
+						relation.getAmount(),
+						relation.getFoodItem().getPrice()));
+			}
+			orderResponse.setFoodItems(foodItemsInCart);
+			orderResponses.add(orderResponse);
+		}
+
+		return orderResponses;
 	}
 
 }
