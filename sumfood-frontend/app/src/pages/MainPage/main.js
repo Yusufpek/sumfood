@@ -246,7 +246,7 @@ const MainPage = () => {
 
   // --- Place Order Function ---
   const placeOrder = async () => {
-    navigate('/create-order');
+    navigate('/create_order');
   }
 
   // --- Derived State and Grouping (Updated: Removed category filtering) ---
