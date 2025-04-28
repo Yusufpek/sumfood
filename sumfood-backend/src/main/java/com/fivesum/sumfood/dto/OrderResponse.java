@@ -15,6 +15,7 @@ public class OrderResponse {
     private Long id;
     private Date createdAt;
     private String orderStatus;
+    private String orderType;
     private String paymentStatus;
     private double totalPrice;
     private String restaurantName;

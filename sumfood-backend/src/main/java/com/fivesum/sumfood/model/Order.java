@@ -4,6 +4,7 @@ import javax.persistence.*;
 
 import com.fivesum.sumfood.model.base.EntityBase;
 import com.fivesum.sumfood.model.enums.OrderStatus;
+import com.fivesum.sumfood.model.enums.OrderType;
 import com.fivesum.sumfood.model.enums.PaymentStatus;
 
 import lombok.experimental.SuperBuilder;
@@ -30,6 +31,10 @@ public class Order extends EntityBase {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaymentStatus paymentStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderType orderType;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
