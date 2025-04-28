@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './ManageAddresses.css';
 import StandardizedInput from '../../../components/common/StandardizedInput';
 import axios from 'axios';
 
 const ManageAddresses = () => {
+    const formRef = useRef(null);
+
     const [addresses, setAddresses] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({
@@ -148,6 +150,9 @@ const ManageAddresses = () => {
             postalCode: address.postalCode,
             isDefault: address.id === defaultAddressId
         });
+        if (formRef.current) {
+            formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     };
 
     const handleSetDefault = async (addressId) => {
@@ -291,7 +296,7 @@ const ManageAddresses = () => {
                 </div>
             )}
 
-            <form className="address-form" onSubmit={handleSubmit}>
+            <form className="address-form" onSubmit={handleSubmit} ref={formRef}>
                 <StandardizedInput
                     label="Address Line 1"
                     name="addressLine"
