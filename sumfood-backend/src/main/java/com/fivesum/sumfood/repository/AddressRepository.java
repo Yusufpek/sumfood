@@ -1,5 +1,6 @@
 package com.fivesum.sumfood.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,5 +21,5 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
     @Query("UPDATE Address a SET a.isDefault = false WHERE a.customer.id = :customerId")
     void updateDefaultAddressFalse(@Param("customerId") Long customerId);
 
-    Optional<Address> getDefaultAddressByCustomerId(Long customerId);
+    List<Address> findByIsDefaultAndCustomerId(boolean isDefault, Long customerId);
 }

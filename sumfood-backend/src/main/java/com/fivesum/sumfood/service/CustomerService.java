@@ -169,7 +169,12 @@ public class CustomerService implements UserDetailsService {
     }
 
     public Address getDefaultAddressByCustomer(Customer customer) {
-        return addressRepository.getDefaultAddressByCustomerId(customer.getId()).orElse(null);
+        List<Address> addresses = addressRepository.findByIsDefaultAndCustomerId(true, customer.getId());
+        if (addresses.size() == 0) {
+            return null;
+        } else {
+            return addresses.get(0);
+        }
     }
 
     @Transactional
