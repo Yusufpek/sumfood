@@ -6,6 +6,7 @@ import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.model.*;
 import com.fivesum.sumfood.model.enums.OrderStatus;
 import com.fivesum.sumfood.model.enums.PaymentStatus;
+import com.fivesum.sumfood.repository.OrderRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,25 +19,29 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class OrderService {
 	private final ShoppingCartService shoppingCartService;
+	private final OrderRepository orderRepository;
 
 	@Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class })
 	public OrderResponse createOrder(Customer customer) {
-		// PAYMENT CHECK
 
 		ShoppingCart shoppingCart = shoppingCartService.getActiveCartByCustomer(customer);
 		if (shoppingCart == null) {
 			throw new InvalidRequestException("Invalid request active shopping cart is not exist!");
 		}
+
+		// PAYMENT CHECK
 		double totalPrice = shoppingCart.getTotalPrice();
 		PaymentStatus paymentStatus = getPayment(totalPrice);
 
 		Order order = Order.builder()
 				.shoppingCart(shoppingCart)
+				.address("")
 				.customer(customer)
 				.paymentStatus(paymentStatus)
 				.orderStatus(OrderStatus.REGULAR)
 				.build();
 		shoppingCartService.disableShoppingCart(shoppingCart);
+		orderRepository.save(order);
 
 		return toResponseDTO(order);
 	}
