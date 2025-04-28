@@ -374,7 +374,7 @@ const MainPage = () => {
                                 <button onClick={() => updateQuantity(cart.id, item.foodItemId, 1)}>+</button>
                               </div>
                             </td>
-                            <td>${(item.price * item.amount)}</td>
+                            <td>${Number(item.price * item.amount).toFixed(2)}</td>
                             <td>
                               <button className="btn-remove" onClick={() => updateQuantity(cart.id, item.foodItemId, item.amount * -1)}>×</button>
                             </td>
@@ -384,7 +384,7 @@ const MainPage = () => {
                     </tbody>
                   </table>
                   <div className="cart-total">
-                    <strong>Total: ${cart.totalPrice.toFixed(2)}</strong>
+                    <strong>Total: ${Number(cart.totalPrice).toFixed(2)}</strong>
                   </div>
                   <button
                     className="btn btn-place-order"
