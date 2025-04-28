@@ -85,7 +85,7 @@ public class CustomerController {
         }
     }
 
-    @GetMapping("address/default/")
+    @GetMapping("/address/default/")
     public ResponseEntity<?> getDefaultAddress(@RequestHeader("Authorization") String token) {
         try {
             String email = jwtService.extractUsername(token.substring(7));
@@ -107,7 +107,7 @@ public class CustomerController {
         }
     }
 
-    @PutMapping("address/default/{addressId}")
+    @PutMapping("/address/default/{addressId}")
     public ResponseEntity<?> updateDefaultAddress(@RequestHeader("Authorization") String token,
             @PathVariable() String addressId) {
         try {
