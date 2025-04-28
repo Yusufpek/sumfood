@@ -8,27 +8,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.fivesum.sumfood.dto.AuthRequest;
-import com.fivesum.sumfood.dto.CourierRegistrationRequest;
-import com.fivesum.sumfood.dto.CustomerRegistrationRequest;
-import com.fivesum.sumfood.dto.RestaurantRegistrationRequest;
 import com.fivesum.sumfood.dto.CustomerUpdateRequest;
 import com.fivesum.sumfood.dto.AddressRequest;
 import com.fivesum.sumfood.dto.OrderResponse;
-import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.model.Customer;
-import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.model.Address;
-import com.fivesum.sumfood.model.Order;
-import com.fivesum.sumfood.model.ShoppingCart;
-import com.fivesum.sumfood.model.ShoppingCartFoodItemRelation;
-import com.fivesum.sumfood.model.base.UserBase;
-import com.fivesum.sumfood.model.enums.Role;
-import com.fivesum.sumfood.service.CourierService;
 import com.fivesum.sumfood.service.CustomerService;
 import com.fivesum.sumfood.service.JwtService;
-import com.fivesum.sumfood.service.RestaurantService;
-import com.fivesum.sumfood.responses.LoginResponse;
 import com.fivesum.sumfood.responses.CustomerGetResponse;
 
 @RestController
