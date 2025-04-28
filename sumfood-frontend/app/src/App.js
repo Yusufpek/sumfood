@@ -12,6 +12,7 @@ import './App.css';
 import './styles/global.css';
 import './styles/auth.css';
 import Profile from "./pages/Profile/Profile";
+import CreateOrderPage from './pages/CreateOrderPage/CreateOrderPage';
 
 function App() {
   return (
@@ -58,38 +59,20 @@ function App() {
               element={<Login />}
             />
 
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/orders"
-            element={
-              <ProtectedRoute>
-                <OrdersPage />
-              </ProtectedRoute>
-            }
-          />
-          
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-
             <Route
               path="/orders"
               element={
                 <ProtectedRoute>
                   <OrdersPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/create_order"
+              element={
+                <ProtectedRoute>
+                  <CreateOrderPage />
                 </ProtectedRoute>
               }
             />
