@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.fivesum.sumfood.dto.CustomerUpdateRequest;
 import com.fivesum.sumfood.dto.AddressRequest;
-import com.fivesum.sumfood.dto.OrderResponse;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.Address;
 import com.fivesum.sumfood.service.CustomerService;
@@ -198,25 +197,6 @@ public class CustomerController {
             customerService.deleteAddress(address, customer);
 
             return ResponseEntity.ok("Address deleted successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
-        }
-    }
-
-    @GetMapping("/orders")
-    public ResponseEntity<?> getOrders(@RequestHeader("Authorization") String token) {
-        try {
-            String email = jwtService.extractUsername(token.substring(7));
-            Optional<Customer> customerOpt = customerService.findByEmail(email);
-
-            if (!customerOpt.isPresent()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
-            }
-
-            Customer customer = customerOpt.get();
-            List<OrderResponse> orders = customerService.getOrders(customer);
-
-            return ResponseEntity.ok(orders);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
