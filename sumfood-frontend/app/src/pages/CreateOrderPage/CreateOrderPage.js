@@ -46,7 +46,6 @@ const CreateOrderPage = () => {
                 console.log('fetched shopping cart:', cartResponse.data);
                 setCart(cartResponse.data);
             } catch (err) {
-                console.error("Error fetching shopping cart:", err);
                 setCart(null);
             }
         };
@@ -82,11 +81,15 @@ const CreateOrderPage = () => {
 
     // --- Place Order Function ---
     const createOrder = async () => {
+        const token = localStorage.getItem('token');
+
         if (!token) {
             navigate("/");
         }
+        console.log("token");
+        console.log(token);
         try {
-            const response = await axios.post('http://localhost:8080/api/order/',
+            const response = await axios.post('http://localhost:8080/api/order/', {},
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -97,7 +100,7 @@ const CreateOrderPage = () => {
             console.log('create order:', response.data);
             // setCart(response.data);
         } catch (err) {
-            console.error("Error creating shopping cart:", err);
+            console.error("Error creating order:", err);
             setCart(null);
         }
     }
