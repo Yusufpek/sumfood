@@ -22,6 +22,19 @@
 }
 
 /* --- Food Item Specific Styles (Keep as is) --- */
+/* Category Group Styling */
+.category-group {
+  margin-bottom: 30px;
+}
+
+.category-title {
+  margin: 10px 0;
+  padding: 5px 0;
+  font-size: 1.4rem;
+  color: #333;
+  border-bottom: 1px solid #eee;
+}
+
 .category-group {
   margin-bottom: 40px;
 }
