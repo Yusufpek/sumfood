@@ -1,9 +1,5 @@
 package com.fivesum.sumfood.dto;
 
-import java.util.Date;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,4 +11,9 @@ public class AddressRequest {
     private String addressLine;
     private String addressLine2;
     private String postalCode;
+    private boolean isDefault;
+
+    public boolean getIsDefault() {
+        return isDefault;
+    }
 }
