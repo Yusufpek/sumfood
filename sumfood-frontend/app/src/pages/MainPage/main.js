@@ -39,7 +39,6 @@ const MainPage = () => {
 
   // --- Cart State ---
   const [cart, setCart] = useState([]);
-  const [orderStatus, setOrderStatus] = useState({ loading: false, error: null, success: null });
 
   const navigate = useNavigate();
 
@@ -122,118 +121,133 @@ const MainPage = () => {
     fetchRestaurants();
   }, []);
 
+  useEffect(() => {
+    const fetchShoppingCart = async () => {
+      setCart(null);
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          return;
+        }
+        const cartResponse = await axios.get('http://localhost:8080/api/shopping_cart/', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Role': 'CUSTOMER'
+          }
+        });
+        console.log('fetched shopping cart:', cartResponse.data);
+        setCart(cartResponse.data);
+      } catch (err) {
+        console.error("Error fetching shopping cart:", err);
+        setCart(null);
+      }
+    };
+    fetchShoppingCart();
+  }, []);
+
   // --- Event Handlers (keep as is) ---
   const handleSearch = (term) => {
     setSearchTerm(term);
   };
 
   // Cart Management
-  const addToCart = (item) => {
-    setOrderStatus({ loading: false, error: null, success: null }); // Clear order status on new add
-    setCart(prevCart => {
-      const existingItem = prevCart.find(cartItem => cartItem.id === item.id);
-      if (existingItem) {
-        // Increase quantity if item already exists
-        return prevCart.map(cartItem =>
-          cartItem.id === item.id ? { ...cartItem, qty: cartItem.qty + 1 } : cartItem
-        );
-      } else {
-        const { id, name, price} = item;
-        return [...prevCart, { id, name, price, qty: 1 }];
-      }
-    });
-  };
+  const addToCart = async (item) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate("/");
+    }
 
-  const updateQuantity = (itemId, amount) => {
-    setCart(prevCart => {
-      return prevCart.map(item => {
-        if (item.id === itemId) {
-          const newQty = item.qty + amount;
-          return newQty > 0 ? { ...item, qty: newQty } : null; // Return null if qty becomes 0 or less
+    try {
+      const cartResponse = await axios.get('http://localhost:8080/api/shopping_cart/', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Role': 'CUSTOMER'
         }
-        return item;
-      }).filter(item => item !== null); // Filter out items marked as null (removed)
-    });
+      });
+      console.log('fetched shopping cart:', cartResponse.data);
+      const cart = cartResponse.data;
+      // UPDATE EXISTING SHOPPING CART
+      try {
+        const response = await axios.post('http://localhost:8080/api/shopping_cart/update/',
+          {
+            'shoppingCartId': cart.id,
+            'foodItemId': item.foodItemId,
+            'foodItemCount': 1,
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Role': 'CUSTOMER'
+            }
+          });
+
+        console.log('updating shopping cart:', response.data);
+        setCart(response.data);
+      } catch (err) {
+        console.error("Error creating shopping cart:", err);
+        setCart(null);
+      }
+    } catch (err) {
+      console.error("Error fetching shopping cart:", err.response.data);
+
+      // CREATE NEW SHOPPING CART
+      if (err && err.response && err.response.data === "Shopping cart not found.") {
+        try {
+          const response = await axios.post('http://localhost:8080/api/shopping_cart/',
+            {
+              'foodItemId': item.foodItemId,
+              'restaurantId': item.restaurantId,
+              'foodItemCount': 1,
+            },
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Role': 'CUSTOMER'
+              }
+            });
+
+          console.log('fetched shopping cart:', response.data);
+          setCart(response.data);
+        } catch (err) {
+          console.error("Error creating shopping cart:", err);
+          setCart(null);
+        }
+      }
+    }
   };
 
-  const removeFromCart = (itemId) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== itemId));
-  };
+  const updateQuantity = async (cartId, itemId, amount) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate("/");
+    }
+    try {
+      const response = await axios.post('http://localhost:8080/api/shopping_cart/update/',
+        {
+          'shoppingCartId': cartId,
+          'foodItemId': itemId,
+          'foodItemCount': amount,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Role': 'CUSTOMER'
+          }
+        });
 
-  // --- Calculate Cart Total ---
-  const cartTotal = useMemo(() => {
-    return cart.reduce((total, item) => total + item.price * item.qty, 0);
-  }, [cart]);
+      console.log(amount);
+      console.log('updating shopping cart item amount:', response.data);
+      setCart(response.data);
+    } catch (err) {
+      console.error("Error creating shopping cart:", err);
+      setCart(null);
+    }
+  };
 
   // --- Place Order Function ---
   const placeOrder = async () => {
-    navigate('/orders'); // Redirect to orders page
-    // if (!isLoggedIn) {
-    //   setOrderStatus({ loading: false, error: "Please log in to place an order.", success: null });
-    //   return;
-    // }
-
-    // if (cart.length === 0) {
-    //   setOrderStatus({ loading: false, error: "Your cart is empty.", success: null });
-    //   return;
-    // }
-  
-    // const token = localStorage.getItem('token');
-    // if (!token) {
-    //   setOrderStatus({ loading: false, error: "Authentication token not found. Please log in again.", success: null });
-    //   return;
-    // }
-  
-    // setOrderStatus({ loading: true, error: null, success: null });
-  
-    // let lastOrderResponse = null;
-    
-    // for (const item of cart) {
-    //   const orderPayload = {
-    //     foodItemId: item.id,
-    //     foodItemCount: item.qty,
-    //     restaurantId: item.restaurantId,
-    //   };
-  
-    //   try {
-    //     navigate('/orders');
-    //     // const response = await axios.post('http://localhost:8080/api/shopping_cart/', orderPayload, {
-    //     //   headers: { 
-    //     //     'Authorization': `Bearer ${token}`,
-    //     //     'Role': 'CUSTOMER'
-    //     //   }
-    //     // });
-
-    //     setCart([]); // Clear cart after each order
-        
-
-    //     console.log("Order placed successfully:", response.data);
-    //     lastOrderResponse = response.data;
-    //     return;
-    //   } catch (err) {
-    //     let orderError = 'Order failed. Please try again.';
-    //     if (err.response) {
-    //       orderError = `Order failed: ${err.response.data?.message || `Server error ${err.response.status}`}`;
-    //     } else if (err.request) {
-    //       orderError = 'Order failed: Could not reach server.';
-    //     } else {
-    //       orderError = `Order failed: ${err.message}`;
-    //     }
-    //     setOrderStatus({ loading: false, error: orderError, success: null });
-    //     return;
-    //   }
-      
-    // }
-    // if (lastOrderResponse) {
-    //   setOrderStatus({ 
-    //     loading: false, 
-    //     error: null, 
-    //     success: `Order placed successfully! Redirecting...`
-    //   });
-
-    // }
-
-  };
+    navigate('/create-order');
+  }
 
   // --- Derived State and Grouping (Updated: Removed category filtering) ---
   const searchedItems = useMemo(() => {
@@ -245,7 +259,7 @@ const MainPage = () => {
     );
   }, [foodItems, searchTerm]);
 
-  const groupedItems = useMemo(() => groupItemsByCategory(searchedItems), [searchedItems]);  
+  const groupedItems = useMemo(() => groupItemsByCategory(searchedItems), [searchedItems]);
 
   // --- Render Logic ---
   return (
@@ -274,20 +288,19 @@ const MainPage = () => {
                     return (
                       <div key={item.id} className="food-item-card-simple">
                         <h3>{item.name}</h3>
-                        <img src={image}/>
+                        <img src={image} alt="" />
                         <p>{item.categories}</p>
                         <p>{item.description}</p>
                         <p><strong>Price:</strong> ${item.price.toFixed(2)}</p>
                         <button
-                        className="btn btn-add-to-cart"
-                        onClick={() => addToCart({
-                          ...item,
-                          restaurantId: item.restaurantId
-                        })}
-                      >
-                        Add to Cart
-                      </button>
-                  </div>
+                          className="btn btn-add-to-cart"
+                          onClick={() => addToCart({
+                            ...item,
+                          })}
+                        >
+                          Add to Cart
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -329,63 +342,61 @@ const MainPage = () => {
         <div className="mid-section-container">
           <FeaturedDeals />
         </div>
-        
-        <div className="cart-section-container"> {/* New container for centering */}
-          <div className="cart-container">
-            <h2>Your Cart</h2>
-            {orderStatus.error && <p className="cart-error-message">{orderStatus.error}</p>}
-            {orderStatus.success && <p className="cart-success-message">{orderStatus.success}</p>}
-            {cart.length === 0 && !orderStatus.success ? ( // Show empty message only if no success message
-              <p>Your cart is empty. Add some items!</p>
-            ) : cart.length > 0 ? ( // Only show table if cart has items
-              <>
-                <table className="cart-table">
-                  <thead>
-                    <tr>
-                      <th>Item</th>
-                      <th>Price</th>
-                      <th>Quantity</th>
-                      <th>Subtotal</th>
-                      <th>Remove</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cart.map(item => {
-                      //const image = FOOD_IMAGE_BASE + item.restaurant.bussinesName.replace(" ", "_") + "/" + item.imageName;
 
-                      return (
-                      <tr key={item.id} className="cart-item">
-                        <td>{item.name}</td>
-                        <td>${item.price.toFixed(2)}</td>
-                        <td>
-                          <div className="quantity-controls">
-                            <button onClick={() => updateQuantity(item.id, -1)} disabled={item.qty <= 1}>-</button>
-                            <span>{item.qty}</span>
-                            <button onClick={() => updateQuantity(item.id, 1)}>+</button>
-                          </div>
-                        </td>
-                        <td>${(item.price * item.qty).toFixed(2)}</td>
-                        <td>
-                          <button className="btn-remove" onClick={() => removeFromCart(item.id)}>×</button>
-                        </td>
+        {cart && (
+          <div className="cart-section-container"> {/* New container for centering */}
+            <div className="cart-container">
+              <h2>Your Cart</h2>
+              {!cart.items ? (
+                <p>Your cart is empty. Add some items!</p>
+              ) : cart.items.length > 0 ? (
+                <>
+                  <table className="cart-table">
+                    <thead>
+                      <tr>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                        <th>Remove</th>
                       </tr>
-                    )})}
-                  </tbody>
-                </table>
-                <div className="cart-total">
-                  <strong>Total: ${cartTotal.toFixed(2)}</strong>
-                </div>
-                <button
-                  className="btn btn-place-order"
-                  disabled={cart.length === 0 || orderStatus.loading} // Disable if cart empty or order placing
-                  onClick={placeOrder}
-                >
-                  {orderStatus.loading ? 'Placing Order...' : 'Place Order'}
-                </button>
-              </>
-            ) : null /* Don't show table/total/button if cart is empty after success */}
-          </div>
-        </div>
+                    </thead>
+                    <tbody>
+                      {cart.items.map(item => {
+                        return (
+                          <tr key={item.foodItemId} className="cart-item">
+                            <td>{item.foodItemName}</td>
+                            <td>${item.price}</td>
+                            <td>
+                              <div className="quantity-controls">
+                                <button onClick={() => updateQuantity(cart.id, item.foodItemId, -1)} disabled={item.qty <= 1}>-</button>
+                                <span>{item.amount}</span>
+                                <button onClick={() => updateQuantity(cart.id, item.foodItemId, 1)}>+</button>
+                              </div>
+                            </td>
+                            <td>${(item.price * item.amount)}</td>
+                            <td>
+                              <button className="btn-remove" onClick={() => updateQuantity(cart.id, item.foodItemId, item.amount * -1)}>×</button>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                  <div className="cart-total">
+                    <strong>Total: ${cart.totalPrice.toFixed(2)}</strong>
+                  </div>
+                  <button
+                    className="btn btn-place-order"
+                    disabled={cart.items.length === 0}
+                    onClick={placeOrder}
+                  >
+                    Place Order
+                  </button>
+                </>
+              ) : null /* Don't show table/total/button if cart is empty after success */}
+            </div>
+          </div>)}
 
       </main>
 
