@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import RestaurantDashboard from './pages/RestaurantDashboard';
 import RestaurantMenu from './pages/RestaurantMenu'; // Add this import
 import ProtectedRoute from './components/ProtectedRoute';
+import CourierDashboard from './pages/CourierDashboard';
 import './App.css';
 import './styles/global.css';
 import './styles/auth.css';
@@ -63,7 +64,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+          <Route
+            path="/courier-dashboard"
+            element={
+              <ProtectedRoute>
+                <CourierDashboard />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </Router>
