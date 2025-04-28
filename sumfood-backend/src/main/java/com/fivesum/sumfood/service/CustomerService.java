@@ -134,6 +134,7 @@ public class CustomerService implements UserDetailsService {
 
         if (request.getIsDefault()) {
             addressRepository.updateDefaultAddressFalse(customer.getId());
+            address.setIsDefault(true);
         }
 
         if (isChanged) {
