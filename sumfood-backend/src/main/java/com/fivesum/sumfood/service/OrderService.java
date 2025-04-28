@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 public class OrderService {
 	private final ShoppingCartService shoppingCartService;
 	private final OrderRepository orderRepository;
+	private final CustomerService customerService;
 
 	@Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class })
 	public OrderResponse createOrder(Customer customer) {
@@ -33,9 +34,18 @@ public class OrderService {
 		double totalPrice = shoppingCart.getTotalPrice();
 		PaymentStatus paymentStatus = getPayment(totalPrice);
 
+		// Order Address
+		Address address = customerService.getDefaultAddressByCustomer(customer);
+		if (address == null) {
+			throw new InvalidRequestException("Default address is not defined!");
+		}
+		String addresString = address.getAddressLine() + " " + address.getAddressLine2();
+
 		Order order = Order.builder()
 				.shoppingCart(shoppingCart)
-				.address("")
+				.address(addresString)
+				.latitude(address.getLatitude())
+				.longitude(address.getLongitude())
 				.customer(customer)
 				.paymentStatus(paymentStatus)
 				.orderStatus(OrderStatus.REGULAR)
