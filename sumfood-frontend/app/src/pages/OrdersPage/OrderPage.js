@@ -32,7 +32,7 @@ const OrdersPage = () => {
       setError(null);
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8080/api/customer/orders', {
+        const response = await axios.get('http://localhost:8080/api/order/orders', {
           headers: { 
             'Authorization': `Bearer ${token}`,
             'Role': 'CUSTOMER'
