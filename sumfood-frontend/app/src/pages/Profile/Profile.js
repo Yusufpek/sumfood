@@ -22,7 +22,7 @@ const Profile = () => {
         switch (activeSection) {
             case 'Personal Information':
                 return <PersonalInformation />;
-            case 'Manage Addresses': // Fixed typo from 'Adresses' to 'Addresses'
+            case 'Manage Addresses': // Fixed from 'Manage Adresses'
                 return <ManageAddresses />;
             case 'Payment Methods':
                 return <PaymentMethods />;
@@ -56,7 +56,7 @@ const Profile = () => {
                         Personal Information
                     </button>
                     <button 
-                        onClick={() => setActiveSection('Manage Addresses')} // Fixed typo here too
+                        onClick={() => setActiveSection('Manage Addresses')} // Fixed from 'Manage Adresses'
                         style={{
                             width: '100%',
                             padding: '10px',
@@ -67,7 +67,7 @@ const Profile = () => {
                             cursor: 'pointer'
                         }}
                     >
-                        Manage Addresses {/* Fixed typo here */}
+                        Manage Addresses {/* Fixed from 'Adresses' to 'Addresses' */}
                     </button>
                     <button 
                         onClick={() => setActiveSection('Payment Methods')}

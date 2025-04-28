@@ -420,10 +420,10 @@ const MainPage = () => {
                     onClick={() => handleAddressSelectFromPopup(address)}
                   >
                     <p>
-                      <strong>{address.streetName} {address.buildingNo}</strong>
+                      <strong>{address.addressLine}</strong>
                       {address.isDefault && <span className="default-badge">Default</span>}
                     </p>
-                    <p>{address.city}, {address.zipCode}</p>
+                    <p>{address.addressLine2 ? `${address.addressLine2}, ` : ''}{address.postalCode}</p>
                   </div>
                 ))}
               </div>
@@ -500,7 +500,7 @@ const MainPage = () => {
                 Available Restaurants
                 {isLoggedIn && selectedAddress && (
                   <span className="delivery-address-note"> 
-                    (Delivery to: {selectedAddress.streetName} {selectedAddress.buildingNo})
+                    (Delivery to: {selectedAddress.addressLine}{selectedAddress.addressLine2 ? `, ${selectedAddress.addressLine2}` : ''})
                   </span>
                 )}
               </h2>
