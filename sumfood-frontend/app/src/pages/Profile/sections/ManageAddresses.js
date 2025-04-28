@@ -360,52 +360,60 @@ const ManageAddresses = () => {
             </form>
 
             <div className="addresses-list">
-                {Array.isArray(addresses) && addresses.length > 0 ? addresses.map(address => (
-                    <div key={address.id} className="address-card">
-                        <div className="address-info">
-                            {address.id === defaultAddressId && (
-                                <p className="default-badge">Default Address</p>
-                            )}
-                            <p>
-                                <span className="field-label">Address Line 1:</span>
-                                <span className="field-value">{address.addressLine}</span>
-                            </p>
-                            {address.addressLine2 && (
-                                <p>
-                                    <span className="field-label">Address Line 2:</span>
-                                    <span className="field-value">{address.addressLine2}</span>
-                                </p>
-                            )}
-                            <p>
-                                <span className="field-label">Postal Code:</span>
-                                <span className="field-value">{address.postalCode}</span>
-                            </p>
-                        </div>
-                        <div className="address-actions">
-                            <button
-                                className="edit-btn"
-                                onClick={() => handleEdit(address)}
-                                disabled={loading}
-                            >
-                                Edit
-                            </button>
-                            <button
-                                className="default-btn"
-                                onClick={() => handleSetDefault(address.id)}
-                                disabled={loading || address.id === defaultAddressId}
-                            >
-                                {address.id === defaultAddressId ? 'Default' : 'Set Default'}
-                            </button>
-                            <button
-                                className="delete-btn"
-                                onClick={() => initiateDelete(address.id)}
-                                disabled={loading}
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                )) : <p className="no-addresses">No addresses found. Add your first address above.</p>}
+                {Array.isArray(addresses) && addresses.length > 0 ? 
+                    [...addresses]
+                        .sort((a, b) => {
+                            // Sort by default status (default address first)
+                            if (a.id === defaultAddressId) return -1;
+                            if (b.id === defaultAddressId) return 1;
+                            return 0;
+                        })
+                        .map(address => (
+                            <div key={address.id} className="address-card">
+                                <div className="address-info">
+                                    {address.id === defaultAddressId && (
+                                        <p className="default-badge">Default Address</p>
+                                    )}
+                                    <p>
+                                        <span className="field-label">Address Line 1:</span>
+                                        <span className="field-value">{address.addressLine}</span>
+                                    </p>
+                                    {address.addressLine2 && (
+                                        <p>
+                                            <span className="field-label">Address Line 2:</span>
+                                            <span className="field-value">{address.addressLine2}</span>
+                                        </p>
+                                    )}
+                                    <p>
+                                        <span className="field-label">Postal Code:</span>
+                                        <span className="field-value">{address.postalCode}</span>
+                                    </p>
+                                </div>
+                                <div className="address-actions">
+                                    <button
+                                        className="edit-btn"
+                                        onClick={() => handleEdit(address)}
+                                        disabled={loading}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="default-btn"
+                                        onClick={() => handleSetDefault(address.id)}
+                                        disabled={loading || address.id === defaultAddressId}
+                                    >
+                                        {address.id === defaultAddressId ? 'Default' : 'Set Default'}
+                                    </button>
+                                    <button
+                                        className="delete-btn"
+                                        onClick={() => initiateDelete(address.id)}
+                                        disabled={loading}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        )) : <p className="no-addresses">No addresses found. Add your first address above.</p>}
             </div>
         </div>
     );
