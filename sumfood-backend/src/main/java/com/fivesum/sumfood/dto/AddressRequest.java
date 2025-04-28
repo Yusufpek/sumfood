@@ -12,4 +12,8 @@ public class AddressRequest {
     private String addressLine2;
     private String postalCode;
     private boolean isDefault;
+
+    public boolean getIsDefault() {
+        return isDefault;
+    }
 }

@@ -101,7 +101,7 @@ public class CustomerService implements UserDetailsService {
                 .postalCode(request.getPostalCode())
                 .latitude(latitude)
                 .longitude(longitude)
-                .isDefault(request.isDefault())
+                .isDefault(request.getIsDefault())
                 .build();
 
         if (address.getIsDefault()) {
@@ -132,7 +132,7 @@ public class CustomerService implements UserDetailsService {
             address.setPostalCode(request.getPostalCode());
         }
 
-        if (request.isDefault()) {
+        if (request.getIsDefault()) {
             addressRepository.updateDefaultAddressFalse(customer.getId());
         }
 
