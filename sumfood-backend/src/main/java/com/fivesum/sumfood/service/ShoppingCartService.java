@@ -118,6 +118,8 @@ public class ShoppingCartService {
             } else if (request.getFoodItemCount() + updateItem.getAmount() == 0) {
                 calculatedTotalPrice = shoppingCart.getTotalPrice()
                         - updateItem.getAmount() * updateItem.getFoodItem().getPrice();
+                List<ShoppingCartFoodItemRelation> items = shoppingCart.getItems();
+                items.remove(updateItem);
                 shoppingCartItemRepository.delete(updateItem);
             } else {
                 updateItem.setAmount(updateItem.getAmount() + request.getFoodItemCount());
@@ -163,6 +165,7 @@ public class ShoppingCartService {
                         .foodItemId(item.getFoodItem().getId())
                         .foodItemName(item.getFoodItem().getName())
                         .amount(item.getAmount())
+                        .price(item.getFoodItem().getPrice())
                         .build())
                 .collect(Collectors.toList());
 
