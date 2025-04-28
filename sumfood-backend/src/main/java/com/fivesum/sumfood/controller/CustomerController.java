@@ -107,7 +107,7 @@ public class CustomerController {
         }
     }
 
-    @PutMapping("address/default/")
+    @PutMapping("address/default/{addressId}")
     public ResponseEntity<?> updateDefaultAddress(@RequestHeader("Authorization") String token,
             @PathVariable() String addressId) {
         try {
@@ -119,7 +119,7 @@ public class CustomerController {
             }
 
             Customer customer = customerOpt.get();
-            Address address = customerService.getDefaultAddressByCustomer(customer);
+            Address address = customerService.updateDefaultAddressByCustomer(customer, addressId);
             if (address == null) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Default Address is not defined");
             }

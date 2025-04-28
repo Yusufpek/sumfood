@@ -150,6 +150,7 @@ public class CustomerService implements UserDetailsService {
         return addressRepository.save(address);
     }
 
+    @Transactional
     public Address updateDefaultAddressByCustomer(Customer customer, String addressIdString) {
         Long addressId;
         try {
@@ -164,7 +165,6 @@ public class CustomerService implements UserDetailsService {
         Address address = addressOpt.get();
         addressRepository.updateDefaultAddressFalse(customer.getId());
         address.setIsDefault(true);
-
         return addressRepository.save(address);
     }
 
