@@ -1,0 +1,84 @@
+.restaurant-card {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    display: block;
+  }
+  
+  .restaurant-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+  }
+  
+  .restaurant-image {
+    height: 180px;
+    background-color: #eee;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  
+  .restaurant-info {
+    padding: 16px;
+  }
+  
+  .restaurant-info h3 {
+    margin: 0 0 10px;
+    font-size: 1.3rem;
+    color: #333;
+  }
+  
+  .restaurant-meta {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .rating {
+    color: #ff9800;
+    font-weight: 500;
+  }
+  
+  .delivery-time, .minimum-order {
+    display: flex;
+    align-items: center;
+  }
+  
+  .delivery-time::before {
+    content: "🕒";
+    margin-right: 4px;
+  }
+  
+  .minimum-order::before {
+    content: "💰";
+    margin-right: 4px;
+  }
+  
+  .restaurant-categories {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+  }
+  
+  .featured-restaurant .restaurant-image::before {
+    content: "Featured";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #ff6347;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  

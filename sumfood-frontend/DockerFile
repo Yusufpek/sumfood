@@ -1,0 +1,5 @@
+FROM node:23-bookworm AS builder
+
+WORKDIR ./app
+
+RUN npm ci
