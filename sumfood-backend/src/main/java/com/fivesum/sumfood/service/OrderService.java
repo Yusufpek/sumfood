@@ -76,7 +76,7 @@ public class OrderService {
 		} catch (Exception e) {
 			throw new InvalidRequestException("Status " + status + " is not valid!");
 		}
-		List<Order> orders = orderRepository.findByCustomerAndByOrderStatus(customer, orderStatus);
+		List<Order> orders = orderRepository.findByCustomerAndOrderStatus(customer, orderStatus);
 		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
 	}
 
