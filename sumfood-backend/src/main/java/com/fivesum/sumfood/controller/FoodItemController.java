@@ -63,7 +63,7 @@ public class FoodItemController {
         }
     }
 
-    @GetMapping("/items")
+    @GetMapping("/items/restaurant")
     public ResponseEntity<List<FoodItemResponse>> getFoodItemsByRestaurant(
             @RequestHeader("Authorization") String token) {
         String email = jwtService.extractUsername(token.substring(7));
