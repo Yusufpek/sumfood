@@ -22,5 +22,7 @@ public class OrderResponse {
     private double totalPrice;
     private String restaurantName;
     private String address;
+    private double latitude;
+    private double longitude;
     private List<ShoppingCartItemResponse> foodItems;
 }
