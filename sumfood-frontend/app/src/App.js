@@ -1,38 +1,75 @@
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import MainPage from './pages/MainPage/main';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Navbar from './components/Navbar';
+import RestaurantDashboard from './pages/RestaurantDashboard';
+import RestaurantMenu from './pages/RestaurantMenu'; // Add this import
+import ProtectedRoute from './components/ProtectedRoute';
+import CourierDashboard from './pages/CourierDashboard';
 import './App.css';
+import './styles/global.css';
+import './styles/auth.css';
+import Profile from "./pages/Profile/Profile";
 
 function App() {
   return (
     <Router>
       <div className="App">
-        <Navbar />
-        <header className="App-header">
-          <h1>Welcome to SumFood</h1>
-          <p>Your favorite food, delivered fast and fresh!</p>
-        </header>
+        {}
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          {}
+          <Route
+            path="/main"
+            element={
+              <ProtectedRoute>
+                <MainPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/restaurant-dashboard"
+            element={
+              <ProtectedRoute>
+                <RestaurantDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/restaurant-dashboard/menu"
+            element={
+              <ProtectedRoute>
+                <RestaurantMenu />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/login"
+            element={<Login />}
+          />
+          <Route
+            path="/register"
+            element={<Register />}
+          />
           <Route
             path="/"
+            element={<Login />}
+          />
+
+          <Route
+            path="/profile"
             element={
-              <button
-                onClick={() => alert('Browse our menu!')}
-                style={{
-                  padding: '10px 20px',
-                  fontSize: '16px',
-                  backgroundColor: '#ff6347',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                }}
-              >
-                Browse Menu
-              </button>
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/courier-dashboard"
+            element={
+              <ProtectedRoute>
+                <CourierDashboard />
+              </ProtectedRoute>
             }
           />
         </Routes>

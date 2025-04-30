@@ -1,0 +1,286 @@
+.restaurant-menu-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.add-item-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.add-item-button:hover {
+  background-color: #45a049;
+}
+
+.menu-items-container {
+  min-height: 300px;
+}
+
+.menu-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.menu-item-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  position: relative;
+}
+
+.menu-item-status {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.donation-badge {
+  background-color: #ff9800;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.stock-info {
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.item-description {
+  color: #666;
+  margin: 10px 0;
+}
+
+.item-category {
+  color: #888;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.item-price {
+  font-weight: bold;
+  color: #333;
+  font-size: 1.2rem;
+  margin: 10px 0;
+}
+
+.item-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.edit-button,
+.delete-button {
+  padding: 5px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.edit-button {
+  background-color: #2196F3;
+  color: white;
+}
+
+.edit-button:hover {
+  background-color: #0b7dda;
+}
+
+.delete-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.delete-button:hover {
+  background-color: #da190b;
+}
+
+.empty-menu-message {
+  text-align: center;
+  padding: 50px;
+  font-style: italic;
+  color: #777;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.menu-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.menu-form-container {
+  background-color: white;
+  border-radius: 8px;
+  padding: 30px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.form-title {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.menu-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.form-group.full-width {
+  width: 100%;
+}
+
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 100%;
+}
+
+.form-group textarea {
+  min-height: 100px;
+}
+
+.form-group.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox-container input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+}
+
+.checkbox-label {
+  margin-left: 0;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px; /* Add gap between buttons */
+  margin-top: 20px;
+}
+
+.form-buttons button {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.save-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+}
+
+.save-button:hover {
+  background-color: #45a049;
+}
+
+.cancel-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+}
+
+.cancel-button:hover {
+  background-color: #da190b;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 50px;
+  font-size: 1.2rem;
+}
+
+.error {
+  color: #f44336;
+}
+
+.delete-confirm-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  padding: 24px;
+  position: relative;
+  text-align: center;
+  width: 90%;
+  z-index: 1000;
+}
+
+.delete-confirm-container h2 {
+  color: #d32f2f;
+  margin-top: 0;
+}
+
+.delete-confirm-container p {
+  margin: 16px 0;
+}
