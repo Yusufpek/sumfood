@@ -1,6 +1,5 @@
 package com.fivesum.sumfood.service;
 
-import com.fivesum.sumfood.dto.FoodItemShoppingCartDTO;
 import com.fivesum.sumfood.dto.OrderResponse;
 import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.model.*;
@@ -135,6 +134,9 @@ public class OrderService {
 				.paymentStatus(order.getPaymentStatus().toString())
 				.totalPrice(order.getShoppingCart().getTotalPrice())
 				.restaurantName(order.getShoppingCart().getRestaurant().getDisplayName())
+				.address(order.getAddress())
+				.latitude(order.getLatitude())
+				.longitude(order.getLongitude())
 				.foodItems(items)
 				.build();
 	}
