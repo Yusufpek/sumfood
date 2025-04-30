@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Add navigation import
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import './OrdersPage.css';
+
+// !! use the requested states
+const ACTIVE_STATUSES = ['PROCESSING', 'PREPARING', 'ON_THE_WAY', 'ACCEPTED', 'WAITING_PAYMENT'];
 
 const OrdersPage = () => {
   const navigate = useNavigate();
@@ -13,7 +16,6 @@ const OrdersPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Check login status first
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -27,7 +29,6 @@ const OrdersPage = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       if (!isLoggedIn) return;
-      
       setLoading(true);
       setError(null);
       try {
@@ -38,12 +39,9 @@ const OrdersPage = () => {
             'Role': 'CUSTOMER'
           }
         });
-        console.log("Orders response:", response.data); // Debugging line
         const ordersData = Array.isArray(response.data) ? response.data : [];
         setOrders(ordersData);
-        
       } catch (err) {
-        console.error("Error fetching orders:", err);
         let msg = 'Failed to load orders.';
         if (err.response) {
           if (err.response.status === 401 || err.response.status === 403) {
@@ -69,11 +67,9 @@ const OrdersPage = () => {
         setLoading(false);
       }
     };
-    
     fetchOrders();
   }, [isLoggedIn, navigate]);
 
-  // Helper function to format dates nicely
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     try {
@@ -85,11 +81,13 @@ const OrdersPage = () => {
     }
   };
 
+  // Split orders into active and past based on ORDER STATUS
+  const activeOrders = orders.filter(order => ACTIVE_STATUSES.includes((order.orderStatus || '').toUpperCase()));
+  const pastOrders = orders.filter(order => !ACTIVE_STATUSES.includes((order.orderStatus || '').toUpperCase()));
+
   return (
     <div className="orders-page-container">
-      {}
       <Navbar isLoggedIn={isLoggedIn} username={username} />
-      
       <main className="orders-main-content">
         <h2>Your Orders</h2>
         {loading ? (
@@ -111,61 +109,134 @@ const OrdersPage = () => {
             </button>
           </div>
         ) : (
-          <div className="orders-table-container">
-            <table className="orders-table">
-              <thead>
-                <tr>
-                  <th>Order #</th>
-                  <th>Restaurant</th>
-                  <th>Date</th>
-                  <th>Order Status</th>
-                  <th>Payment Status</th>
-                  <th>Total</th>
-                  {/* <th>Details</th> */}
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map(order => (
-                  <tr key={order.id}>
-                    <td>{order.id || 'N/A'}</td>
-                    <td>{order.restaurantName || 'Unknown Restaurant'}</td>
-                    <td>{formatDate(order.createdAt)}</td>
-                    <td>
-                      <span className={`status-badge status-${(order.status || 'processing').toLowerCase()}`}>
-                        {order.status || 'Processing'}
-                      </span>
-                    </td>
-                    <td>${Number(order.totalPrice || 0).toFixed(2)}</td>
-                    <td>
-                      <details>
-                        <summary>View Items</summary>
-                        <div className="order-details-panel">
-                          <ul className="order-items-list">
-                            {order.foodItems && order.foodItems.length > 0 ? (
-                              order.foodItems.map((item, idx) => (
-                                <li key={idx} className="order-item">
-                                  <span className="item-name">{item.name || item.foodItemName || 'Unknown Item'}</span>
-                                  <span className="item-quantity">× {item.quantity || 1}</span>
-                                  <span className="item-price">${Number(item.price || 0).toFixed(2)}</span>
-                                </li>
-                              ))
-                            ) : (
-                              <li className="no-items">No items available</li>
-                            )}
-                          </ul>
-                          {order.deliveryAddress && (
-                            <div className="delivery-info">
-                              <strong>Delivery Address:</strong> {order.address}
-                            </div>
-                          )}
-                        </div>
-                      </details>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <section>
+              <h3>Active Orders</h3>
+              {activeOrders.length === 0 ? (
+                <p>No active orders.</p>
+              ) : (
+                <div className="orders-table-container">
+                  <table className="orders-table">
+                    <thead>
+                      <tr>
+                        <th>Order #</th>
+                        <th>Restaurant</th>
+                        <th>Date</th>
+                        <th>Order Status</th>
+                        <th>Payment Status</th>
+                        <th>Total</th>
+                        <th>Details</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activeOrders.map(order => (
+                        <tr key={order.id}>
+                          <td>{order.id || 'N/A'}</td>
+                          <td>{order.restaurantName || 'Unknown Restaurant'}</td>
+                          <td>{formatDate(order.createdAt)}</td>
+                          <td>
+                            <span className={`status-badge status-${(order.status || 'processing').toLowerCase()}`}>
+                              {order.status || 'Processing'}
+                            </span>
+                          </td>
+                          <td>{order.paymentStatus || 'N/A'}</td>
+                          <td>${Number(order.totalPrice || 0).toFixed(2)}</td>
+                          <td>
+                            <details>
+                              <summary>View Items</summary>
+                              <div className="order-details-panel">
+                                <ul className="order-items-list">
+                                  {order.foodItems && order.foodItems.length > 0 ? (
+                                    order.foodItems.map((item, idx) => (
+                                      <li key={idx} className="order-item">
+                                        <span className="item-name">{item.name || item.foodItemName || 'Unknown Item'}</span>
+                                        <span className="item-quantity">× {item.quantity || 1}</span>
+                                        <span className="item-price">${Number(item.price || 0).toFixed(2)}</span>
+                                      </li>
+                                    ))
+                                  ) : (
+                                    <li className="no-items">No items available</li>
+                                  )}
+                                </ul>
+                                {order.deliveryAddress && (
+                                  <div className="delivery-info">
+                                    <strong>Delivery Address:</strong> {order.address}
+                                  </div>
+                                )}
+                              </div>
+                            </details>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
+            <section>
+              <h3>Order History</h3>
+              {pastOrders.length === 0 ? (
+                <p>No past orders.</p>
+              ) : (
+                <div className="orders-table-container">
+                  <table className="orders-table">
+                    <thead>
+                      <tr>
+                        <th>Order #</th>
+                        <th>Restaurant</th>
+                        <th>Date</th>
+                        <th>Order Status</th>
+                        <th>Payment Status</th>
+                        <th>Total</th>
+                        <th>Details</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pastOrders.map(order => (
+                        <tr key={order.id}>
+                          <td>{order.id || 'N/A'}</td>
+                          <td>{order.restaurantName || 'Unknown Restaurant'}</td>
+                          <td>{formatDate(order.createdAt)}</td>
+                          <td>
+                            <span className={`status-badge status-${(order.status || 'processing').toLowerCase()}`}>
+                              {order.status || 'Processing'}
+                            </span>
+                          </td>
+                          <td>{order.paymentStatus || 'N/A'}</td>
+                          <td>${Number(order.totalPrice || 0).toFixed(2)}</td>
+                          <td>
+                            <details>
+                              <summary>View Items</summary>
+                              <div className="order-details-panel">
+                                <ul className="order-items-list">
+                                  {order.foodItems && order.foodItems.length > 0 ? (
+                                    order.foodItems.map((item, idx) => (
+                                      <li key={idx} className="order-item">
+                                        <span className="item-name">{item.name || item.foodItemName || 'Unknown Item'}</span>
+                                        <span className="item-quantity">× {item.quantity || 1}</span>
+                                        <span className="item-price">${Number(item.price || 0).toFixed(2)}</span>
+                                      </li>
+                                    ))
+                                  ) : (
+                                    <li className="no-items">No items available</li>
+                                  )}
+                                </ul>
+                                {order.deliveryAddress && (
+                                  <div className="delivery-info">
+                                    <strong>Delivery Address:</strong> {order.address}
+                                  </div>
+                                )}
+                              </div>
+                            </details>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
+          </>
         )}
       </main>
       <Footer />
