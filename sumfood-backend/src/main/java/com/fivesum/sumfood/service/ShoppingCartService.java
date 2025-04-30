@@ -121,15 +121,19 @@ public class ShoppingCartService {
                 List<ShoppingCartFoodItemRelation> items = shoppingCart.getItems();
                 items.remove(updateItem);
                 shoppingCartItemRepository.delete(updateItem);
+                if (calculatedTotalPrice == 0) {
+                    shoppingCartRepository.delete(shoppingCart);
+                }
             } else {
                 updateItem.setAmount(updateItem.getAmount() + request.getFoodItemCount());
                 calculatedTotalPrice = shoppingCart.getTotalPrice() + foodItem.getPrice() * request.getFoodItemCount();
                 shoppingCartItemRepository.save(updateItem);
             }
         }
-
-        shoppingCart.setTotalPrice(calculatedTotalPrice);
-        shoppingCartRepository.save(shoppingCart);
+        if (calculatedTotalPrice == 0) {
+            shoppingCart.setTotalPrice(calculatedTotalPrice);
+            shoppingCartRepository.save(shoppingCart);
+        }
 
         return mapToDTO(shoppingCart);
     }
