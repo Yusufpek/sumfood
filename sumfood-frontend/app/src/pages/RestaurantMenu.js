@@ -49,11 +49,9 @@ function RestaurantMenu() {
 
 
         // Fetch food items
-        const foodResponse = await axios.get('http://localhost:8080/api/food/items', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Role': `RESTAURANT`
-          }
+        const foodResponse = await axios.get('http://localhost:8080/api/food/items/restaurant', {
+          headers: { 'Authorization': `Bearer ${token}`,
+          'Role': `RESTAURANT` }
         });
         console.log('API Food Items Response:', foodResponse);
         setFoodItems(foodResponse.data || []);
@@ -204,7 +202,7 @@ function RestaurantMenu() {
       }
 
       // Refresh food items after successful save/update
-      const foodResponse = await axios.get('http://localhost:8080/api/food/items', {
+      const foodResponse = await axios.get('http://localhost:8080/api/food/items/restaurant', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Role': 'RESTAURANT'
