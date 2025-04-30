@@ -10,10 +10,12 @@ import com.fivesum.sumfood.model.enums.PaymentStatus;
 import com.fivesum.sumfood.repository.OrderRepository;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -65,6 +67,38 @@ public class OrderService {
 	@Transactional
 	public List<OrderResponse> getOrdersByCustomer(Customer customer) {
 		List<Order> orders = orderRepository.findByCustomer(customer);
+		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public List<OrderResponse> getPastOrdersByCustomer(Customer customer) {
+		List<OrderStatus> pastStatusList = new ArrayList<OrderStatus>();
+		pastStatusList.add(OrderStatus.FAILED);
+		pastStatusList.add(OrderStatus.CANCELLED);
+		pastStatusList.add(OrderStatus.DELIVERED);
+
+		List<Order> orders = orderRepository.findByCustomerAndOrderStatusIn(customer, pastStatusList);
+		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public List<OrderResponse> getActiveOrdersByCustomer(Customer customer) {
+		List<OrderStatus> activeStatusList = new ArrayList<OrderStatus>();
+		activeStatusList.add(OrderStatus.PENDING);
+		activeStatusList.add(OrderStatus.PREPARING);
+		activeStatusList.add(OrderStatus.ON_THE_WAY);
+
+		List<Order> orders = orderRepository.findByCustomerAndOrderStatusIn(customer, activeStatusList);
+		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public List<OrderResponse> getActiveOrders() {
+		List<OrderStatus> activeStatusList = new ArrayList<OrderStatus>();
+		activeStatusList.add(OrderStatus.PENDING);
+		activeStatusList.add(OrderStatus.PREPARING);
+
+		List<Order> orders = orderRepository.findByOrderStatusIn(activeStatusList);
 		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
 	}
 

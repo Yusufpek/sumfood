@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import com.fivesum.sumfood.dto.OrderResponse;
 import com.fivesum.sumfood.exception.InvalidRequestException;
+import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.model.Customer;
+import com.fivesum.sumfood.service.CourierService;
 import com.fivesum.sumfood.service.CustomerService;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.OrderService;
@@ -24,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class OrderController {
     private final OrderService orderService;
     private final CustomerService customerService;
+    private final CourierService courierService;
     private final JwtService jwtService;
 
     @Transactional
@@ -81,6 +84,55 @@ public class OrderController {
             List<OrderResponse> orders = orderService.getOrdersByCustomerByStatus(customer, orderStatus);
 
             return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/orders/past")
+    public ResponseEntity<?> getPastOrders(@RequestHeader("Authorization") String token) {
+        try {
+            String email = jwtService.extractUsername(token.substring(7));
+            Optional<Customer> customerOpt = customerService.findByEmail(email);
+
+            if (!customerOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
+            }
+
+            Customer customer = customerOpt.get();
+            List<OrderResponse> orders = orderService.getPastOrdersByCustomer(customer);
+
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/orders/active")
+    public ResponseEntity<?> getActiveOrders(@RequestHeader("Authorization") String token,
+            @RequestHeader("Role") String role) {
+        try {
+            String email = jwtService.extractUsername(token.substring(7));
+            if (role.equals("CUSTOMER")) {
+                Optional<Customer> customerOpt = customerService.findByEmail(email);
+                if (!customerOpt.isPresent()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
+                }
+
+                Customer customer = customerOpt.get();
+                List<OrderResponse> orders = orderService.getActiveOrdersByCustomer(customer);
+                return ResponseEntity.ok(orders);
+
+            } else if (role.equals("COURIER")) {
+                Optional<Courier> courierOpt = courierService.findByEmail(email);
+                if (!courierOpt.isPresent()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
+                }
+                List<OrderResponse> orders = orderService.getActiveOrders();
+                return ResponseEntity.ok(orders);
+            }
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
