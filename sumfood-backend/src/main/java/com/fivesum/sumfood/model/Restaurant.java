@@ -11,6 +11,9 @@ import com.fivesum.sumfood.model.enums.Role;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @SuperBuilder
 @Entity
@@ -33,7 +36,17 @@ public class Restaurant extends UserBase {
     @Column(nullable = false)
     private boolean isValidated = false;
 
-    // TODO: Add location fields
+    @Column(nullable = false, length = 50)
+    private String city;
+
+    @Column(nullable = false, length = 500)
+    private String address;
+
+    @Column(nullable = true)
+    private double latitude;
+
+    @Column(nullable = true)
+    private double longitude;
 
     @PrePersist
     public void prePersist() {
@@ -48,25 +61,4 @@ public class Restaurant extends UserBase {
     // Relation
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FoodItem> foodItems = new ArrayList<>();
-
-    // Getters
-    public String getTaxIdentificationNumber() {
-        return taxIdentificationNumber;
-    }
-
-    public String getBusinessName() {
-        return businessName;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public boolean isValidated() {
-        return isValidated;
-    }
 }

@@ -7,9 +7,15 @@ import com.fivesum.sumfood.model.enums.OrderStatus;
 import com.fivesum.sumfood.model.enums.PaymentStatus;
 
 import lombok.experimental.SuperBuilder;
+import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 @SuperBuilder
 @Entity
+@NoArgsConstructor
+@Getter
+@Setter
 @Table(name = "orders")
 public class Order extends EntityBase {
 
@@ -28,5 +34,4 @@ public class Order extends EntityBase {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus orderStatus;
-
 }

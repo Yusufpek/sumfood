@@ -1,5 +1,7 @@
 package com.fivesum.sumfood.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -16,10 +18,15 @@ import com.fivesum.sumfood.dto.CustomerRegistrationRequest;
 import com.fivesum.sumfood.dto.CustomerUpdateRequest;
 import com.fivesum.sumfood.dto.AuthRequest;
 import com.fivesum.sumfood.dto.AddressRequest;
+import com.fivesum.sumfood.dto.OrderResponse;
+import com.fivesum.sumfood.dto.FoodItemShoppingCartDTO;
+import com.fivesum.sumfood.model.Order;
+import com.fivesum.sumfood.model.ShoppingCartFoodItemRelation;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.Address;
 import com.fivesum.sumfood.repository.CustomerRepository;
 import com.fivesum.sumfood.repository.AddressRepository;
+import com.fivesum.sumfood.repository.OrderRepository;
 import com.fivesum.sumfood.responses.CustomerGetResponse;
 
 import lombok.AllArgsConstructor;
@@ -32,6 +39,8 @@ public class CustomerService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final AddressRepository addressRepository;
+    private final OrderRepository orderRepository;
+    private final GoogleMapsService googleMapsService;
 
     @Transactional
     public Customer registerCustomer(CustomerRegistrationRequest request) {
@@ -66,21 +75,39 @@ public class CustomerService implements UserDetailsService {
 
     public CustomerGetResponse getCustomerResponse(Customer customer) {
         return new CustomerGetResponse(
-            customer.getName(),
-            customer.getLastName(),
-            customer.getEmail(),
-            customer.getPhoneNumber()
-        );
+                customer.getName(),
+                customer.getLastName(),
+                customer.getEmail(),
+                customer.getPhoneNumber());
     }
 
     @Transactional
     public Address addAddress(AddressRequest request, Customer customer) {
+        double latitude = 0;
+        double longitude = 0;
+        try {
+            String addressStr = request.getAddressLine() + request.getAddressLine2();
+            double[] points = googleMapsService.getLatLongByAddress(addressStr);
+            latitude = points[0];
+            longitude = points[1];
+        } catch (Exception e) {
+            System.out.println("Error in updating address " + e.getMessage());
+        }
+
         Address address = Address.builder()
                 .customer(customer)
                 .addressLine(request.getAddressLine())
                 .addressLine2(request.getAddressLine2())
                 .postalCode(request.getPostalCode())
+                .latitude(latitude)
+                .longitude(longitude)
+                .isDefault(request.getIsDefault())
                 .build();
+
+        if (address.getIsDefault()) {
+            // set all others isDefault=false before saving new one
+            addressRepository.updateDefaultAddressFalse(customer.getId());
+        }
 
         customer.getAddresses().add(address);
         customerRepository.save(customer);
@@ -92,17 +119,63 @@ public class CustomerService implements UserDetailsService {
         if (!customer.getAddresses().contains(address)) {
             throw new IllegalArgumentException("Address not found in customer's address list");
         }
+        boolean isChanged = false;
         if (request.getAddressLine() != null) {
             address.setAddressLine(request.getAddressLine());
+            isChanged = true;
         }
         if (request.getAddressLine2() != null) {
             address.setAddressLine2(request.getAddressLine2());
+            isChanged = true;
         }
         if (request.getPostalCode() != null) {
             address.setPostalCode(request.getPostalCode());
         }
 
+        if (request.getIsDefault()) {
+            addressRepository.updateDefaultAddressFalse(customer.getId());
+            address.setIsDefault(true);
+        }
+
+        if (isChanged) {
+            try {
+                String addressStr = address.getAddressLine() + address.getAddressLine2();
+                double[] points = googleMapsService.getLatLongByAddress(addressStr);
+                address.setLatitude(points[0]);
+                address.setLongitude(points[1]);
+            } catch (Exception e) {
+                System.out.println("Error in updating address " + e.getMessage());
+            }
+        }
+
         return addressRepository.save(address);
+    }
+
+    @Transactional
+    public Address updateDefaultAddressByCustomer(Customer customer, String addressIdString) {
+        Long addressId;
+        try {
+            addressId = Long.parseLong(addressIdString);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Address Id is not valid!");
+        }
+        Optional<Address> addressOpt = addressRepository.findById(addressId);
+        if (!addressOpt.isPresent()) {
+            throw new IllegalArgumentException("Address Id is not valid!");
+        }
+        Address address = addressOpt.get();
+        addressRepository.updateDefaultAddressFalse(customer.getId());
+        address.setIsDefault(true);
+        return addressRepository.save(address);
+    }
+
+    public Address getDefaultAddressByCustomer(Customer customer) {
+        List<Address> addresses = addressRepository.findByIsDefaultAndCustomerId(true, customer.getId());
+        if (addresses.size() == 0) {
+            return null;
+        } else {
+            return addresses.get(0);
+        }
     }
 
     @Transactional
@@ -118,6 +191,34 @@ public class CustomerService implements UserDetailsService {
     public Address findAddressById(Long addressId) {
         return addressRepository.findById(addressId)
                 .orElseThrow(() -> new IllegalArgumentException("Address not found with id: " + addressId));
+    }
+
+    @Transactional
+    public List<OrderResponse> getOrders(Customer customer) {
+        List<Order> orders = orderRepository.findByCustomer(customer);
+        List<OrderResponse> orderResponses = new ArrayList<>();
+
+        for (Order order : orders) {
+            OrderResponse orderResponse = new OrderResponse();
+            orderResponse.setId(order.getId());
+            orderResponse.setCreatedAt(order.getCreateAt());
+            orderResponse.setOrderStatus(order.getOrderStatus().name());
+            orderResponse.setPaymentStatus(order.getPaymentStatus().name());
+            orderResponse.setTotalPrice(order.getShoppingCart().getTotalPrice());
+            orderResponse.setRestaurantName(order.getShoppingCart().getRestaurant().getName());
+            List<FoodItemShoppingCartDTO> foodItemsInCart = new ArrayList<>();
+            for (ShoppingCartFoodItemRelation relation : order.getShoppingCart().getItems()) {
+                foodItemsInCart.add(new FoodItemShoppingCartDTO(
+                        relation.getFoodItem().getId(),
+                        relation.getFoodItem().getName(),
+                        relation.getAmount(),
+                        relation.getFoodItem().getPrice()));
+            }
+            orderResponse.setFoodItems(foodItemsInCart);
+            orderResponses.add(orderResponse);
+        }
+
+        return orderResponses;
     }
 
     @Transactional
