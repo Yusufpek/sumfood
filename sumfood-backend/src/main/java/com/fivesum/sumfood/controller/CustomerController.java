@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.*;
 
 import com.fivesum.sumfood.dto.CustomerUpdateRequest;
 import com.fivesum.sumfood.dto.AddressRequest;
+import com.fivesum.sumfood.responses.RestaurantProfileResponse;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.Address;
 import com.fivesum.sumfood.service.CustomerService;
 import com.fivesum.sumfood.service.JwtService;
+import com.fivesum.sumfood.service.RestaurantService;
 import com.fivesum.sumfood.responses.CustomerGetResponse;
 
 @RestController
@@ -22,6 +24,7 @@ import com.fivesum.sumfood.responses.CustomerGetResponse;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final RestaurantService restaurantService;
     private final JwtService jwtService;
 
     @PutMapping("/")
@@ -201,4 +204,30 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
+
+    @GetMapping("/restaurants/{maxDistance}")
+    public ResponseEntity<List<RestaurantProfileResponse>> getRestaurantsByCustomer(
+            @PathVariable("maxDistance") double maxDistance,
+            @RequestHeader("Authorization") String token) {
+        String email = jwtService.extractUsername(token.substring(7));
+        Optional<Customer> customer = customerService.findByEmail(email);
+        if (customer.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    restaurantService.getRestaurantByCustomer(customer.get(), maxDistance));
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    @GetMapping("/restaurants")
+    public ResponseEntity<List<RestaurantProfileResponse>> getRestaurantsByCustomer(
+            @RequestHeader("Authorization") String token) {
+        String email = jwtService.extractUsername(token.substring(7));
+        Optional<Customer> customer = customerService.findByEmail(email);
+        if (customer.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    restaurantService.getRestaurantByCustomer(customer.get(), 30));
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
 }
