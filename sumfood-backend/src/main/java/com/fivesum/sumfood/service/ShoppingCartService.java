@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -137,6 +138,16 @@ public class ShoppingCartService {
         }
 
         return null;
+    }
+
+    @Transactional
+    public boolean deleteShoppingCart(Customer customer, Long cartId) {
+        ShoppingCart cart = getShoppingCartById(cartId);
+        if (cart.getCustomer() == customer) {
+            shoppingCartRepository.delete(cart);
+            return true;
+        }
+        return false;
     }
 
     public ShoppingCart getShoppingCartById(Long id) {

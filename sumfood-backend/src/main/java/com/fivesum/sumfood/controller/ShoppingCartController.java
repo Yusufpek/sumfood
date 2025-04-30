@@ -93,4 +93,24 @@ public class ShoppingCartController {
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
+    @DeleteMapping("/{cartId}")
+    public ResponseEntity<?> getShoppingCart(@RequestHeader("Authorization") String token,
+            @PathVariable() String cartId) {
+        String email = jwtService.extractUsername(token.replace("Bearer ", ""));
+        Optional<Customer> customer = customerService.findByEmail(email);
+        if (customer.isPresent()) {
+            long id;
+            try {
+                id = Long.parseLong(cartId);
+                boolean response = shoppingCartService.deleteShoppingCart(customer.get(), id);
+                if (response)
+                    return ResponseEntity.ok("Address deleted successfully");
+            } catch (NumberFormatException e) {
+                System.out.printf("Invalid item ID format: %s%n", cartId);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid item ID format.");
+            }
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
 }
