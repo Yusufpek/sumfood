@@ -106,6 +106,7 @@ public class RestaurantService implements UserDetailsService {
 
     public RestaurantProfileResponse toProfileResponse(Restaurant restaurant) {
         return RestaurantProfileResponse.builder()
+                .id(restaurant.getId())
                 .displayName(restaurant.getDisplayName())
                 .description(restaurant.getDescription())
                 .address(restaurant.getAddress())
