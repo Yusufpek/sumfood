@@ -130,7 +130,7 @@ public class ShoppingCartService {
                 shoppingCartItemRepository.save(updateItem);
             }
         }
-        if (calculatedTotalPrice == 0) {
+        if (calculatedTotalPrice != 0) {
             shoppingCart.setTotalPrice(calculatedTotalPrice);
             shoppingCartRepository.save(shoppingCart);
         }
