@@ -38,34 +38,22 @@
   .navbar-links a:hover {
     color: #ff6347;
   }
-  
-  .auth-button {
+
+  .logout-button {
     padding: 8px 16px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-  }
-  
-  .login-button {
-    background-color: transparent;
-    border: 1px solid #ff6347;
+    background: transparent;
     color: #ff6347;
-  }
-  
-  .login-button:hover {
-    background-color: #ff6347;
-    color: white;
-  }
-  
-  .register-button {
-    background-color: #ff6347;
-    color: white;
     border: 1px solid #ff6347;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
   }
-  
-  .register-button:hover {
-    background-color: #e5543e;
+
+  .logout-button:hover {
+    background-color: #ff6347;
+    color: white;
+    border-color: #ff6347;
   }
   
   @media (max-width: 768px) {
