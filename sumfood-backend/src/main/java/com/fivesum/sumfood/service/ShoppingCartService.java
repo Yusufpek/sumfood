@@ -133,9 +133,10 @@ public class ShoppingCartService {
         if (calculatedTotalPrice != 0) {
             shoppingCart.setTotalPrice(calculatedTotalPrice);
             shoppingCartRepository.save(shoppingCart);
+            return mapToDTO(shoppingCart);
         }
 
-        return mapToDTO(shoppingCart);
+        return null;
     }
 
     public ShoppingCart getShoppingCartById(Long id) {
@@ -177,6 +178,7 @@ public class ShoppingCartService {
         return ShoppingCartResponse.builder()
                 .id(cart.getId())
                 .totalPrice(cart.getTotalPrice())
+                .restaurantId(cart.getRestaurant().getId())
                 .restaurantName(cart.getRestaurant().getDisplayName())
                 .items(items)
                 .build();
