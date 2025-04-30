@@ -3,6 +3,8 @@ package com.fivesum.sumfood.dto;
 import java.util.Date;
 import java.util.List;
 
+import com.fivesum.sumfood.responses.ShoppingCartItemResponse;
+
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -20,5 +22,5 @@ public class OrderResponse {
     private double totalPrice;
     private String restaurantName;
     private String address;
-    private List<FoodItemShoppingCartDTO> foodItems;
+    private List<ShoppingCartItemResponse> foodItems;
 }

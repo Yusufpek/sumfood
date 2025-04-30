@@ -8,6 +8,7 @@ import com.fivesum.sumfood.model.enums.OrderStatus;
 import com.fivesum.sumfood.model.enums.OrderType;
 import com.fivesum.sumfood.model.enums.PaymentStatus;
 import com.fivesum.sumfood.repository.OrderRepository;
+import com.fivesum.sumfood.responses.ShoppingCartItemResponse;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -115,11 +116,12 @@ public class OrderService {
 	}
 
 	public OrderResponse toResponseDTO(Order order) {
-		List<FoodItemShoppingCartDTO> items = order.getShoppingCart().getItems().stream()
-				.map(item -> FoodItemShoppingCartDTO.builder()
+		List<ShoppingCartItemResponse> items = order.getShoppingCart().getItems().stream()
+				.map(item -> ShoppingCartItemResponse.builder()
 						.foodItemId(item.getFoodItem().getId())
-						.name(item.getFoodItem().getName())
-						.quantity(item.getAmount())
+						.foodItemName(item.getFoodItem().getName())
+						.imageRestaurantName(item.getFoodItem().getRestaurant().getBusinessName())
+						.amount(item.getAmount())
 						.price(item.getFoodItem().getPrice())
 						.build())
 				.collect(Collectors.toList());

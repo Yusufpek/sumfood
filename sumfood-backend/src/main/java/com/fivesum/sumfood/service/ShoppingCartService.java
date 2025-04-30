@@ -164,6 +164,7 @@ public class ShoppingCartService {
                 .map(item -> ShoppingCartItemResponse.builder()
                         .foodItemId(item.getFoodItem().getId())
                         .foodItemName(item.getFoodItem().getName())
+                        .imageRestaurantName(item.getFoodItem().getRestaurant().getBusinessName())
                         .amount(item.getAmount())
                         .price(item.getFoodItem().getPrice())
                         .build())

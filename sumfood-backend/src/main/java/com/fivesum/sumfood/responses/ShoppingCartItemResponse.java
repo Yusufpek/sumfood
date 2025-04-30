@@ -10,6 +10,7 @@ import lombok.*;
 public class ShoppingCartItemResponse {
     private Long foodItemId;
     private String foodItemName;
+    private String imageRestaurantName;
     private double price;
     private int amount;
 }
