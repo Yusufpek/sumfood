@@ -17,11 +17,13 @@ import com.fivesum.sumfood.dto.FoodItemAddRequest;
 import com.fivesum.sumfood.dto.FoodItemResponse;
 import com.fivesum.sumfood.model.FoodItem;
 import com.fivesum.sumfood.model.Restaurant;
+import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.enums.Category;
 import com.fivesum.sumfood.service.FoodItemService;
 import com.fivesum.sumfood.service.ImageService;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.RestaurantService;
+import com.fivesum.sumfood.service.CustomerService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +35,7 @@ public class FoodItemController {
     private final ImageService imageService;
     private final JwtService jwtService;
     private final RestaurantService restaurantService;
+    private final CustomerService customerService;
 
     @GetMapping("/public/image/{restaurantName}/{imageName}")
     public ResponseEntity<byte[]> getImage(
@@ -70,6 +73,31 @@ public class FoodItemController {
         Optional<Restaurant> restaurant = restaurantService.findByEmail(email);
         if (restaurant.isPresent()) {
             return ResponseEntity.status(HttpStatus.OK).body(foodItemService.getFoodItemByRestaurant(restaurant.get()));
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    @GetMapping("items/customer/{maxDistance}")
+    public ResponseEntity<List<FoodItemResponse>> getFoodItemsByCustomer(
+            @PathVariable("maxDistance") double maxDistance,
+            @RequestHeader("Authorization") String token) {
+        String email = jwtService.extractUsername(token.substring(7));
+        Optional<Customer> customer = customerService.findByEmail(email);
+        if (customer.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    foodItemService.getFoodItemsByCustomer(customer.get(), maxDistance));
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    @GetMapping("items/customer")
+    public ResponseEntity<List<FoodItemResponse>> getFoodItemsByCustomer(
+            @RequestHeader("Authorization") String token) {
+        String email = jwtService.extractUsername(token.substring(7));
+        Optional<Customer> customer = customerService.findByEmail(email);
+        if (customer.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    foodItemService.getFoodItemsByCustomer(customer.get(), 30));
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
