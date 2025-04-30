@@ -100,6 +100,14 @@ const MainPage = () => {
   // Cart state
   const [cart, setCart] = useState([]);
   
+  // Cart conflict state
+  const [cartConflict, setCartConflict] = useState({
+    show: false,
+    newItem: null,
+    currentRestaurant: null,
+    newRestaurant: null
+  });
+  
   // Check login status
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -249,6 +257,50 @@ const MainPage = () => {
     navigate('/profile', { state: { activeSection: 'Manage Addresses' } });
   };
 
+  const handleClearCartAndAdd = async () => {
+    const item = cartConflict.newItem;
+    setCartConflict({show: false, newItem: null, currentRestaurant: null, newRestaurant: null});
+    
+    if (!item) return;
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate("/");
+      return;
+    }
+    
+    try {
+      // Clear the existing cart
+      const cartResponse = await axios.delete(ENDPOINTS.SHOPPING_CART + cart.id, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Role': 'CUSTOMER'
+        }
+      });
+      console.log('fetched shopping cart:', cartResponse.data);
+      // Create a new cart with the selected item
+      const response = await axios.post(ENDPOINTS.SHOPPING_CART,
+        {
+          'foodItemId': item.foodItemId,
+          'restaurantId': item.restaurantId,
+          'foodItemCount': 1,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Role': 'CUSTOMER'
+          }
+        });
+
+      console.log('Created new shopping cart:', response.data);
+      setCart(response.data);
+      window.dispatchEvent(new Event('cart-updated'));
+    } catch (err) {
+      console.error("Error creating new shopping cart:", err);
+      setCart(null);
+    }
+  };
+
   const addToCart = async (item) => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -262,12 +314,36 @@ const MainPage = () => {
           'Role': 'CUSTOMER'
         }
       });
+      
       console.log('fetched shopping cart:', cartResponse.data);
-      const cart = cartResponse.data;
+      const currentCart = cartResponse.data;
+      
+      // Check if the cart is not empty and has items from a different restaurant
+      if (currentCart && currentCart.items && currentCart.items.length > 0) {
+        const existingRestaurantId = currentCart.restaurantId;
+        const newRestaurantId = item.restaurantId;
+        console.log(`Current restaurant: ${existingRestaurantId}, New restaurant: ${newRestaurantId}`);
+        if (existingRestaurantId !== newRestaurantId) {
+          // Find restaurant names
+          const currentRestaurantName = restaurantState.restaurants.find(r => r.id === existingRestaurantId)?.name || 'Another restaurant';
+          const newRestaurantName = restaurantState.restaurants.find(r => r.id === newRestaurantId)?.name || 'New restaurant';
+          
+          console.log(`Current restaurant: ${currentRestaurantName}, New restaurant: ${newRestaurantName}`);
+          // Show conflict popup
+          setCartConflict({
+            show: true,
+            newItem: item,
+            currentRestaurant: currentRestaurantName,
+            newRestaurant: newRestaurantName
+          });
+          return; // Exit early, don't add to cart yet
+        }
+      }
+      
       try {
         const response = await axios.post(ENDPOINTS.UPDATE_CART,
           {
-            'shoppingCartId': cart.id,
+            'shoppingCartId': currentCart.id,
             'foodItemId': item.foodItemId,
             'foodItemCount': 1,
           },
@@ -280,12 +356,14 @@ const MainPage = () => {
 
         console.log('updating shopping cart:', response.data);
         setCart(response.data);
+        // Dispatch event to notify cart dropdown
+        window.dispatchEvent(new Event('cart-updated'));
       } catch (err) {
         console.error("Error creating shopping cart:", err);
         setCart(null);
       }
     } catch (err) {
-      console.error("Error fetching shopping cart:", err.response.data);
+      console.error("Error fetching shopping cart:", err.response?.data);
 
       if (err && err.response && err.response.data === "Shopping cart not found.") {
         try {
@@ -304,6 +382,8 @@ const MainPage = () => {
 
           console.log('fetched shopping cart:', response.data);
           setCart(response.data);
+          // Dispatch event to notify cart dropdown
+          window.dispatchEvent(new Event('cart-updated'));
         } catch (err) {
           console.error("Error creating shopping cart:", err);
           setCart(null);
@@ -334,6 +414,8 @@ const MainPage = () => {
       console.log(amount);
       console.log('updating shopping cart item amount:', response.data);
       setCart(response.data);
+      // Dispatch event to notify cart dropdown
+      window.dispatchEvent(new Event('cart-updated'));
     } catch (err) {
       console.error("Error creating shopping cart:", err);
       setCart(null);
@@ -447,12 +529,39 @@ const MainPage = () => {
     );
   };
 
+  const CartConflictPopup = () => {
+    return (
+      <div className="address-popup-overlay">
+        <div className="address-popup cart-conflict-popup">
+          <h2>Different Restaurant</h2>
+          <p>Your cart contains items from <strong>{cartConflict.currentRestaurant}</strong>.</p>
+          <p>Adding items from <strong>{cartConflict.newRestaurant}</strong> will clear your current cart.</p>
+          <div className="address-popup-actions">
+            <button 
+              className="btn btn-secondary"
+              onClick={() => setCartConflict({...cartConflict, show: false})}
+            >
+              Cancel
+            </button>
+            <button 
+              className="btn btn-primary"
+              onClick={handleClearCartAndAdd}
+            >
+              Clear Cart & Add
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="app-container">
       <Navbar />
       <HeroSection onSearch={handleSearch} />
 
       {userState.isLoggedIn && addressState.showPopup && <AddressSelectionPopup />}
+      {cartConflict.show && <CartConflictPopup />}
 
       <main className="main-content">
         {(!userState.isLoggedIn || addressState.selectedAddress) && (
@@ -535,60 +644,7 @@ const MainPage = () => {
           </>
         )}
 
-        {cart && (
-          <div className="cart-section-container">
-            <div className="cart-container">
-              <h2>Your Cart</h2>
-              {!cart.items ? (
-                <p>Your cart is empty. Add some items!</p>
-              ) : cart.items.length > 0 ? (
-                <>
-                  <table className="cart-table">
-                    <thead>
-                      <tr>
-                        <th>Item</th>
-                        <th>Price</th>
-                        <th>Quantity</th>
-                        <th>Subtotal</th>
-                        <th>Remove</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {cart.items.map(item => {
-                        return (
-                          <tr key={item.foodItemId} className="cart-item">
-                            <td>{item.foodItemName}</td>
-                            <td>${item.price}</td>
-                            <td>
-                              <div className="quantity-controls">
-                                <button onClick={() => updateQuantity(cart.id, item.foodItemId, -1)} disabled={item.qty <= 1}>-</button>
-                                <span>{item.amount}</span>
-                                <button onClick={() => updateQuantity(cart.id, item.foodItemId, 1)}>+</button>
-                              </div>
-                            </td>
-                            <td>${Number(item.price * item.amount).toFixed(2)}</td>
-                            <td>
-                              <button className="btn-remove" onClick={() => updateQuantity(cart.id, item.foodItemId, item.amount * -1)}>×</button>
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                  <div className="cart-total">
-                    <strong>Total: ${Number(cart.totalPrice).toFixed(2)}</strong>
-                  </div>
-                  <button
-                    className="btn btn-place-order"
-                    disabled={cart.items.length === 0}
-                    onClick={placeOrder}
-                  >
-                    Place Order
-                  </button>
-                </>
-              ) : null}
-            </div>
-          </div>)}
+        {/* Cart section removed - now in Navbar as dropdown */}
 
       </main>
 

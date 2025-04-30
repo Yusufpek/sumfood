@@ -30,7 +30,7 @@ const OrdersPage = () => {
       setError(null);
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8080/api/order/orders', {
+        const response = await axios.get('http://localhost:8080/api/order/orders/active', {
           headers: { 
             'Authorization': `Bearer ${token}`,
             'Role': 'CUSTOMER'
@@ -74,7 +74,7 @@ const OrdersPage = () => {
       setError(null);
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8080/api/order/orders', {
+        const response = await axios.get('http://localhost:8080/api/order/orders/past', {
           headers: { 
             'Authorization': `Bearer ${token}`,
             'Role': 'CUSTOMER'

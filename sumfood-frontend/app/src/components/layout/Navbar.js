@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css';
+import CartDropdown from '../ui/cartDropdown';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ const Navbar = () => {
       <div className="navbar-links">
         <Link to="/profile">Profile</Link>
         <Link to="/orders">Order History</Link>
+        <CartDropdown />
         <button 
           className="logout-button" 
           onClick={handleLogout}
