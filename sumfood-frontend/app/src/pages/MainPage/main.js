@@ -2,86 +2,127 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
 import HeroSection from '../../components/home/HeroSection';
-import FeaturedDeals from '../../components/home/FeaturedDeals';
 import Footer from '../../components/layout/Footer';
 import './MainPage.css';
 import axios from 'axios';
 
-// --- Updated Helper Function to handle different category structures ---
+// API Constants
+const API_BASE_URL = 'http://localhost:8080/api';
+const FOOD_IMAGE_BASE = `${API_BASE_URL}/food/public/image/`;
+const ENDPOINTS = {
+  FOOD_ITEMS: `${API_BASE_URL}/food/public/items`,
+  RESTAURANTS: `${API_BASE_URL}/restaurant/public/all`,
+  CUSTOMER: `${API_BASE_URL}/customer/`,
+  CUSTOMER_ADDRESS: `${API_BASE_URL}/customer/address/`,
+  SHOPPING_CART: `${API_BASE_URL}/shopping_cart/`,
+  UPDATE_CART: `${API_BASE_URL}/shopping_cart/update/`
+};
+
+// --- Simplified helper function for category grouping ---
 const groupItemsByCategory = (items) => {
   if (!items || items.length === 0) return {};
   
   console.log("Items being grouped:", items);
   
   return items.reduce((acc, item) => {
-    let categoryId = 'uncategorized';
+    // Extract category using optional chaining and nullish coalescing
+    const categoryId = item.category_id || 
+                      item.categoryId || 
+                      item.category || 
+                      (typeof item.categories === 'string' ? item.categories : 
+                       Array.isArray(item.categories) && item.categories.length > 0 ? item.categories[0] : null) || 
+                      'uncategorized';
     
-    if (item.category_id) {
-      categoryId = item.category_id;
-    } else if (item.categoryId) {
-      categoryId = item.categoryId;
-    } else if (item.category) {
-      categoryId = item.category;
-    } else if (item.categories) {
-      if (typeof item.categories === 'string') {
-        categoryId = item.categories;
-      } else if (Array.isArray(item.categories) && item.categories.length > 0) {
-        categoryId = item.categories[0];
-      }
-    }
-    
+    // Create category array if it doesn't exist
     if (!acc[categoryId]) {
       acc[categoryId] = [];
     }
+    
     acc[categoryId].push(item);
     return acc;
   }, {});
 };
 
+// Error handler utility function
+const formatErrorMessage = (err, defaultMessage) => {
+  let displayError = defaultMessage || 'An unexpected error occurred.';
+  
+  if (err.response) {
+    displayError = `Server error ${err.response.status}.`;
+    if (err.response.data && err.response.data.message) {
+      displayError += ` Message: ${err.response.data.message}`;
+    } else if (typeof err.response.data === 'string' && err.response.data.length < 200) {
+      displayError += ` Details: ${err.response.data}`;
+    }
+  } else if (err.request) {
+    displayError = 'Cannot reach server.';
+  } else {
+    displayError = err.message || displayError;
+  }
+  
+  return displayError;
+};
+
 const MainPage = () => {
-  const FOOD_IMAGE_BASE = "http://localhost:8080/api/food/public/image/";
-  const [username, setUsername] = useState('Guest');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [foodItems, setFoodItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [restaurants, setRestaurants] = useState([]);
-  const [restLoading, setRestLoading] = useState(true);
-  const [restError, setRestError] = useState(null);
-  const [addresses, setAddresses] = useState([]);
-  const [selectedAddress, setSelectedAddress] = useState(null);
-  const [addressLoading, setAddressLoading] = useState(false);
-  const [addressError, setAddressError] = useState(null);
-  const [cart, setCart] = useState([]);
-  const [showAddressPopup, setShowAddressPopup] = useState(false);
-
   const navigate = useNavigate();
-
+  
+  // User state
+  const [userState, setUserState] = useState({
+    username: 'Guest',
+    isLoggedIn: false
+  });
+  
+  // Search state
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Food items state
+  const [foodState, setFoodState] = useState({
+    items: [],
+    loading: true,
+    error: null
+  });
+  
+  // Restaurant state
+  const [restaurantState, setRestaurantState] = useState({
+    restaurants: [],
+    loading: true,
+    error: null
+  });
+  
+  // Address state
+  const [addressState, setAddressState] = useState({
+    addresses: [],
+    selectedAddress: null,
+    loading: false,
+    error: null,
+    showPopup: false
+  });
+  
+  // Cart state
+  const [cart, setCart] = useState([]);
+  
+  // Check login status
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      setIsLoggedIn(true);
-      setUsername('User');
-    } else {
-      setIsLoggedIn(false);
-      setUsername('Guest');
+      setUserState({
+        username: 'User', // Consider fetching the actual username
+        isLoggedIn: true
+      });
     }
   }, []);
 
   useEffect(() => {
     const fetchAddresses = async () => {
       const token = localStorage.getItem('token');
-      if (!token || !isLoggedIn) {
+      if (!token || !userState.isLoggedIn) {
         return;
       }
       
-      setAddressLoading(true);
-      setAddressError(null);
+      setAddressState(prevState => ({ ...prevState, loading: true, error: null }));
       
       try {
-        const response = await axios.get('http://localhost:8080/api/customer/address/', {
+        const response = await axios.get(ENDPOINTS.CUSTOMER_ADDRESS, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Role': 'CUSTOMER'
@@ -90,121 +131,84 @@ const MainPage = () => {
         
         console.log('Fetched addresses:', response.data);
         const addressList = Array.isArray(response.data) ? response.data : [];
-        setAddresses(addressList);
-        
-        if (addressList.length > 0) {
-          const defaultAddress = addressList.find(addr => addr.isDefault) || addressList[0];
-          setSelectedAddress(defaultAddress);
-          
-          if (!defaultAddress) {
-            setShowAddressPopup(true);
-          }
-        } else {
-          setSelectedAddress(null);
-          setShowAddressPopup(true);
-        }
+        setAddressState(prevState => ({
+          ...prevState,
+          addresses: addressList,
+          selectedAddress: addressList.find(addr => addr.isDefault) || addressList[0],
+          showPopup: addressList.length === 0
+        }));
       } catch (err) {
         console.error("Error fetching addresses:", err);
-        setAddressError('Failed to load your addresses');
-        setAddresses([]);
-        setShowAddressPopup(true);
+        setAddressState(prevState => ({
+          ...prevState,
+          error: 'Failed to load your addresses',
+          addresses: [],
+          showPopup: true
+        }));
       } finally {
-        setAddressLoading(false);
+        setAddressState(prevState => ({ ...prevState, loading: false }));
       }
     };
     
     fetchAddresses();
-  }, [isLoggedIn]);
+  }, [userState.isLoggedIn]);
 
   useEffect(() => {
     const fetchRestaurants = async () => {
-      setRestLoading(true);
-      setRestError(null);
+      setRestaurantState(prevState => ({ ...prevState, loading: true, error: null }));
       try {
-        if (isLoggedIn && !selectedAddress) {
-          setRestaurants([]);
-          setRestLoading(false);
+        if (userState.isLoggedIn && !addressState.selectedAddress) {
+          setRestaurantState(prevState => ({ ...prevState, restaurants: [], loading: false }));
           return;
         }
         
-        let endpoint = 'http://localhost:8080/api/restaurant/public/all';
-        
-        if (isLoggedIn && selectedAddress) {
-          console.log(`Fetching restaurants for address ID: ${selectedAddress.id}`);
-        }
-        
-        const response = await axios.get(endpoint);
+        const response = await axios.get(ENDPOINTS.RESTAURANTS);
         console.log('Fetched restaurants:', response.data);
-        setRestaurants(Array.isArray(response.data) ? response.data : []);
+        setRestaurantState(prevState => ({
+          ...prevState,
+          restaurants: Array.isArray(response.data) ? response.data : []
+        }));
       } catch (err) {
         console.error("Error fetching restaurants:", err);
-        let displayError = 'Failed to load restaurants. An unexpected error occurred.';
-        if (err.response) {
-          displayError = `Failed to load restaurants. Server error ${err.response.status}.`;
-          if (err.response.data && err.response.data.message) {
-            displayError += ` Message: ${err.response.data.message}`;
-          } else if (typeof err.response.data === 'string' && err.response.data.length < 200) {
-            displayError += ` Details: ${err.response.data}`;
-          }
-        } else if (err.request) {
-          displayError = 'Failed to load restaurants. Cannot reach server.';
-        } else {
-          displayError = `Failed to load restaurants: ${err.message}`;
-        }
-        setRestError(displayError);
-        setRestaurants([]);
+        setRestaurantState(prevState => ({
+          ...prevState,
+          error: formatErrorMessage(err, 'Failed to load restaurants.'),
+          restaurants: []
+        }));
       } finally {
-        setRestLoading(false);
+        setRestaurantState(prevState => ({ ...prevState, loading: false }));
       }
     };
     
     fetchRestaurants();
-  }, [selectedAddress, isLoggedIn]);
+  }, [addressState.selectedAddress, userState.isLoggedIn]);
 
   useEffect(() => {
     const fetchAllFoodItems = async () => {
-      if (isLoggedIn && !selectedAddress) {
-        setFoodItems([]);
-        setLoading(false);
+      if (userState.isLoggedIn && !addressState.selectedAddress) {
+        setFoodState(prevState => ({ ...prevState, items: [], loading: false }));
         return;
       }
       
-      setLoading(true);
-      setError(null);
+      setFoodState(prevState => ({ ...prevState, loading: true, error: null }));
       try {
-        const response = await axios.get('http://localhost:8080/api/food/public/items');
+        const response = await axios.get(ENDPOINTS.FOOD_ITEMS);
         console.log('Fetched food items:', response.data);
         const items = Array.isArray(response.data) ? response.data : [];
-        console.log('Number of food items fetched:', items.length);
-        if (items.length > 0) {
-          console.log('Sample food item structure:', items[0]);
-        }
-        setFoodItems(items);
+        setFoodState(prevState => ({ ...prevState, items }));
       } catch (err) {
         console.error("Error fetching food items:", err);
-        let displayError = 'Failed to load food items. An unexpected error occurred.';
-        if (err.response) {
-          console.error("Error Response Status:", err.response.status);
-          console.error("Error Response Data:", err.response.data);
-          displayError = `Failed to load items. Server error ${err.response.status}.`;
-          if (err.response.data && err.response.data.message) {
-            displayError += ` Message: ${err.response.data.message}`;
-          } else if (typeof err.response.data === 'string' && err.response.data.length < 200) {
-            displayError += ` Details: ${err.response.data}`;
-          }
-        } else if (err.request) {
-          displayError = 'Failed to load items. Cannot reach server.';
-        } else {
-          displayError = `Failed to load items: ${err.message}`;
-        }
-        setError(displayError);
-        setFoodItems([]);
+        setFoodState(prevState => ({
+          ...prevState,
+          error: formatErrorMessage(err, 'Failed to load food items.'),
+          items: []
+        }));
       } finally {
-        setLoading(false);
+        setFoodState(prevState => ({ ...prevState, loading: false }));
       }
     };
     fetchAllFoodItems();
-  }, [isLoggedIn, selectedAddress]);
+  }, [userState.isLoggedIn, addressState.selectedAddress]);
 
   useEffect(() => {
     const fetchShoppingCart = async () => {
@@ -214,7 +218,7 @@ const MainPage = () => {
         if (!token) {
           return;
         }
-        const cartResponse = await axios.get('http://localhost:8080/api/shopping_cart/', {
+        const cartResponse = await axios.get(ENDPOINTS.SHOPPING_CART, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Role': 'CUSTOMER'
@@ -235,12 +239,15 @@ const MainPage = () => {
   };
 
   const handleAddressSelectFromPopup = (address) => {
-    setSelectedAddress(address);
-    setShowAddressPopup(false);
+    setAddressState(prevState => ({
+      ...prevState,
+      selectedAddress: address,
+      showPopup: false
+    }));
   };
   
   const navigateToAddressPageFromPopup = () => {
-    setShowAddressPopup(false);
+    setAddressState(prevState => ({ ...prevState, showPopup: false }));
     navigate('/profile', { state: { activeSection: 'Manage Addresses' } });
   };
 
@@ -251,7 +258,7 @@ const MainPage = () => {
     }
 
     try {
-      const cartResponse = await axios.get('http://localhost:8080/api/shopping_cart/', {
+      const cartResponse = await axios.get(ENDPOINTS.SHOPPING_CART, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Role': 'CUSTOMER'
@@ -260,7 +267,7 @@ const MainPage = () => {
       console.log('fetched shopping cart:', cartResponse.data);
       const cart = cartResponse.data;
       try {
-        const response = await axios.post('http://localhost:8080/api/shopping_cart/update/',
+        const response = await axios.post(ENDPOINTS.UPDATE_CART,
           {
             'shoppingCartId': cart.id,
             'foodItemId': item.foodItemId,
@@ -284,7 +291,7 @@ const MainPage = () => {
 
       if (err && err.response && err.response.data === "Shopping cart not found.") {
         try {
-          const response = await axios.post('http://localhost:8080/api/shopping_cart/',
+          const response = await axios.post(ENDPOINTS.SHOPPING_CART,
             {
               'foodItemId': item.foodItemId,
               'restaurantId': item.restaurantId,
@@ -313,7 +320,7 @@ const MainPage = () => {
       navigate("/");
     }
     try {
-      const response = await axios.post('http://localhost:8080/api/shopping_cart/update/',
+      const response = await axios.post(ENDPOINTS.UPDATE_CART,
         {
           'shoppingCartId': cartId,
           'foodItemId': itemId,
@@ -340,17 +347,17 @@ const MainPage = () => {
   }
 
   const searchedItems = useMemo(() => {
-    if (!foodItems || foodItems.length === 0) {
+    if (!foodState.items || foodState.items.length === 0) {
       console.log("No food items to filter");
       return [];
     }
     
-    console.log(`Filtering ${foodItems.length} food items`);
-    let filteredItems = foodItems;
+    console.log(`Filtering ${foodState.items.length} food items`);
+    let filteredItems = foodState.items;
     
-    if (isLoggedIn && restaurants.length > 0) {
-      console.log(`Filtering by ${restaurants.length} available restaurants`);
-      const availableRestaurantIds = restaurants.map(r => r.id);
+    if (userState.isLoggedIn && restaurantState.restaurants.length > 0) {
+      console.log(`Filtering by ${restaurantState.restaurants.length} available restaurants`);
+      const availableRestaurantIds = restaurantState.restaurants.map(r => r.id);
       console.log('Available restaurant IDs:', availableRestaurantIds);
       
       filteredItems = filteredItems.filter(item => {
@@ -374,7 +381,7 @@ const MainPage = () => {
     }
     
     return filteredItems;
-  }, [foodItems, searchTerm, restaurants, isLoggedIn]);
+  }, [foodState.items, searchTerm, restaurantState.restaurants, userState.isLoggedIn]);
 
   const groupedItems = useMemo(() => {
     const grouped = groupItemsByCategory(searchedItems);
@@ -387,11 +394,11 @@ const MainPage = () => {
       <div className="address-popup-overlay">
         <div className="address-popup">
           <h2>Select Delivery Address</h2>
-          {addressLoading ? (
+          {addressState.loading ? (
             <p>Loading your addresses...</p>
-          ) : addressError ? (
+          ) : addressState.error ? (
             <div>
-              <p className="error-message">{addressError}</p>
+              <p className="error-message">{addressState.error}</p>
               <button 
                 className="btn btn-primary"
                 onClick={navigateToAddressPageFromPopup}
@@ -399,7 +406,7 @@ const MainPage = () => {
                 Add New Address
               </button>
             </div>
-          ) : addresses.length === 0 ? (
+          ) : addressState.addresses.length === 0 ? (
             <div>
               <p>You don't have any saved addresses. Please add an address to see restaurants and food items available in your area.</p>
               <button 
@@ -413,10 +420,10 @@ const MainPage = () => {
             <div className="address-popup-content">
               <p>Please select an address for delivery:</p>
               <div className="address-list">
-                {addresses.map(address => (
+                {addressState.addresses.map(address => (
                   <div 
                     key={address.id} 
-                    className={`address-card ${selectedAddress && selectedAddress.id === address.id ? 'selected' : ''}`}
+                    className={`address-card ${addressState.selectedAddress && addressState.selectedAddress.id === address.id ? 'selected' : ''}`}
                     onClick={() => handleAddressSelectFromPopup(address)}
                   >
                     <p>
@@ -444,22 +451,22 @@ const MainPage = () => {
 
   return (
     <div className="app-container">
-      <Navbar isLoggedIn={isLoggedIn} username={username} />
+      <Navbar isLoggedIn={userState.isLoggedIn} username={userState.username} />
       <HeroSection onSearch={handleSearch} />
 
-      {isLoggedIn && showAddressPopup && <AddressSelectionPopup />}
+      {userState.isLoggedIn && addressState.showPopup && <AddressSelectionPopup />}
 
       <main className="main-content">
-        {(!isLoggedIn || selectedAddress) && (
+        {(!userState.isLoggedIn || addressState.selectedAddress) && (
           <>
             <div className="food-items-container">
               <h2 style={{ textAlign: 'center' }}>Available Food Items</h2>
-              {loading ? (
+              {foodState.loading ? (
                 <p style={{ textAlign: 'center' }}>Loading items...</p>
-              ) : error ? (
-                <p className="error-message">{error}</p>
+              ) : foodState.error ? (
+                <p className="error-message">{foodState.error}</p>
               ) : searchedItems.length === 0 ? (
-                foodItems.length === 0 ?
+                foodState.items.length === 0 ?
                   <p style={{ textAlign: 'center' }}>No food items available at the moment.</p> :
                   <p style={{ textAlign: 'center' }}>No food items match your current search or delivery area.</p>
               ) : Object.keys(groupedItems).length === 0 ? (
@@ -498,22 +505,22 @@ const MainPage = () => {
             <div className="restaurants-container">
               <h2 style={{ textAlign: 'center' }}>
                 Available Restaurants
-                {isLoggedIn && selectedAddress && (
+                {userState.isLoggedIn && addressState.selectedAddress && (
                   <span className="delivery-address-note"> 
-                    (Delivery to: {selectedAddress.addressLine}{selectedAddress.addressLine2 ? `, ${selectedAddress.addressLine2}` : ''})
+                    (Delivery to: {addressState.selectedAddress.addressLine}{addressState.selectedAddress.addressLine2 ? `, ${addressState.selectedAddress.addressLine2}` : ''})
                   </span>
                 )}
               </h2>
               
-              {restLoading ? (
+              {restaurantState.loading ? (
                 <p style={{ textAlign: 'center' }}>Loading restaurants...</p>
-              ) : restError ? (
-                <p className="error-message">{restError}</p>
-              ) : restaurants.length === 0 ? (
+              ) : restaurantState.error ? (
+                <p className="error-message">{restaurantState.error}</p>
+              ) : restaurantState.restaurants.length === 0 ? (
                 <p style={{ textAlign: 'center' }}>No restaurants available at the moment.</p>
               ) : (
                 <div className="restaurant-grid">
-                  {restaurants.map((restaurant) => (
+                  {restaurantState.restaurants.map((restaurant) => (
                     <div key={restaurant.id} className="restaurant-card-simple">
                       <h3>{restaurant.name}</h3>
                       {restaurant.description && <p>{restaurant.description}</p>}
@@ -526,10 +533,6 @@ const MainPage = () => {
                   ))}
                 </div>
               )}
-            </div>
-            
-            <div className="mid-section-container">
-              <FeaturedDeals />
             </div>
           </>
         )}

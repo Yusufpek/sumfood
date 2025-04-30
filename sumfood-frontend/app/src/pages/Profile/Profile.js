@@ -22,7 +22,7 @@ const Profile = () => {
         switch (activeSection) {
             case 'Personal Information':
                 return <PersonalInformation />;
-            case 'Manage Addresses': // Fixed from 'Manage Adresses'
+            case 'Manage Addresses':
                 return <ManageAddresses />;
             case 'Payment Methods':
                 return <PaymentMethods />;
