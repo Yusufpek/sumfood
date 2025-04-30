@@ -99,6 +99,7 @@ const CreateOrderPage = () => {
 
             console.log('create order:', response.data);
             // setCart(response.data);
+            navigate("/orders");
         } catch (err) {
             console.error("Error creating order:", err);
             setCart(null);

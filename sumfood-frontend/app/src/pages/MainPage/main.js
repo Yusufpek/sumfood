@@ -68,7 +68,6 @@ const MainPage = () => {
   
   // User state
   const [userState, setUserState] = useState({
-    username: 'Guest',
     isLoggedIn: false
   });
   
@@ -106,7 +105,6 @@ const MainPage = () => {
     const token = localStorage.getItem('token');
     if (token) {
       setUserState({
-        username: 'User', // Consider fetching the actual username
         isLoggedIn: true
       });
     }
@@ -451,7 +449,7 @@ const MainPage = () => {
 
   return (
     <div className="app-container">
-      <Navbar isLoggedIn={userState.isLoggedIn} username={userState.username} />
+      <Navbar />
       <HeroSection onSearch={handleSearch} />
 
       {userState.isLoggedIn && addressState.showPopup && <AddressSelectionPopup />}
