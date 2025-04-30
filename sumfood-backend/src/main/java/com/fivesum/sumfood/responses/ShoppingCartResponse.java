@@ -11,6 +11,7 @@ import lombok.*;
 @Builder
 public class ShoppingCartResponse {
     private Long id;
+    private Long restaurantId;
     private String restaurantName;
     private double totalPrice;
     private List<ShoppingCartItemResponse> items;
