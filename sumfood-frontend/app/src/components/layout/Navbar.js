@@ -7,7 +7,12 @@ const Navbar = ({ isLoggedIn, username }) => {
   return (
     <nav className="main-navbar">
       <div className="navbar-logo">
-        <Link to="/">SumFood</Link>
+        {isLoggedIn ? (
+          <Link to="/main">SumFood</Link>
+        ) : (
+          <Link to="/">SumFood</Link>
+        )}
+        
       </div>
       <div className="navbar-links">
         <Link to="/about">About</Link>
