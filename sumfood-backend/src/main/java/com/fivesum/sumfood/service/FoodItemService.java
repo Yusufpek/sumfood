@@ -13,8 +13,10 @@ import com.fivesum.sumfood.dto.FoodItemAddRequest;
 import com.fivesum.sumfood.dto.FoodItemResponse;
 import com.fivesum.sumfood.model.FoodItem;
 import com.fivesum.sumfood.model.Restaurant;
+import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.enums.Category;
 import com.fivesum.sumfood.repository.FoodItemRepository;
+import com.fivesum.sumfood.service.CustomerService;
 
 import lombok.AllArgsConstructor;
 
@@ -23,6 +25,7 @@ import lombok.AllArgsConstructor;
 public class FoodItemService {
 
     private final FoodItemRepository foodItemRepository;
+    private final CustomerService customerService;
 
     public FoodItem getById(Long id) {
         return foodItemRepository.getById(id);
@@ -39,6 +42,21 @@ public class FoodItemService {
     public List<FoodItemResponse> getFoodItemByRestaurant(Restaurant restaurant) {
         List<FoodItem> foodItems = foodItemRepository.findByRestaurant(restaurant);
         return foodItems.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
+    }
+
+    public List<FoodItemResponse> getFoodItemsByCustomer(Customer customer, double maxDistance) {
+        List<FoodItem> allItems = getAllFoodItems();
+        List<FoodItemResponse> foodItemResponses = new ArrayList<>();
+        double customerLat = customerService.getDefaultAddressByCustomer(customer).getLatitude();
+        double customerLong = customerService.getDefaultAddressByCustomer(customer).getLongitude();
+        for (FoodItem item : allItems) {
+            double distance = distFromLatLong(customerLat, item.getRestaurant().getLatitude(),
+                    customerLong, item.getRestaurant().getLongitude());
+            if (distance <= maxDistance) {
+                foodItemResponses.add(toResponseDTO(item));
+            }
+        }
+        return foodItemResponses;
     }
 
     @Transactional
@@ -105,6 +123,11 @@ public class FoodItemService {
                 .restaurantName(itemRestaurant.getBusinessName())
                 .categories(item.getCategories())
                 .build();
+    }
+
+    public double distFromLatLong(double lat1, double lat2, double lon1, double lon2) {
+        double rad = 6371;
+        return Math.acos((Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2))) + (Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(lon2) - Math.toRadians(lon1)))) * rad;
     }
 
 }
