@@ -103,7 +103,7 @@ const OrdersPage = () => {
             <p>You have not placed any orders yet.</p>
             <button 
               className="browse-foods-btn"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/main')}
             >
               Browse Food Items
             </button>
