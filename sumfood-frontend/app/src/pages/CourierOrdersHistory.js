@@ -1,13 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CourierNavbar from '../components/layout/CourierNavbar';
-import './CourierDashboard.css';
+import axios from 'axios';
+import './CourierOrdersHistory.css';
 
 function CourierOrdersHistory() {
   const navigate = useNavigate();
-  const [pastOrders, setPastOrders] = useState([]);
+  const [pastDeliveries, setPastDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedDelivery, setSelectedDelivery] = useState(null);
+
+  const formatDateTime = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getStatusClass = (status) => {
+    switch(status) {
+      case 'DELIVERED':
+        return 'status-delivered';
+      case 'FAILED':
+        return 'status-failed';
+      default:
+        return '';
+    }
+  };
 
   useEffect(() => {
     // Basic authentication check
@@ -27,157 +51,109 @@ function CourierOrdersHistory() {
       navigate('/login');
     }
 
-    // Fetch past orders (mock data for now)
-    setTimeout(() => {
-      const mockPastOrders = [
-        {
-          id: '982',
-          restaurant: 'Burger Palace',
-          customer: 'Emma Wilson',
-          address: '742 Maple Ave, City',
-          status: 'Delivered',
-          time: 'Yesterday, 2:30 PM',
-          distance: '3.1 miles',
-          items: [
-            { name: 'Double Cheeseburger', quantity: 1 },
-            { name: 'Onion Rings', quantity: 1 },
-            { name: 'Milkshake', quantity: 1 }
-          ],
-          total: '$21.99'
-        },
-        {
-          id: '965',
-          restaurant: 'Taco Town',
-          customer: 'Robert Chen',
-          address: '123 Oak St, City',
-          status: 'Delivered',
-          time: 'Yesterday, 12:15 PM',
-          distance: '2.8 miles',
-          items: [
-            { name: 'Taco Combo', quantity: 1 },
-            { name: 'Nachos', quantity: 1 },
-            { name: 'Soda', quantity: 2 }
-          ],
-          total: '$18.50'
-        },
-        {
-          id: '943',
-          restaurant: 'Pizza Corner',
-          customer: 'Sarah Miller',
-          address: '567 Pine Ave, City',
-          status: 'Delivered',
-          time: '2 days ago, 7:20 PM',
-          distance: '1.5 miles',
-          items: [
-            { name: 'Medium Veggie Pizza', quantity: 1 },
-            { name: 'Cheese Sticks', quantity: 1 }
-          ],
-          total: '$22.75'
-        },
-        {
-          id: '921',
-          restaurant: 'Sushi Express',
-          customer: 'Daniel Brown',
-          address: '890 Cedar St, City',
-          status: 'Delivered',
-          time: '3 days ago, 6:45 PM',
-          distance: '4.2 miles',
-          items: [
-            { name: 'Dragon Roll', quantity: 1 },
-            { name: 'Spicy Tuna Roll', quantity: 1 },
-            { name: 'Green Tea', quantity: 2 }
-          ],
-          total: '$32.99'
-        }
-      ];
-
-      setPastOrders(mockPastOrders);
-      setLoading(false);
-    }, 1000); // Simulating API call delay
+    // Fetch past deliveries
+    const fetchPastDeliveries = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/api/courier/deliveries', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Role': 'COURIER'
+          }
+        });
+        console.log('Past Deliveries:', response.data);
+        setPastDeliveries(response.data);
+      } catch (error) {
+        console.error('Error fetching past deliveries:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchPastDeliveries();
   }, [navigate]);
 
-  const handleOrderClick = (order) => {
-    setSelectedOrder(order);
+  const handleDeliveryClick = (delivery) => {
+    setSelectedDelivery(delivery);
   };
 
-  const closeOrderDetails = () => {
-    setSelectedOrder(null);
+  const closeDeliveryDetails = () => {
+    setSelectedDelivery(null);
   };
 
   return (
     <>
-      <CourierNavbar currentPage="orders" />
-      <div className="courier-dashboard">
-        <div className="dashboard-header">
-          <h1>Order History</h1>
+      <CourierNavbar currentPage="deliveries" />
+      <div className="orders-history-container">
+        <div className="history-header">
+          <h1>Delivery History</h1>
         </div>
 
-        <div className="past-orders">
-          <h3>Past Deliveries</h3>
-          {loading ? (
-            <div className="loading">Loading order history...</div>
-          ) : pastOrders.length === 0 ? (
-            <div className="orders-list">No past orders found.</div>
-          ) : (
-            <div className="orders-container">
-              {pastOrders.map((order) => (
+        {loading ? (
+          <div className="loading">Loading delivery history...</div>
+        ) : pastDeliveries.length === 0 ? (
+          <div className="empty-state">No past deliveries found.</div>
+        ) : (
+          <div className="deliveries-section">
+            <h3>Past Deliveries</h3>
+            <div className="deliveries-container">
+              {pastDeliveries.map((delivery) => (
                 <div 
-                  key={order.id} 
-                  className="order-item past-order" 
-                  onClick={() => handleOrderClick(order)}
+                  key={delivery.id} 
+                  className="delivery-item"
+                  onClick={() => handleDeliveryClick(delivery)}
                 >
-                  <div className="order-header">
-                    <h4>{order.restaurant}</h4>
-                    <span className="order-status status-delivered">
-                      {order.status}
+                  <div className="delivery-header">
+                    <h4>{delivery.order.restaurantName}</h4>
+                    <span className={`delivery-status ${getStatusClass(delivery.order.orderStatus)}`}>
+                      {delivery.order.orderStatus}
                     </span>
                   </div>
-                  <div className="order-details-preview">
-                    <p><strong>Order #:</strong> {order.id}</p>
-                    <p><strong>Customer:</strong> {order.customer}</p>
-                    <p><strong>Time:</strong> {order.time}</p>
-                    <p><strong>Distance:</strong> {order.distance}</p>
+                  <div className="delivery-details-preview">
+                    <p><strong>Delivery #:</strong> {delivery.id}</p>
+                    <p><strong>Restaurant:</strong> {delivery.order.restaurantName || 'N/A'}</p>
+                    <p><strong>Time:</strong> {formatDateTime(delivery.createdAt)}</p>
                   </div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {selectedOrder && (
-          <div className="order-details-modal">
-            <div className="order-details-content">
-              <button className="close-button" onClick={closeOrderDetails}>×</button>
-              <h3>Order Details - #{selectedOrder.id}</h3>
+        {selectedDelivery && (
+          <div className="delivery-details-modal" onClick={closeDeliveryDetails}>
+            <div className="delivery-details-content" onClick={(e) => e.stopPropagation()}>
+              <button className="close-button" onClick={closeDeliveryDetails}>×</button>
+              <h3>Delivery Details - #{selectedDelivery.id}</h3>
               
-              <div className="order-details-section" style={{ background: 'transparent' }}>
+              <div className="delivery-details-section">
                 <h4>Restaurant</h4>
-                <p>{selectedOrder.restaurant}</p>
-                
-                <h4>Customer</h4>
-                <p>{selectedOrder.customer}</p>
+                <p>{selectedDelivery.order.restaurantName}</p>
                 
                 <h4>Delivery Address</h4>
-                <p>{selectedOrder.address}</p>
+                <p>{selectedDelivery.order.address || 'N/A'}</p>
                 
                 <h4>Status</h4>
-                <p>{selectedOrder.status}</p>
+                <p>{selectedDelivery.order.orderStatus}</p>
                 
-                <h4>Delivered</h4>
-                <p>{selectedOrder.time}</p>
+                <h4>Delivery Time</h4>
+                <p>{formatDateTime(selectedDelivery.createdAt)}</p>
                 
-                <h4>Order Items</h4>
-                <ul className="order-items-list">
-                  {selectedOrder.items.map((item, index) => (
-                    <li key={index}>
-                      {item.name} × {item.quantity}
-                    </li>
-                  ))}
+                <h4>Delivery Items</h4>
+                <ul className="delivery-items-list">
+                  {selectedDelivery.order.foodItems.length > 0 ? (
+                    selectedDelivery.order.foodItems.map((item, index) => (
+                      <li key={index}>
+                        {item.foodItemName} × {item.amount} - ${item.price * item.amount}
+                      </li>
+                    ))
+                  ) : (
+                    <li>No items available</li>
+                  )}
                 </ul>
                 
-                <div className="order-total">
+                <div className="delivery-total">
                   <h4>Total Amount</h4>
-                  <p>{selectedOrder.total}</p>
+                  <p>{selectedDelivery.order.totalPrice} $</p>
                 </div>
               </div>
             </div>
