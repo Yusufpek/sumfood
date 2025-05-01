@@ -1,9 +1,7 @@
-package com.fivesum.sumfood.dto;
+package com.fivesum.sumfood.dto.responses;
 
 import java.util.Date;
 import java.util.List;
-
-import com.fivesum.sumfood.responses.ShoppingCartItemResponse;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -15,6 +13,7 @@ import lombok.experimental.SuperBuilder;
 @Setter
 public class OrderResponse {
     private Long id;
+    private Long reviewId;
     private Date createdAt;
     private String orderStatus;
     private String orderType;

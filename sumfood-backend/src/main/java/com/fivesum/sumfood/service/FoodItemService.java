@@ -9,8 +9,8 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
-import com.fivesum.sumfood.dto.FoodItemAddRequest;
-import com.fivesum.sumfood.dto.FoodItemResponse;
+import com.fivesum.sumfood.dto.requests.FoodItemAddRequest;
+import com.fivesum.sumfood.dto.responses.FoodItemResponse;
 import com.fivesum.sumfood.model.FoodItem;
 import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.model.Customer;

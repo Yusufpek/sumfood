@@ -13,15 +13,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.fivesum.sumfood.dto.CustomerRegistrationRequest;
-import com.fivesum.sumfood.dto.CustomerUpdateRequest;
-import com.fivesum.sumfood.dto.AuthRequest;
-import com.fivesum.sumfood.dto.AddressRequest;
+import com.fivesum.sumfood.dto.requests.AddressRequest;
+import com.fivesum.sumfood.dto.requests.AuthRequest;
+import com.fivesum.sumfood.dto.requests.CustomerRegistrationRequest;
+import com.fivesum.sumfood.dto.requests.CustomerUpdateRequest;
+import com.fivesum.sumfood.dto.responses.CustomerGetResponse;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.Address;
 import com.fivesum.sumfood.repository.CustomerRepository;
 import com.fivesum.sumfood.repository.AddressRepository;
-import com.fivesum.sumfood.responses.CustomerGetResponse;
 
 import lombok.AllArgsConstructor;
 

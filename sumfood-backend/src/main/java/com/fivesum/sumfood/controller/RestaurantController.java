@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
+import com.fivesum.sumfood.dto.responses.RestaurantProfileResponse;
 import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.model.enums.OrderStatus;
 import com.fivesum.sumfood.responses.RestaurantProfileResponse;

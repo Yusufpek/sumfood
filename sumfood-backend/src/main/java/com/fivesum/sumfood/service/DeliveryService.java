@@ -17,6 +17,10 @@ public class DeliveryService {
     private final OrderService orderService;
     private final DeliveryRepository deliveryRepository;
 
+     public Delivery findByOrderId(Long orderId) {
+        return deliveryRepository.findByOrderId(orderId).orElse(null);
+    }
+
     public Delivery getDeliveryById(Long id) {
         return deliveryRepository.getById(id);
     }

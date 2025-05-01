@@ -15,6 +15,7 @@ import './styles/auth.css';
 import Profile from "./pages/Profile/Profile";
 import CreateOrderPage from './pages/CreateOrderPage/CreateOrderPage';
 import RestaurantPublicPage from './pages/RestaurantPublicPage/RestaurantPublicPage';
+import OrderReviewPage from './pages/OrderReviewPage/OrderReviewPage';
 
 function App() {
   return (
@@ -97,6 +98,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/order/:orderId/review" element={<OrderReviewPage />} />
 
           </Routes>
         </div>

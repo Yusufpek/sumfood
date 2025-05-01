@@ -1,7 +1,9 @@
 package com.fivesum.sumfood.controller;
 
+import java.text.Collator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -9,14 +11,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.fivesum.sumfood.dto.OrderResponse;
+import com.fivesum.sumfood.dto.responses.OrderResponse;
 import com.fivesum.sumfood.exception.InvalidRequestException;
+import com.fivesum.sumfood.exception.UnauthorizedAccessException;
 import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.model.Customer;
+import com.fivesum.sumfood.model.OrderReview;
 import com.fivesum.sumfood.service.CourierService;
 import com.fivesum.sumfood.service.CustomerService;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.OrderService;
+import com.fivesum.sumfood.service.ReviewService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class OrderController {
     private final OrderService orderService;
     private final CustomerService customerService;
+    private final ReviewService reviewService;
     private final CourierService courierService;
     private final JwtService jwtService;
 
@@ -65,7 +71,37 @@ public class OrderController {
 
             return ResponseEntity.ok(orders);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<?> getOrder(@RequestHeader("Authorization") String token,
+            @PathVariable() String orderId) {
+
+        String email = jwtService.extractUsername(token.substring(7));
+        Optional<Customer> customerOpt = customerService.findByEmail(email);
+
+        if (!customerOpt.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
+        }
+        Customer customer = customerOpt.get();
+        long id;
+        try {
+            id = Long.parseLong(orderId);
+            OrderResponse response = orderService.getOrderById(customer, id);
+            return ResponseEntity.ok(response);
+        } catch (NumberFormatException e) {
+            System.out.printf("Invalid item ID format: %s%n", orderId);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid item ID format.");
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (UnauthorizedAccessException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -85,7 +121,8 @@ public class OrderController {
 
             return ResponseEntity.ok(orders);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -102,9 +139,18 @@ public class OrderController {
             Customer customer = customerOpt.get();
             List<OrderResponse> orders = orderService.getPastOrdersByCustomer(customer);
 
+            orders = orders.stream().map(orderResponse -> {
+                OrderReview review = reviewService.getReviewByOrderId(orderResponse.getId());
+                System.out.println(orderResponse.getId());
+                if (review != null)
+                    orderResponse.setReviewId(review.getId());
+                return orderResponse;
+            }).collect(Collectors.toList());
+
             return ResponseEntity.ok(orders);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -134,7 +180,8 @@ public class OrderController {
 
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
         }
     }
 }
