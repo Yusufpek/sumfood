@@ -53,7 +53,7 @@ function RestaurantOrders() {
             'Role': 'RESTAURANT'
           }
         });
-
+        
         setOrders(ordersResponse.data || []);
         setLoading(false);
       } catch (err) {
@@ -216,6 +216,8 @@ function RestaurantOrders() {
             )}
           </div>
 
+
+
           <div className="tab-section">
             <h2>In Preparation</h2>
             {getOrdersByStatus('PREPARING').length === 0 ? (
@@ -271,11 +273,11 @@ function RestaurantOrders() {
 
           <div className="tab-section">
             <h2>Completed Orders</h2>
-            {getOrdersByStatus('DELIVERED').length === 0 ? (
+            {getOrdersByStatus('COMPLETED').length === 0 ? (
               <div className="no-orders">No completed orders</div>
             ) : (
               <div className="orders-list completed-list">
-                {getOrdersByStatus('DELIVERED').map(order => (
+                {getOrdersByStatus('COMPLETED').map(order => (
                   <div key={order.id} className="order-card completed">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
