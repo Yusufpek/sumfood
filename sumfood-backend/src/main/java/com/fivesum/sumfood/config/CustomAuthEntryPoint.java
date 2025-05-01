@@ -1,7 +1,7 @@
 package com.fivesum.sumfood.config;
 
-import com.fivesum.sumfood.dto.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fivesum.sumfood.dto.responses.ErrorResponse;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;

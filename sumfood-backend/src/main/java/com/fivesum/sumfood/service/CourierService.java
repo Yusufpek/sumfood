@@ -12,8 +12,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.fivesum.sumfood.dto.CourierRegistrationRequest;
-import com.fivesum.sumfood.dto.AuthRequest;
+import com.fivesum.sumfood.dto.requests.AuthRequest;
+import com.fivesum.sumfood.dto.requests.CourierRegistrationRequest;
 import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.repository.CourierRepository;
 
