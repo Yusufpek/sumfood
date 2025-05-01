@@ -7,8 +7,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FoodReviewRepository extends JpaRepository<FoodReview, Long> {
     // Implement crud operations
-    FoodReview findByFoodId(Long foodId);
-    FoodReview findByFoodIdAndCustomerId(Long foodId, Long customerId);
-    FoodReview findByCustomerId(Long customerId);
+    FoodReview findByOrderReviewId(Long orderReviewId);
+
+    FoodReview findByRestaurantId(Long restaurantId);
+
+    FoodReview findByOrderReviewCustomerId(Long customerId);
 
 }
