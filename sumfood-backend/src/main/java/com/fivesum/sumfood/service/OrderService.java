@@ -25,6 +25,10 @@ public class OrderService {
 	private final OrderRepository orderRepository;
 	private final CustomerService customerService;
 	
+	@Transactional
+	public Order getOrderById(Long orderId) {
+		return orderRepository.findById(orderId).orElseThrow(() -> new InvalidRequestException("Order not found!"));
+	}
 
 	@Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class })
 	public OrderResponse createOrder(Customer customer) {
@@ -120,6 +124,7 @@ public class OrderService {
 		List<OrderStatus> activeStatusList = new ArrayList<OrderStatus>();
 		activeStatusList.add(OrderStatus.PENDING);
 		activeStatusList.add(OrderStatus.PREPARING);
+		activeStatusList.add(OrderStatus.READY_FOR_PICKUP);
 		activeStatusList.add(OrderStatus.ON_THE_WAY);
 
 		List<Order> orders = orderRepository.findByShoppingCartRestaurantAndOrderStatusIn(restaurant, activeStatusList);
@@ -145,6 +150,19 @@ public class OrderService {
 		}
 		order.setOrderStatus(OrderStatus.CANCELLED);
 		orderRepository.save(order);
+	}
+
+	@Transactional
+	public void updateStatus(Order order, OrderStatus orderStatus) {
+		order.setOrderStatus(orderStatus);
+		orderRepository.save(order);
+	}
+
+	@Transactional
+	public List<OrderResponse> getReadyOrders() {
+		OrderStatus activeStatus = OrderStatus.READY_FOR_PICKUP;
+		List<Order> orders = orderRepository.findByOrderStatus(activeStatus);
+		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
 	}
 
 	public OrderResponse toResponseDTO(Order order) {

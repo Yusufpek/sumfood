@@ -10,12 +10,16 @@ import com.fivesum.sumfood.model.base.UserBase;
 import com.fivesum.sumfood.model.enums.Role;
 import com.fivesum.sumfood.model.enums.VehicleType;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @NoArgsConstructor
 @SuperBuilder
 @Entity
+@Setter
+@Getter
 @Table(name = "couriers")
 public class Courier extends UserBase {
 
