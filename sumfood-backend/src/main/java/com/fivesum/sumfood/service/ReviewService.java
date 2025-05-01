@@ -5,6 +5,7 @@ import javax.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import com.fivesum.sumfood.dto.ReviewRequest;
+import com.fivesum.sumfood.dto.responses.ReviewResponse;
 import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.exception.UnauthorizedAccessException;
 import com.fivesum.sumfood.model.Customer;
@@ -35,14 +36,18 @@ public class ReviewService {
         return orderReviewRepository.findByOrderId(id).orElse(null);
     }
 
-    public OrderReview getReviewById(Long id) {
-        return orderReviewRepository.findById(id)
+    public ReviewResponse getReviewById(Long id) {
+        OrderReview orderReview = orderReviewRepository.findById(id)
                 .orElseThrow(() -> new InvalidRequestException("Review is not found!"));
+        FoodReview foodReview = foodReviewRepository.findByOrderReviewId(id);
+        DeliveryReview deliveryReview = deliveryReviewRepository.findByOrderReviewId(id).orElse(null);
+
+        return toResponseMap(orderReview, foodReview, deliveryReview);
     }
 
     @Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class,
             UnauthorizedAccessException.class })
-    public boolean createReview(Customer customer, Long orderId, ReviewRequest request) {
+    public ReviewResponse createReview(Customer customer, Long orderId, ReviewRequest request) {
         Order order = orderService.findById(orderId);
         if (order == null) {
             throw new InvalidRequestException("Order is not found!");
@@ -82,6 +87,22 @@ public class ReviewService {
                 .build();
         deliveryReviewRepository.save(deliveryReview);
 
-        return true;
+        return toResponseMap(orderReview, foodReview, deliveryReview);
+    }
+
+    ReviewResponse toResponseMap(OrderReview review, FoodReview foodReview, DeliveryReview deliveryReview) {
+        ReviewResponse response = ReviewResponse.builder()
+                .createdAt(review.getCreateAt())
+                .orderId(review.getOrder().getId())
+                .customerName(review.getOrder().getCustomer().getName())
+                .build();
+        if (foodReview != null) {
+            response.setFoodReviewScore(foodReview.getScore());
+            response.setFoodReviewComment(foodReview.getComment());
+        }
+
+        if (deliveryReview != null)
+            response.setDeliveryScore(deliveryReview.getScore());
+        return response;
     }
 }

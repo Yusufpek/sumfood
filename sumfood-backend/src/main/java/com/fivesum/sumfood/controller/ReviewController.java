@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fivesum.sumfood.dto.ReviewRequest;
+import com.fivesum.sumfood.dto.responses.ReviewResponse;
 import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.exception.UnauthorizedAccessException;
 import com.fivesum.sumfood.model.Customer;
-import com.fivesum.sumfood.model.OrderReview;
 import com.fivesum.sumfood.service.CustomerService;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.ReviewService;
@@ -35,8 +35,8 @@ public class ReviewController {
     public ResponseEntity<?> getOrder(@PathVariable() String reviewId) {
         try {
             long id = Long.parseLong(reviewId);
-            OrderReview orderReview = reviewService.getReviewById(id);
-            return ResponseEntity.ok(orderReview);
+            ReviewResponse response = reviewService.getReviewById(id);
+            return ResponseEntity.ok(response);
         } catch (NumberFormatException e) {
             System.out.printf("Invalid item ID format: %s%n", reviewId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid item ID format.");
@@ -58,9 +58,8 @@ public class ReviewController {
         if (customer.isPresent()) {
             try {
                 long id = Long.parseLong(orderId);
-                boolean response = reviewService.createReview(customer.get(), id, request);
-                if (response)
-                    return ResponseEntity.ok("Review added successfully");
+                ReviewResponse response = reviewService.createReview(customer.get(), id, request);
+                return ResponseEntity.ok(response);
             } catch (NumberFormatException e) {
                 System.out.printf("Invalid item ID format: %s%n", orderId);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid item ID format.");
