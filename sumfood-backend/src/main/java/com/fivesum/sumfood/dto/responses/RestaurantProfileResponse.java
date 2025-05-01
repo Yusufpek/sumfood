@@ -12,4 +12,6 @@ public class RestaurantProfileResponse {
     private double longitude;
     private double latitude;
     private String address;
+    private String logoName;
+    private double averageRate;
 }

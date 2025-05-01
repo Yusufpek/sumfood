@@ -1,16 +1,22 @@
 package com.fivesum.sumfood.controller;
 
+import java.io.IOException;
 import java.util.List;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.fivesum.sumfood.constants.ImagePath;
 import com.fivesum.sumfood.dto.responses.RestaurantProfileResponse;
+import com.fivesum.sumfood.dto.responses.ReviewResponse;
 import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.model.enums.OrderStatus;
+import com.fivesum.sumfood.service.ImageService;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.RestaurantService;
+import com.fivesum.sumfood.service.ReviewService;
 import com.fivesum.sumfood.service.OrderService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,10 +28,27 @@ public class RestaurantController {
     private final JwtService jwtService;
     private final RestaurantService restaurantService;
     private final OrderService orderService;
+    private final ImageService imageService;
+    private final ReviewService reviewService;
+
+    @GetMapping("/public/image/{imageName}")
+    public ResponseEntity<byte[]> getImage(@PathVariable String imageName) throws IOException {
+        byte[] image = imageService.getImage(ImagePath.RESTAURANT_LOGO_PATH, imageName);
+        if (image != null) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
+                    .body(image);
+        }
+        return ResponseEntity.notFound().build();
+    }
 
     @GetMapping("/public/all")
     public ResponseEntity<List<RestaurantProfileResponse>> getAllFoodItems() {
-        return ResponseEntity.ok(restaurantService.getAll());
+        List<RestaurantProfileResponse> restaurantProfileResponses = restaurantService.getAll();
+        for (RestaurantProfileResponse profile : restaurantProfileResponses) {
+            profile = addAverageRate(profile);
+        }
+        return ResponseEntity.ok(restaurantProfileResponses);
     }
 
     @GetMapping("/profile")
@@ -39,6 +62,21 @@ public class RestaurantController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/public/{id}")
+    public ResponseEntity<?> getPublicRestaurantById(@PathVariable Long id) {
+        try {
+            Restaurant restaurant = restaurantService.getRestaurantById(id);
+            if (restaurant == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Restaurant not found with ID: " + id);
+            }
+            RestaurantProfileResponse response = restaurantService.toProfileResponse(restaurant);
+            response = addAverageRate(response);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching restaurant details.");
         }
     }
 
@@ -75,5 +113,16 @@ public class RestaurantController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
+    }
+
+    private RestaurantProfileResponse addAverageRate(RestaurantProfileResponse restaurant) {
+        List<ReviewResponse> reviews = reviewService.getReviewsByRestaurantId(restaurant.getId());
+        double totalScore = 0;
+        for (ReviewResponse review : reviews) {
+            totalScore += review.getFoodReviewScore();
+        }
+        double average = totalScore / reviews.size();
+        restaurant.setAverageRate(average);
+        return restaurant;
     }
 }

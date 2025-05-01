@@ -21,7 +21,92 @@ function Register() {
   const [description, setDescription] = useState('');
   const [city, setCity] = useState('');
   const [address, setAddress] = useState('');
+  const [logo, setLogo] = useState(null);
   const navigate = useNavigate();
+
+  const cities = [
+    "ADANA",
+    "ADIYAMAN",
+    "AFYONKARAHİSAR",
+    "AĞRI",
+    "AKSARAY",
+    "AMASYA",
+    "ANKARA",
+    "ANTALYA",
+    "ARDAHAN",
+    "ARTVİN",
+    "AYDIN",
+    "BALIKESİR",
+    "BARTIN",
+    "BATMAN",
+    "BAYBURT",
+    "BİLECİK",
+    "BİNGÖL",
+    "BİTLİS",
+    "BOLU",
+    "BURDUR",
+    "BURSA",
+    "ÇANAKKALE",
+    "ÇANKIRI",
+    "ÇORUM",
+    "DENİZLİ",
+    "DİYARBAKIR",
+    "DÜZCE",
+    "EDİRNE",
+    "ELAZIĞ",
+    "ERZİNCAN",
+    "ERZURUM",
+    "ESKİŞEHİR",
+    "GAZİANTEP",
+    "GİRESUN",
+    "GÜMÜŞHANE",
+    "HAKKARİ",
+    "HATAY",
+    "IĞDIR",
+    "ISPARTA",
+    "İSTANBUL",
+    "İZMİR",
+    "KAHRAMANMARAŞ",
+    "KARABÜK",
+    "KARAMAN",
+    "KARS",
+    "KASTAMONU",
+    "KAYSERİ",
+    "KIRIKKALE",
+    "KIRKLARELİ",
+    "KIRŞEHİR",
+    "KİLİS",
+    "KOCAELİ",
+    "KONYA",
+    "KÜTAHYA",
+    "MALATYA",
+    "MANİSA",
+    "MARDİN",
+    "MERSİN",
+    "MUĞLA",
+    "MUŞ",
+    "NEVŞEHİR",
+    "NİĞDE",
+    "ORDU",
+    "OSMANİYE",
+    "RİZE",
+    "SAKARYA",
+    "SAMSUN",
+    "SİİRT",
+    "SİNOP",
+    "SİVAS",
+    "ŞANLIURFA",
+    "ŞIRNAK",
+    "TEKİRDAĞ",
+    "TOKAT",
+    "TRABZON",
+    "TUNCELİ",
+    "UŞAK",
+    "VAN",
+    "YALOVA",
+    "YOZGAT",
+    "ZONGULDAK"
+  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -33,7 +118,7 @@ function Register() {
       phoneNumber,
       password,
       ...(userType === 'courier' && { driverLicenceId, birthDate, vehicleType }),
-      ...(userType === 'restaurant' && { taxId, businessName, displayName, description, city, address }),
+      ...(userType === 'restaurant' && { taxId, businessName, displayName, description, city, address, logo }),
     };
 
     register(userData)
@@ -48,7 +133,7 @@ function Register() {
       })
       .catch((e) => {
         if (e.status === 409) {
-          alert("This email already in use!");
+          alert(e.response.data);
         } else {
           alert("Something went wrong! " + e['message']);
         }
@@ -57,17 +142,23 @@ function Register() {
 
   async function register(userData) {
     let url = "http://localhost:8080/api/auth/register/";
-    if (userType === 'regular') {
-      url += "customer";
-    } else if (userType === 'restaurant') {
+    let body;
+    if (userType === 'restaurant') {
+      body = new FormData()
       userData['taxIdentificationNumber'] = userData['taxId'];
       url += userType;
+      body.append('restaurantRegistration', new Blob([JSON.stringify(userData)], { type: 'application/json' }));
+      body.append('file', logo);
     } else {
-      url += userType;
+      if (userType === 'regular') {
+        url += "customer";
+      } else {
+        url += userType;
+      }
+      body = JSON.stringify(userData, null, 2);
     }
-    const body = JSON.stringify(userData, null, 2);
     console.log("body", body);
-    const response = await axios.post(url, body, { headers: { 'Content-Type': 'application/json' } });
+    const response = await axios.post(url, body);
     return response;
   }
 
@@ -223,17 +314,32 @@ function Register() {
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  maxLength={256}
                   required
                 />
               </div>
               <div>
                 <label>City</label>
-                <input
-                  type="text"
+                <select
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   required
-                />
+                  style={{
+                    width: '80%',
+                    padding: '0.5rem',
+                    border: '1px solid #ccc',
+                    borderRadius: '6px',
+                    fontSize: '1rem',
+                    appearance: 'none',
+                    cursor: 'pointer',
+                  }}>
+                  <option value="">Select city</option>
+                  {cities.map((city) => (
+                    <option key={city} value={city}>
+                      {city}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label>Address</label>
@@ -242,6 +348,24 @@ function Register() {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   required
+                />
+              </div>
+              <div>
+                <label>Restaurant Logo</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        console.log('File preview:', reader.result);
+                      };
+                      reader.readAsDataURL(file);
+                      setLogo(file);
+                    }
+                  }}
                 />
               </div>
             </>

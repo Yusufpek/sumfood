@@ -21,7 +21,6 @@ import com.fivesum.sumfood.dto.responses.RestaurantProfileResponse;
 import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.repository.RestaurantRepository;
-import com.fivesum.sumfood.service.CustomerService;
 
 import lombok.AllArgsConstructor;
 
@@ -50,7 +49,7 @@ public class RestaurantService implements UserDetailsService {
         double latitude = 0;
 
         try {
-            double[] points = googleMapsService.getLatLongByAddress(request.getAddress());
+            double[] points = googleMapsService.getLatLongByAddress(request.getAddress() + " " + request.getCity());
             latitude = points[0];
             longitude = points[1];
         } catch (Exception e) {
@@ -71,6 +70,7 @@ public class RestaurantService implements UserDetailsService {
                 .city(request.getCity())
                 .longitude(longitude)
                 .latitude(latitude)
+                .logoName(request.getImagePath())
                 .isValidated(false)
                 .build();
 
@@ -112,6 +112,14 @@ public class RestaurantService implements UserDetailsService {
         return restaurantRepository.existsByEmail(email);
     }
 
+    public boolean existsByTaxIdentificationNumber(String taxIdentification) {
+        return restaurantRepository.existsByTaxIdentificationNumber(taxIdentification);
+    }
+
+    public boolean existsByPhoneNumber(String phoneNumber) {
+        return restaurantRepository.existsByPhoneNumber(phoneNumber);
+    }
+
     public List<RestaurantProfileResponse> getRestaurantByCustomer(Customer customer, double maxDistance) {
         List<Restaurant> allRestaurants = getAllRaw();
         List<RestaurantProfileResponse> restaurantResponses = new ArrayList<>();
@@ -147,14 +155,18 @@ public class RestaurantService implements UserDetailsService {
                 .id(restaurant.getId())
                 .displayName(restaurant.getDisplayName())
                 .description(restaurant.getDescription())
-                .address(restaurant.getAddress())
+                .address(restaurant.getAddress() + " " + restaurant.getCity())
                 .latitude(restaurant.getLatitude())
                 .longitude(restaurant.getLongitude())
+                .logoName(restaurant.getLogoName())
                 .build();
     }
 
     public double distFromLatLong(double lat1, double lat2, double lon1, double lon2) {
         double rad = 6371;
-        return Math.acos((Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2))) + (Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(lon2) - Math.toRadians(lon1)))) * rad;
+        return Math.acos(
+                (Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2))) + (Math.cos(Math.toRadians(lat1))
+                        * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(lon2) - Math.toRadians(lon1))))
+                * rad;
     }
 }
