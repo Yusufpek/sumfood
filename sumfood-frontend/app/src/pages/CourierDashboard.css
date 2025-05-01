@@ -1,0 +1,116 @@
+/* styles/courier-dashboard.css */
+.courier-dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .dashboard-header h1 {
+    color: #1a365d;
+    font-size: 2rem;
+  }
+  
+  .auth-status {
+    background-color: #38a169;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  
+  .courier-info {
+    background-color: #f7fafc;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border-left: 4px solid #38a169;
+  }
+  
+  .courier-info h2 {
+    color: #1a365d;
+    margin-bottom: 10px;
+  }
+  
+  .courier-status {
+    color: #4a5568;
+  }
+  
+  .status-active {
+    color: #38a169;
+    font-weight: bold;
+  }
+  
+  .dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .dashboard-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border-top: 3px solid #38a169;
+  }
+  
+  .dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .dashboard-card h3 {
+    color: #1a365d;
+    margin-bottom: 10px;
+  }
+  
+  .dashboard-card p {
+    color: #718096;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+  }
+  
+  .card-icon {
+    font-size: 2rem;
+    text-align: right;
+  }
+  
+  .recent-orders {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .recent-orders h3 {
+    color: #1a365d;
+    margin-bottom: 15px;
+  }
+  
+  .orders-list {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #718096;
+  }
+  
+  .loading, .error {
+    text-align: center;
+    padding: 50px;
+    font-size: 1.2rem;
+  }
+  
+  .error {
+    color: #e53e3e;
+  }

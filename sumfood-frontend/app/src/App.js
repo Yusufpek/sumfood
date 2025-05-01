@@ -7,7 +7,8 @@ import Register from './pages/Register';
 import RestaurantDashboard from './pages/RestaurantDashboard';
 import RestaurantMenu from './pages/RestaurantMenu';
 import ProtectedRoute from './components/ProtectedRoute';
-import OrdersPage from './pages/OrdersPage/OrderPage'; // Add this import
+import CourierDashboard from './pages/CourierDashboard';
+import OrdersPage from './pages/OrdersPage/OrderPage';
 import './App.css';
 import './styles/global.css';
 import './styles/auth.css';
@@ -59,7 +60,14 @@ function App() {
               path="/"
               element={<Login />}
             />
-
+            <Route
+              path="/courier-dashboard"
+              element={
+                <ProtectedRoute>
+                  <CourierDashboard />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/orders"
               element={
