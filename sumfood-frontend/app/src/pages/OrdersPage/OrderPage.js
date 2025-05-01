@@ -282,12 +282,21 @@ const OrdersPage = () => {
                           <td>
                             <div className="order-actions">
                               {((order.orderStatus || order.status) || '').toUpperCase() === 'DELIVERED' && (
-                                <button
-                                  className="review-order-btn"
-                                  onClick={() => navigate(`/order/${order.id}/review`)}
-                                >
-                                  Leave Review
-                                </button>
+                                order.isReviewed ? (
+                                  <button
+                                    className="view-review-btn"
+                                    onClick={() => navigate(`/order/${order.id}/review`)}
+                                  >
+                                    See Review
+                                  </button>
+                                ) : (
+                                  <button
+                                    className="review-order-btn"
+                                    onClick={() => navigate(`/order/${order.id}/review`)}
+                                  >
+                                    Leave Review
+                                  </button>
+                                )
                               )}
                               
                               <details>

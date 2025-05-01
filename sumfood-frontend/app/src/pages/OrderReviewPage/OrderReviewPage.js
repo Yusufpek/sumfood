@@ -79,15 +79,16 @@ const OrderReviewPage = () => {
   const navigate = useNavigate();
   
   const [order, setOrder] = useState(null);
-  const [foodRating, setFoodRating] = useState(0); // New state for food rating
-  const [foodComment, setFoodComment] = useState(''); // New state for food comment
+  const [foodRating, setFoodRating] = useState(0);
+  const [foodComment, setFoodComment] = useState('');
   const [deliveryRating, setDeliveryRating] = useState(0);
-  const [deliveryComment, setDeliveryComment] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [orderLoading, setOrderLoading] = useState(true);
   const [orderError, setOrderError] = useState(null);
+  const [existingReview, setExistingReview] = useState(null);
+  const [isViewMode, setIsViewMode] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -108,6 +109,27 @@ const OrderReviewPage = () => {
         });
         
         setOrder(response.data);
+        
+        // Check if order has been reviewed
+        if (response.data.isReviewed) {
+          try {
+            // Fetch the existing review
+            const reviewResponse = await axios.get(`http://localhost:8080/api/review/order/${orderId}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Role': 'CUSTOMER'
+              }
+            });
+            
+            setExistingReview(reviewResponse.data);
+            setFoodRating(reviewResponse.data.foodScore || 0);
+            setDeliveryRating(reviewResponse.data.deliveryScore || 0);
+            setFoodComment(reviewResponse.data.foodComment || '');
+            setIsViewMode(true);
+          } catch (reviewErr) {
+            console.error("Error fetching review:", reviewErr);
+          }
+        }
       } catch (err) {
         console.error("Error fetching order:", err);
         const errorMessage = typeof err.response?.data === 'object' 
@@ -226,7 +248,9 @@ const OrderReviewPage = () => {
     <>
       <Navbar />
       <div className="review-page-container">
-        <h2 className="review-page-title">Review Your Order</h2>
+        <h2 className="review-page-title">
+          {isViewMode ? "Order Review" : "Review Your Order"}
+        </h2>
         <div className="order-summary">
           <p className="order-id">
             <strong>Order #{order?.id}</strong> from <strong>{order?.restaurantName}</strong>
@@ -239,45 +263,37 @@ const OrderReviewPage = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={!isViewMode ? handleSubmit : (e) => e.preventDefault()}>
           {/* Delivery Rating Section */}
           <div className="delivery-rating-section">
-            <h3 className="delivery-section-title">Rate Your Delivery Experience</h3>
+            <h3 className="delivery-section-title">
+              {isViewMode ? "Delivery Experience Rating" : "Rate Your Delivery Experience"}
+            </h3>
             <div className="rating-container">
               <label className="rating-label">
                 Delivery Rating:
               </label>
               <StarRating
                 rating={deliveryRating}
-                onRatingChange={(value) => setDeliveryRating(value)}
-                disabled={submitted}
-              />
-            </div>
-            <div className="review-container">
-              <label className="rating-label">
-                Delivery Comments:
-              </label>
-              <textarea
-                className="review-textarea"
-                value={deliveryComment}
-                onChange={e => setDeliveryComment(e.target.value)}
-                placeholder="How was your delivery experience? (Optional)"
-                disabled={submitted}
+                onRatingChange={(value) => !isViewMode && setDeliveryRating(value)}
+                disabled={isViewMode || submitted}
               />
             </div>
           </div>
 
           {/* Food Rating Section */}
           <div className="food-rating-section">
-            <h3 className="food-section-title">Rate Your Food Experience</h3>
+            <h3 className="food-section-title">
+              {isViewMode ? "Food Experience Rating" : "Rate Your Food Experience"}
+            </h3>
             <div className="rating-container">
               <label className="rating-label">
                 Food Rating:
               </label>
               <StarRating
                 rating={foodRating}
-                onRatingChange={(value) => setFoodRating(value)}
-                disabled={submitted}
+                onRatingChange={(value) => !isViewMode && setFoodRating(value)}
+                disabled={isViewMode || submitted}
               />
             </div>
             <div className="review-container">
@@ -287,9 +303,10 @@ const OrderReviewPage = () => {
               <textarea
                 className="review-textarea"
                 value={foodComment}
-                onChange={e => setFoodComment(e.target.value)}
+                onChange={e => !isViewMode && setFoodComment(e.target.value)}
                 placeholder="How was your food? (Optional)"
-                disabled={submitted}
+                disabled={isViewMode || submitted}
+                readOnly={isViewMode}
               />
             </div>
           </div>
@@ -308,9 +325,9 @@ const OrderReviewPage = () => {
             ))}
           </div>
 
-          {submitted ? (
+          {(submitted || isViewMode) ? (
             <div className="success-message">
-              Thank you for your reviews!
+              {isViewMode ? "Review submitted previously." : "Thank you for your reviews!"}
               <div style={{ marginTop: '20px' }}>
                 <button
                   onClick={() => navigate('/orders')}
