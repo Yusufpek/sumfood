@@ -26,7 +26,7 @@ function RestaurantOrders() {
     if (tokenExpiry && new Date(tokenExpiry) < new Date()) {
       localStorage.removeItem('token');
       localStorage.removeItem('tokenExpiry');
-      localStorage.removeItem('userType');
+      localStorage.removeItem('userType');  
       setError('Session expired. Please login again.');
       navigate('/login');
       return;
@@ -118,11 +118,11 @@ function RestaurantOrders() {
       case 'PENDING':
         return (
           <>
-            <button
-              className="status-action-btn accept"
+            <button 
+              className="status-action-btn accept" 
               onClick={() => updateOrderStatus(order.id, 'PREPARING')}
             >
-              Confirm Order
+              Start Preparing
             </button>
             <button
               className="status-action-btn reject"
@@ -132,15 +132,19 @@ function RestaurantOrders() {
             </button>
           </>
         );
+
       case 'PREPARING':
         return (
-          <button
-            className="status-action-btn ready"
+          <button 
+            className="status-action-btn ready" 
             onClick={() => updateOrderStatus(order.id, 'READY_FOR_PICKUP')}
           >
-            Ready For pickup
+            Mark as Ready
           </button>
         );
+      case 'READY_FOR_PICKUP':
+        // Removed the complete order button
+        return null;
       default:
         return null;
     }
@@ -216,8 +220,6 @@ function RestaurantOrders() {
             )}
           </div>
 
-
-
           <div className="tab-section">
             <h2>In Preparation</h2>
             {getOrdersByStatus('PREPARING').length === 0 ? (
@@ -249,11 +251,11 @@ function RestaurantOrders() {
 
           <div className="tab-section">
             <h2>Ready for Pickup</h2>
-            {getOrdersByStatus('READY').length === 0 ? (
+            {getOrdersByStatus('READY_FOR_PICKUP').length === 0 ? (
               <div className="no-orders">No orders ready for pickup</div>
             ) : (
               <div className="orders-list">
-                {getOrdersByStatus('READY').map(order => (
+                {getOrdersByStatus('READY_FOR_PICKUP').map(order => (
                   <div key={order.id} className="order-card ready">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
@@ -273,11 +275,11 @@ function RestaurantOrders() {
 
           <div className="tab-section">
             <h2>Completed Orders</h2>
-            {getOrdersByStatus('COMPLETED').length === 0 ? (
+            {getOrdersByStatus('DELIVERED').length === 0 ? (
               <div className="no-orders">No completed orders</div>
             ) : (
               <div className="orders-list completed-list">
-                {getOrdersByStatus('COMPLETED').map(order => (
+                {getOrdersByStatus('DELIVERED').map(order => (
                   <div key={order.id} className="order-card completed">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
