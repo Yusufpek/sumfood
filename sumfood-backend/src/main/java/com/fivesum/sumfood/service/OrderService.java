@@ -148,6 +148,9 @@ public class OrderService {
 		if (order.getShoppingCart().getRestaurant().getId() != restaurant.getId()) {
 			throw new InvalidRequestException("Order not found!");
 		}
+		if (order.getOrderStatus() != OrderStatus.PENDING) {
+			throw new InvalidRequestException("Order is not cancellable!");
+		}
 		order.setOrderStatus(OrderStatus.CANCELLED);
 		orderRepository.save(order);
 	}
