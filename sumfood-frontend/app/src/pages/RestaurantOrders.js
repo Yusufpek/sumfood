@@ -53,7 +53,7 @@ function RestaurantOrders() {
             'Role': 'RESTAURANT'
           }
         });
-        
+        console.log('Orders:', ordersResponse.data);
         setOrders(ordersResponse.data || []);
         setLoading(false);
       } catch (err) {
@@ -114,7 +114,7 @@ function RestaurantOrders() {
   };
 
   const getStatusActions = (order) => {
-    switch (order.status) {
+    switch (order.orderStatus) {
       case 'PENDING':
         return (
           <>
@@ -142,16 +142,13 @@ function RestaurantOrders() {
             Mark as Ready
           </button>
         );
-      case 'READY_FOR_PICKUP':
-        // Removed the complete order button
-        return null;
       default:
         return null;
     }
   };
 
   const getOrdersByStatus = (status) => {
-    return orders.filter(order => order.status === status);
+    return orders.filter(order => order.orderStatus === status);
   };
 
   const formatOrderDate = (dateString) => {
@@ -192,24 +189,20 @@ function RestaurantOrders() {
                   <div key={order.id} className="order-card pending">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
-                      <span className="order-date">{formatOrderDate(order.orderDate)}</span>
-                    </div>
-                    <div className="order-customer">
-                      <p><strong>Customer:</strong> {order.customerName}</p>
-                      <p><strong>Phone:</strong> {order.customerPhone}</p>
+                      <span className="order-date">{formatOrderDate(order.createdAt)}</span>
                     </div>
                     <div className="order-items">
                       <h4>Items:</h4>
                       <ul>
-                        {order.items.map((item, idx) => (
+                        {(order.foodItems || []).map((item, idx) => (
                           <li key={idx}>
-                            {item.quantity}x {item.name} - ${item.price.toFixed(2)}
+                            {item.amount}x {item.foodItemName} - ${item.price}
                           </li>
                         ))}
                       </ul>
                     </div>
                     <div className="order-total">
-                      <p><strong>Total:</strong> ${order.totalAmount.toFixed(2)}</p>
+                      <p><strong>Total:</strong> ${order.totalPrice}</p>
                     </div>
                     <div className="order-actions">
                       {getStatusActions(order)}
@@ -230,13 +223,13 @@ function RestaurantOrders() {
                   <div key={order.id} className="order-card preparing">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
-                      <span className="order-date">{formatOrderDate(order.orderDate)}</span>
+                      <span className="order-date">{formatOrderDate(order.createdAt)}</span>
                     </div>
                     <div className="order-items">
                       <h4>Items:</h4>
                       <ul>
-                        {order.items.map((item, idx) => (
-                          <li key={idx}>{item.quantity}x {item.name}</li>
+                        {(order.foodItems || []).map((item, idx) => (
+                          <li key={idx}>{item.amount}x {item.foodItemName}</li>
                         ))}
                       </ul>
                     </div>
@@ -259,13 +252,7 @@ function RestaurantOrders() {
                   <div key={order.id} className="order-card ready">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
-                      <span className="order-date">{formatOrderDate(order.orderDate)}</span>
-                    </div>
-                    <div className="order-customer">
-                      <p><strong>Customer:</strong> {order.customerName}</p>
-                    </div>
-                    <div className="order-actions">
-                      {getStatusActions(order)}
+                      <span className="order-date">{formatOrderDate(order.createdAt)}</span>
                     </div>
                   </div>
                 ))}

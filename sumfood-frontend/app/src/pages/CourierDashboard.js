@@ -84,9 +84,14 @@ function CourierDashboard() {
     try {
       setAssigningOrder(true);
       
+      // Create request body with all potential address field names
+      const requestBody = {
+        deliveryAddress: selectedOrder.address
+      };
+      
       await axios.post(
         `http://localhost:8080/api/courier/assign_order/${orderId}`,
-        {},
+        requestBody,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -149,14 +154,15 @@ function CourierDashboard() {
                 >
                   <div className="order-header">
                     <h4>{order.restaurantName}</h4>
-                    <span className={`order-status status-${order.status?.toLowerCase().replace(/[\s_]/g, '-')}`}>
-                      {getStatusDisplay(order.status)}
+                    <span className={`order-status status-${order.orderStatus?.toLowerCase().replace(/[\s_]/g, '-')}`}>
+                      {getStatusDisplay(order.orderStatus)}
                     </span>
                   </div>
                   <div className="order-details-preview">
                     <p><strong>Order #:</strong> {order.id}</p>
-                    <p><strong>Customer:</strong> {order.customerName}</p>
-                    <p><strong>Time:</strong> {new Date(order.orderDate).toLocaleTimeString()}</p>
+                    <p><strong>Address:</strong> {order.address}</p>
+                    <p><strong>Restaurant:</strong> {order.restaurantName || 'Unknown'}</p>
+                    <p><strong>Time:</strong> {new Date(order.createdAt).toLocaleTimeString()}</p>
                     {order.estimatedDeliveryTime && (
                       <p><strong>Est. Delivery:</strong> {new Date(order.estimatedDeliveryTime).toLocaleTimeString()}</p>
                     )}
