@@ -14,7 +14,7 @@ const FOOD_IMAGE_BASE = `${API_BASE_URL}/food/public/image/`;
 // This endpoint definition is CORRECT, assuming you add the corresponding method in the Java Controller
 const RESTAURANT_ENDPOINT = (id) => `${API_BASE_URL}/restaurant/public/${id}`;
 const MENU = (id) => `${API_BASE_URL}/food/items/restaurant/${id}`; // Changed from /food/public/items/restaurant/
-const REVIEWS_ENDPOINT = (id) => `${API_BASE_URL}/reviews/restaurant/${id}`; // Assumed handled by ReviewController
+const REVIEWS_ENDPOINT = (id) => `${API_BASE_URL}/review/public/restaurant/${id}`; // Assumed handled by ReviewController
 // Cart endpoints (Assumed handled by ShoppingCartController)
 const SHOPPING_CART_ENDPOINT = `${API_BASE_URL}/shopping_cart/`;
 const UPDATE_CART_ENDPOINT = `${API_BASE_URL}/shopping_cart/update/`;
@@ -115,6 +115,7 @@ function RestaurantPublicPage() {
         // This endpoint MUST exist on the backend (GET /api/restaurant/public/{id})
         const response = await axios.get(RESTAURANT_ENDPOINT(restaurantId));
         setRestaurantData(response.data);
+        console.log('Restaurant details response:', response.data);
       } catch (err) {
         console.error("Error fetching restaurant details:", err);
         setError(formatErrorMessage(err, 'Failed to load restaurant details.'));
@@ -168,13 +169,33 @@ function RestaurantPublicPage() {
   // Fetch reviews - Uses REVIEWS_ENDPOINT (Assumed correct)
   // Using mock data as before, replace with actual fetch when ready
   useEffect(() => {
-      setLoadingReviews(false);
-      setReviews([
-          { id: 1, rating: 5, comment: "Amazing pizza, delivered hot and fresh!", customerName: "Alice", date: "2023-10-26" },
-          { id: 2, rating: 4, comment: "Good food, reasonable prices.", customerName: "Bob", date: "2023-10-25" },
-          { id: 3, rating: 3, comment: "Delivery took a bit long, but the burger was okay.", customerName: "Charlie", date: "2023-10-24" },
-      ]);
-  }, []); // Run once
+    const fetchReviews = async () => {
+      if(!restaurantId){
+        setLoadingReviews(false);
+        return;
+      }
+      
+      setLoadingReviews(true);
+      try{
+        const response = await axios.get(REVIEWS_ENDPOINT(restaurantId));
+        console.log('Reviews response:', response.data);
+        const fetchedReviews = Array.isArray(response.data) ? response.data : response.data.reviews || response.data;
+        setReviews(fetchedReviews);
+      }
+      catch (err) {
+        console.error("Error fetching reviews:", err);
+        
+        setError(prev => prev
+            ? `${prev} | ${formatErrorMessage(err, 'Failed to load reviews.')}`
+            : formatErrorMessage(err, 'Failed to load reviews.')
+        );
+         setReviews([]);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+    fetchReviews();
+  }, [restaurantId]);
 
    // Fetch current cart (Keep as is - Assumed correct)
    useEffect(() => {
@@ -526,10 +547,20 @@ function RestaurantPublicPage() {
             ) : (
               <div className="reviews-list">
                 {reviews.map(review => (
-                  <div key={review.id} className="review-card compact-review">
-                    <StarRatingDisplay rating={review.rating} size={16} />
-                    <p className="review-comment">"{review.comment}"</p>
-                    <p className="review-author">- {review.customerName || 'Anonymous'} on {new Date(review.date).toLocaleDateString()}</p>
+                  <div key={review.orderId || `review-${Math.random()}`} className="review-card compact-review">
+                    
+                    {review.foodReviewComment && review.foodReviewComment.trim() !== '' ? (
+                       <p className="review-comment">"{review.foodReviewComment}"</p>
+                    ) : (
+                       <p className="review-comment no-comment"><i>No comment provided.</i></p>
+                    )}
+                    <p className="review-author">
+                       - {review.customerName || 'Anonymous Customer'} on {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Unknown Date'}
+                    </p>
+                    <div className="delivery-score-display">
+                        <span>Delivery Rating: </span>
+                        <StarRatingDisplay rating={review.deliveryScore} size={14} inactiveColor="#cccccc"/>
+                    </div>
                   </div>
                 ))}
               </div>
