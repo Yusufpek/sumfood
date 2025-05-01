@@ -34,7 +34,7 @@ function Register() {
       phoneNumber,
       password,
       ...(userType === 'courier' && { driverLicenceId, birthDate, vehicleType }),
-      ...(userType === 'restaurant' && { taxId, businessName, displayName, description, city, address, logo}),
+      ...(userType === 'restaurant' && { taxId, businessName, displayName, description, city, address, logo }),
     };
 
     register(userData)
@@ -58,17 +58,23 @@ function Register() {
 
   async function register(userData) {
     let url = "http://localhost:8080/api/auth/register/";
-    if (userType === 'regular') {
-      url += "customer";
-    } else if (userType === 'restaurant') {
+    let body;
+    if (userType === 'restaurant') {
+      body = FormData()
       userData['taxIdentificationNumber'] = userData['taxId'];
       url += userType;
+      body.append('restaurantRegistration', new Blob([JSON.stringify(userData)], { type: 'application/json' }));
+      body.append('file', logo);
     } else {
-      url += userType;
+      if (userType === 'regular') {
+        url += "customer";
+      } else {
+        url += userType;
+      }
+      body = JSON.stringify(userData, null, 2);
     }
-    const body = JSON.stringify(userData, null, 2);
     console.log("body", body);
-    const response = await axios.post(url, body, { headers: { 'Content-Type': 'application/json' } });
+    const response = await axios.post(url, body);
     return response;
   }
 
