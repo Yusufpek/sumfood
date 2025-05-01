@@ -98,10 +98,9 @@ public class OrderService {
 	}
 
 	@Transactional
-	public List<OrderResponse> getActiveOrders() {
+	public List<OrderResponse> getReadyForPickupOrders() {
 		List<OrderStatus> activeStatusList = new ArrayList<OrderStatus>();
-		activeStatusList.add(OrderStatus.PENDING);
-		activeStatusList.add(OrderStatus.PREPARING);
+		activeStatusList.add(OrderStatus.READY_FOR_PICKUP);
 
 		List<Order> orders = orderRepository.findByOrderStatusIn(activeStatusList);
 		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());

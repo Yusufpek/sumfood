@@ -128,7 +128,7 @@ public class OrderController {
                 if (!courierOpt.isPresent()) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
                 }
-                List<OrderResponse> orders = orderService.getActiveOrders();
+                List<OrderResponse> orders = orderService.getReadyForPickupOrders();
                 return ResponseEntity.ok(orders);
             }
 
