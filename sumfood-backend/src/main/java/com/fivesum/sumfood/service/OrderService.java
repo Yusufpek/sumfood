@@ -114,6 +114,10 @@ public class OrderService {
 		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
 	}
 
+	public Order findById(Long id) {
+		return orderRepository.findById(id).orElse(null);
+	}
+
 	public OrderResponse toResponseDTO(Order order) {
 		List<ShoppingCartItemResponse> items = order.getShoppingCart().getItems().stream()
 				.map(item -> ShoppingCartItemResponse.builder()
