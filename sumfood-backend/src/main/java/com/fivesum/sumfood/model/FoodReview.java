@@ -19,7 +19,7 @@ public class FoodReview extends EntityBase {
     private Restaurant restaurant;
 
     @Column
-    private int score;
+    private double score;
 
     @Column
     private String comment;

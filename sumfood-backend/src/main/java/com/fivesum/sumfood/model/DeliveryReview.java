@@ -19,5 +19,5 @@ public class DeliveryReview extends EntityBase {
     private OrderReview orderReview;
 
     @Column
-    private int score;
+    private double score;
 }

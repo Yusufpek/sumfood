@@ -11,12 +11,12 @@ public class ReviewRequest {
     @NotNull(message = "Delivery score is required")
     @Min(value = 1, message = "Delivery score must be at least 1")
     @Max(value = 5, message = "Delivery score must be at most 5")
-    private Integer deliveryScore;
+    private double deliveryScore;
 
     @NotNull(message = "Food score is required")
     @Min(value = 1, message = "Food score must be at least 1")
     @Max(value = 5, message = "Food score must be at most 5")
-    private Integer foodScore;     // Represents the overall food/restaurant score
+    private double foodScore;
 
     private String foodComment; // Comment is optional
 
