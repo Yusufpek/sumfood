@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
-import { FaStar, FaStarHalfAlt } from 'react-icons/fa'; // Make sure react-icons is installed
+import React, { useState, useEffect } from 'react';
+import { FaStar, FaStarHalfAlt } from 'react-icons/fa';
+import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
+import './OrderReviewPage.css';
 
-const StarRating = ({ rating, onRatingChange, disabled = false }) => { // Added disabled prop
+const StarRating = ({ rating, onRatingChange, disabled = false }) => {
   const [hover, setHover] = useState(null);
 
   const handleMouseEnter = (value) => {
@@ -22,241 +25,319 @@ const StarRating = ({ rating, onRatingChange, disabled = false }) => { // Added 
     }
   };
 
-
   const renderStar = (index) => {
     const starValue = index + 1;
     const halfStarValue = index + 0.5;
 
-    // Determine filled status based on hover or actual rating
     const filled = hover ? hover >= starValue : rating >= starValue;
     const halfFilled = hover ? hover === halfStarValue : rating === halfStarValue;
+
+    const starClass = `star ${disabled ? 'star-disabled' : 'star-interactive'}`;
 
     return (
       <div
         key={index}
-        style={{
-          display: 'inline-block', // Display stars inline
-          position: 'relative',    // For positioning hover/click areas
-          cursor: disabled ? 'default' : 'pointer', // Change cursor if disabled
-          marginRight: '4px',      // Spacing between stars
-          lineHeight: '1',         // Prevent extra vertical space
-          color: disabled ? '#b0b0b0' : '#e4e5e9', // Default/disabled empty star color
-        }}
-        onMouseEnter={() => handleMouseEnter(starValue)} // Hover over the whole star sets full value hover
+        className={starClass}
+        onMouseEnter={() => handleMouseEnter(starValue)}
         onMouseLeave={handleMouseLeave}
       >
-        {/* Click area for the LEFT half (0.5 rating) */}
         <div
-          style={{
-            position: 'absolute',
-            width: '50%',
-            height: '100%',
-            left: 0,
-            top: 0,
-            // backgroundColor: 'rgba(0, 255, 0, 0.1)', // Optional: for debugging click areas
-            cursor: disabled ? 'default' : 'pointer',
-            zIndex: 2, // Above the star icon
-          }}
-          onMouseEnter={() => handleMouseEnter(halfStarValue)} // Hovering left sets half value hover
-          // onMouseLeave is handled by the parent div
+          className="star-half-area star-half-left"
+          onMouseEnter={() => handleMouseEnter(halfStarValue)}
           onClick={() => handleClick(halfStarValue)}
         />
-        {/* Click area for the RIGHT half (full star rating) */}
-         <div
-          style={{
-            position: 'absolute',
-            width: '50%',
-            height: '100%',
-            right: 0,
-            top: 0,
-            // backgroundColor: 'rgba(255, 0, 0, 0.1)', // Optional: for debugging click areas
-            cursor: disabled ? 'default' : 'pointer',
-            zIndex: 2, // Above the star icon
-          }}
-          onMouseEnter={() => handleMouseEnter(starValue)} // Hovering right sets full value hover
-          // onMouseLeave is handled by the parent div
+        <div
+          className="star-half-area star-half-right"
+          onMouseEnter={() => handleMouseEnter(starValue)}
           onClick={() => handleClick(starValue)}
         />
-
-        {/* Star Icon Rendering */}
         {halfFilled ? (
-          <FaStarHalfAlt size={24} style={{ color: disabled ? '#d4aa00' : '#ffc107', display: 'block' }} />
+          <FaStarHalfAlt size={24} className={disabled ? 'star-filled-disabled' : 'star-filled'} style={{ display: 'block' }} />
         ) : filled ? (
-          <FaStar size={24} style={{ color: disabled ? '#d4aa00' : '#ffc107', display: 'block' }} />
+          <FaStar size={24} className={disabled ? 'star-filled-disabled' : 'star-filled'} style={{ display: 'block' }} />
         ) : (
-          <FaStar size={24} style={{ display: 'block' }} /> // Uses the parent div's color
+          <FaStar size={24} style={{ display: 'block' }} />
         )}
       </div>
     );
   };
 
   return (
-    <div style={{
-      display: 'flex',       // Use flexbox for alignment
-      flexDirection: 'row',  // Align items horizontally (default)
-      alignItems: 'center',  // Vertically center stars and text
-      // marginLeft: 8,      // Removed margin from container, added to individual stars
-    }}>
-      {[...Array(5)].map((_, index) => renderStar(index))} {/* Normal index order (0 to 4) */}
-      <span style={{
-        marginLeft: '12px', // Spacing between last star and text
-        fontSize: '0.9em',
-        color: '#666',
-        minWidth: '50px' // Ensure space for text display
-      }}>
-        {rating ? `${rating.toFixed(1)}/5.0` : 'Select'} {/* Show 'Select' if 0 */}
+    <div className="star-rating">
+      {[...Array(5)].map((_, index) => renderStar(index))}
+      <span className="star-rating-text">
+        {rating ? `${rating.toFixed(1)}/5.0` : 'Select'}
       </span>
     </div>
   );
 };
 
-// --- Keep the rest of your OrderReviewPage component as is ---
-
-// Example mock order data
-const mockOrder = {
-  id: 101,
-  restaurantName: "SumFood Pizza",
-  createdAt: new Date().toISOString(),
-  orderStatus: "DELIVERED",
-  paymentStatus: "SUCCESSFUL",
-  totalPrice: 26.55,
-  foodItems: [
-    { foodItemId: 1, name: "Margherita Pizza", quantity: 2, price: 15.00 },
-    { foodItemId: 2, name: "Garlic Bread", quantity: 1, price: 5.00 },
-    { foodItemId: 3, name: "Cola", quantity: 2, price: 5.00 }
-  ]
-};
-
 const OrderReviewPage = () => {
-  const [reviews, setReviews] = useState({});
+  const { orderId } = useParams();
+  const navigate = useNavigate();
+  
+  const [order, setOrder] = useState(null);
+  const [foodRating, setFoodRating] = useState(0); // New state for food rating
+  const [foodComment, setFoodComment] = useState(''); // New state for food comment
+  const [deliveryRating, setDeliveryRating] = useState(0);
+  const [deliveryComment, setDeliveryComment] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [orderLoading, setOrderLoading] = useState(true);
+  const [orderError, setOrderError] = useState(null);
 
-  const handleChange = (foodItemId, field, value) => {
-    setReviews(prev => ({
-      ...prev,
-      [foodItemId]: { ...prev[foodItemId], [field]: value }
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // TODO: Add actual API call to POST reviews
-    console.log("Submitting reviews:", reviews);
-    setSubmitted(true);
-    // Potentially disable form elements after submission
-  };
-
-  // Basic validation: Check if all items have a score > 0
-  const canSubmit = () => {
-      if (!mockOrder || !mockOrder.foodItems || mockOrder.foodItems.length === 0) {
-          return false;
+  useEffect(() => {
+    const fetchOrder = async () => {
+      setOrderLoading(true);
+      setOrderError(null);
+      
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error("Authentication token not found. Please log in.");
+        }
+        
+        const response = await axios.get(`http://localhost:8080/api/order/${orderId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Role': 'CUSTOMER'
+          }
+        });
+        
+        setOrder(response.data);
+      } catch (err) {
+        console.error("Error fetching order:", err);
+        const errorMessage = typeof err.response?.data === 'object' 
+          ? (err.response.data.message || JSON.stringify(err.response.data)) 
+          : (err.response?.data || err.message || "Failed to fetch order");
+        setOrderError(errorMessage);
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          navigate('/login');
+        }
+      } finally {
+        setOrderLoading(false);
       }
-      return mockOrder.foodItems.every(item => {
-          const review = reviews[item.foodItemId];
-          return review && review.score > 0;
-      });
+    };
+    
+    if (orderId) {
+      fetchOrder();
+    } else {
+      setOrderError("Order ID is missing");
+      setOrderLoading(false);
+    }
+  }, [orderId, navigate]);
+
+  const formatReviewsForSubmission = () => {
+    return {
+      deliveryScore: deliveryRating,
+      foodScore: foodRating,
+      foodComment: foodComment
+    };
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error("Authentication token not found. Please log in.");
+      }
+      
+      const reviewRequest = formatReviewsForSubmission();
+      
+      const response = await axios.post(
+        `http://localhost:8080/api/review/order/${orderId}`,
+        reviewRequest,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Role': 'CUSTOMER'
+          }
+        }
+      );
+      
+      console.log("Review submission response:", response.data);
+      setSubmitted(true);
+    } catch (err) {
+      console.error("Error submitting reviews:", err);
+      const errorMessage = typeof err.response?.data === 'object' 
+        ? (err.response.data.message || JSON.stringify(err.response.data)) 
+        : (err.response?.data || err.message || "Failed to submit reviews");
+      setError(errorMessage);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        navigate('/login');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const canSubmit = () => {
+    if (!order) {
+      return false;
+    }
+    return foodRating > 0 && deliveryRating > 0;
+  };
+
+  if (orderLoading) {
+    return (
+      <div className="loading-container">
+        <p>Loading order details...</p>
+      </div>
+    );
+  }
+
+  if (orderError) {
+    return (
+      <div className="error-container">
+        <p>Error: {orderError}</p>
+        <button 
+          onClick={() => navigate('/orders')}
+          className="return-button"
+        >
+          Return to Orders
+        </button>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="no-order-container">
+        <p>No order found or order cannot be reviewed.</p>
+        <button 
+          onClick={() => navigate('/orders')}
+          className="return-button"
+        >
+          Return to Orders
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div style={{
-        maxWidth: 700, // Slightly wider
-        margin: "40px auto",
-        padding: "24px 32px", // More padding
-        backgroundColor: "#ffffff",
-        borderRadius: 12, // Softer corners
-        boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)", // Subtle shadow
-        fontFamily: "Arial, sans-serif" // Basic font
-     }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '24px', color: '#333' }}>Review Your Order</h2>
-      <div style={{ borderBottom: '1px solid #eee', paddingBottom: '16px', marginBottom: '24px' }}>
-        <p style={{ margin: '4px 0', fontSize: '1.1em' }}>
-            <strong>Order #{mockOrder.id}</strong> from <strong>{mockOrder.restaurantName}</strong>
+    <div className="review-page-container">
+      <h2 className="review-page-title">Review Your Order</h2>
+      <div className="order-summary">
+        <p className="order-id">
+          <strong>Order #{order?.id}</strong> from <strong>{order?.restaurantName}</strong>
         </p>
-        <p style={{ margin: '4px 0', color: '#666', fontSize: '0.9em' }}>
-            Date: {new Date(mockOrder.createdAt).toLocaleString()}
+        <p className="order-meta">
+          Date: {order?.createdAt ? new Date(order.createdAt).toLocaleString() : ''}
         </p>
-         <p style={{ margin: '4px 0', color: '#666', fontSize: '0.9em' }}>
-            Total: ${mockOrder.totalPrice.toFixed(2)}
+        <p className="order-meta">
+          Total: ${order?.totalPrice ? order.totalPrice.toFixed(2) : '0.00'}
         </p>
       </div>
 
       <form onSubmit={handleSubmit}>
-        {mockOrder.foodItems.map(item => (
-          <div key={item.foodItemId} style={{
-            marginBottom: 32, // More space between items
-            paddingBottom: 24, // More padding below item
-            borderBottom: "1px dashed #e0e0e0", // Dashed separator
-           }}>
-            <div style={{ marginBottom: '16px' }}> {/* Increased margin */}
-              <strong style={{ fontSize: '1.1em', color: '#444' }}>{item.name}</strong>
-              <span style={{ marginLeft: '8px', color: '#777' }}>(x{item.quantity})</span>
-              <span style={{ float: 'right', color: '#555', fontWeight: 'bold' }}>${(item.price / item.quantity).toFixed(2)} each</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
-              <label style={{ marginRight: '16px', fontWeight: '500', color: '#555', minWidth: '55px' }}>
-                Rating:
-              </label>
-              <StarRating
-                  rating={reviews[item.foodItemId]?.score || 0}
-                  onRatingChange={(value) => handleChange(item.foodItemId, 'score', value)}
-                  disabled={submitted} // Disable after submit
-              />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-              <label style={{ marginRight: '16px', fontWeight: '500', color: '#555', minWidth: '55px', paddingTop: '5px' }}>
-                Review:
-              </label>
-              <textarea // Changed to textarea for better review input
-                  value={reviews[item.foodItemId]?.comment || ''}
-                  onChange={e => handleChange(item.foodItemId, 'comment', e.target.value)}
-                  placeholder="How was this order? (Optional)"
-                  disabled={submitted} // Disable after submit
-                  style={{
-                      flexGrow: 1, // Take remaining space
-                      padding: '10px 100px',
-                      border: '1px solid #ccc',
-                      borderRadius: '4px',
-                      minHeight: '60px',
-                      resize: 'vertical',
-                      fontSize: '0.95em'
-                  }}
-              />
-            </div>
+        {/* Delivery Rating Section */}
+        <div className="delivery-rating-section">
+          <h3 className="delivery-section-title">Rate Your Delivery Experience</h3>
+          <div className="rating-container">
+            <label className="rating-label">
+              Delivery Rating:
+            </label>
+            <StarRating
+              rating={deliveryRating}
+              onRatingChange={(value) => setDeliveryRating(value)}
+              disabled={submitted}
+            />
           </div>
-        ))}
+          <div className="review-container">
+            <label className="rating-label">
+              Delivery Comments:
+            </label>
+            <textarea
+              className="review-textarea"
+              value={deliveryComment}
+              onChange={e => setDeliveryComment(e.target.value)}
+              placeholder="How was your delivery experience? (Optional)"
+              disabled={submitted}
+            />
+          </div>
+        </div>
 
-        {/* Conditional rendering for submission status */}
+        {/* Food Rating Section */}
+        <div className="food-rating-section">
+          <h3 className="food-section-title">Rate Your Food Experience</h3>
+          <div className="rating-container">
+            <label className="rating-label">
+              Food Rating:
+            </label>
+            <StarRating
+              rating={foodRating}
+              onRatingChange={(value) => setFoodRating(value)}
+              disabled={submitted}
+            />
+          </div>
+          <div className="review-container">
+            <label className="rating-label">
+              Food Comments:
+            </label>
+            <textarea
+              className="review-textarea"
+              value={foodComment}
+              onChange={e => setFoodComment(e.target.value)}
+              placeholder="How was your food? (Optional)"
+              disabled={submitted}
+            />
+          </div>
+        </div>
+
+        {/* Food Items List (for reference only) */}
+        <div className="food-items-list">
+          <h3 className="food-items-section-title">Your Order Items</h3>
+          {order?.foodItems?.map(item => (
+            <div key={item.foodItemId} className="food-item">
+              <div className="food-item-header">
+                <strong className="food-item-name">{item.foodItemName}</strong>
+                <span className="food-item-quantity">(x{item.amount})</span>
+                <span className="food-item-price">${(item.price / item.amount).toFixed(2)} each</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
         {submitted ? (
-          <div style={{ color: "#28a745", marginTop: 24, textAlign: 'center', fontWeight: 'bold', fontSize: '1.1em' }}>
+          <div className="success-message">
             Thank you for your reviews!
+            <div style={{ marginTop: '20px' }}>
+              <button
+                onClick={() => navigate('/orders')}
+                className="return-button"
+              >
+                Return to Orders
+              </button>
+            </div>
           </div>
         ) : (
-           <div style={{ textAlign: 'center', marginTop: '32px' }}> {/* Center the button */}
-             <button
-               type="submit"
-               disabled={!canSubmit()} // Disable if not all items are rated
-               style={{
-                 padding: "10px 30px", // Larger padding
-                 backgroundColor: !canSubmit() ? "#cccccc" : "#007bff", // Grey out if disabled
-                 color: "white",
-                 border: "none",
-                 borderRadius: "5px", // Slightly more rounded
-                 cursor: !canSubmit() ? "not-allowed" : "pointer",
-                 fontSize: "1.05em", // Slightly larger font
-                 transition: "background-color 0.2s ease" // Smooth transition
-               }}
-             >
-               Submit Reviews
-             </button>
-             {!canSubmit() && ( // Optional hint if button is disabled
-                <p style={{fontSize: '0.85em', color: '#777', marginTop: '8px'}}>Please rate all items.</p>
-             )}
-           </div>
+          <div className="form-actions">
+            {error && (
+              <div className="error-message">
+                {error}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={!canSubmit() || loading}
+              className={`submit-button ${(!canSubmit() || loading) ? 'submit-button-disabled' : ''}`}
+            >
+              {loading ? 'Submitting...' : 'Submit Reviews'}
+            </button>
+            {!canSubmit() && !loading && (
+              <p className="validation-message">Please provide both food and delivery ratings.</p>
+            )}
+          </div>
         )}
       </form>
     </div>
   );
 };
-
 
 export default OrderReviewPage;
