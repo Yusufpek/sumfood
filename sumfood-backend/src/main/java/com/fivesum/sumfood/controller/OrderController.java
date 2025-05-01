@@ -68,11 +68,6 @@ public class OrderController {
 
             Customer customer = customerOpt.get();
             List<OrderResponse> orders = orderService.getOrdersByCustomer(customer);
-            orders.stream().map(orderResponse -> {
-                OrderReview review = reviewService.getReviewByOrderId(orderResponse.getId());
-                orderResponse.setReviewId(review.getId());
-                return orderResponse;
-            }).collect(Collectors.toList());
 
             return ResponseEntity.ok(orders);
         } catch (Exception e) {
@@ -143,6 +138,14 @@ public class OrderController {
 
             Customer customer = customerOpt.get();
             List<OrderResponse> orders = orderService.getPastOrdersByCustomer(customer);
+
+            orders = orders.stream().map(orderResponse -> {
+                OrderReview review = reviewService.getReviewByOrderId(orderResponse.getId());
+                System.out.println(orderResponse.getId());
+                if (review != null)
+                    orderResponse.setReviewId(review.getId());
+                return orderResponse;
+            }).collect(Collectors.toList());
 
             return ResponseEntity.ok(orders);
         } catch (Exception e) {
