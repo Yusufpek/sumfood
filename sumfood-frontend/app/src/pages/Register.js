@@ -143,22 +143,30 @@ function Register() {
   async function register(userData) {
     let url = "http://localhost:8080/api/auth/register/";
     let body;
+    let response;
     if (userType === 'restaurant') {
-      body = new FormData()
+      body = new FormData();
       userData['taxIdentificationNumber'] = userData['taxId'];
       url += userType;
       body.append('restaurantRegistration', new Blob([JSON.stringify(userData)], { type: 'application/json' }));
       body.append('file', logo);
+      response = await axios.post(url, body);
     } else {
       if (userType === 'regular') {
         url += "customer";
       } else {
         url += userType;
       }
+      console.log("url");
+      console.log(url);
       body = JSON.stringify(userData, null, 2);
+      response = await axios.post(url, body, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
     }
     console.log("body", body);
-    const response = await axios.post(url, body);
     return response;
   }
 
