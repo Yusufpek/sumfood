@@ -24,6 +24,7 @@ public class OrderService {
 	private final ShoppingCartService shoppingCartService;
 	private final OrderRepository orderRepository;
 	private final CustomerService customerService;
+	
 
 	@Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class })
 	public OrderResponse createOrder(Customer customer) {
@@ -112,6 +113,38 @@ public class OrderService {
 		}
 		List<Order> orders = orderRepository.findByCustomerAndOrderStatus(customer, orderStatus);
 		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public List<OrderResponse> getActiveOrdersByRestaurant(Restaurant restaurant) {
+		List<OrderStatus> activeStatusList = new ArrayList<OrderStatus>();
+		activeStatusList.add(OrderStatus.PENDING);
+		activeStatusList.add(OrderStatus.PREPARING);
+		activeStatusList.add(OrderStatus.ON_THE_WAY);
+
+		List<Order> orders = orderRepository.findByShoppingCartRestaurantAndOrderStatusIn(restaurant, activeStatusList);
+		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public OrderResponse updateOrderStatus(Long orderId, Restaurant restaurant, OrderStatus orderStatus) {
+		Order order = orderRepository.findById(orderId).orElseThrow(() -> new InvalidRequestException("Order not found!"));
+		if (order.getShoppingCart().getRestaurant().getId() != restaurant.getId()) {
+			throw new InvalidRequestException("Order not found!");
+		}
+		order.setOrderStatus(orderStatus);
+		orderRepository.save(order);
+		return toResponseDTO(order);
+	}
+
+	@Transactional
+	public void cancelOrder(Long orderId, Restaurant restaurant) {
+		Order order = orderRepository.findById(orderId).orElseThrow(() -> new InvalidRequestException("Order not found!"));
+		if (order.getShoppingCart().getRestaurant().getId() != restaurant.getId()) {
+			throw new InvalidRequestException("Order not found!");
+		}
+		order.setOrderStatus(OrderStatus.CANCELLED);
+		orderRepository.save(order);
 	}
 
 	public OrderResponse toResponseDTO(Order order) {
