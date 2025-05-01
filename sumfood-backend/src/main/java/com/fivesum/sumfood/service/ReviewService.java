@@ -31,6 +31,10 @@ public class ReviewService {
     private final OrderService orderService;
     private final DeliveryService deliveryService;
 
+    public OrderReview getReviewByOrderId(Long id) {
+        return orderReviewRepository.findByOrderId(id).orElse(null);
+    }
+
     public OrderReview getReviewById(Long id) {
         return orderReviewRepository.findById(id)
                 .orElseThrow(() -> new InvalidRequestException("Review is not found!"));

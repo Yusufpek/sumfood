@@ -25,6 +25,7 @@ public class OrderService {
 	private final ShoppingCartService shoppingCartService;
 	private final OrderRepository orderRepository;
 	private final CustomerService customerService;
+	private final ReviewService reviewService;
 
 	@Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class })
 	public OrderResponse createOrder(Customer customer) {
@@ -143,6 +144,8 @@ public class OrderService {
 						.build())
 				.collect(Collectors.toList());
 
+		OrderReview orderReview = reviewService.getReviewByOrderId(order.getId());
+
 		return OrderResponse
 				.builder()
 				.id(order.getId())
@@ -156,6 +159,7 @@ public class OrderService {
 				.latitude(order.getLatitude())
 				.longitude(order.getLongitude())
 				.foodItems(items)
+				.reviewId(orderReview.getId())
 				.build();
 	}
 }
