@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
 import HeroSection from '../../components/home/HeroSection';
 import Footer from '../../components/layout/Footer';
@@ -627,8 +627,13 @@ const MainPage = () => {
                 <p style={{ textAlign: 'center' }}>No restaurants available at the moment.</p>
               ) : (
                 <div className="restaurant-grid">
-                  {restaurantState.restaurants.map((restaurant) => (
-                    <div key={restaurant.id} className="restaurant-card-simple">
+                {restaurantState.restaurants.map((restaurant) => (
+                  <Link 
+                    key={restaurant.id}
+                    to={`/restaurant/${restaurant.id}`} 
+                    className="restaurant-card-link"
+                  >
+                    <div className="restaurant-card-simple">
                       <h3>{restaurant.name}</h3>
                       {restaurant.description && <p>{restaurant.description}</p>}
                       {restaurant.address && (
@@ -636,9 +641,11 @@ const MainPage = () => {
                           <strong>Address:</strong> {restaurant.address}
                         </p>
                       )}
+                      {}
                     </div>
-                  ))}
-                </div>
+                  </Link>
+                ))}
+              </div>
               )}
             </div>
           </>
