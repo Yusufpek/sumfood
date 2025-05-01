@@ -37,8 +37,6 @@ const ProfileDropdown = ({ username }) => {
         <div className="profile-dropdown">
           <Link to="/profile">Profile</Link>
           <Link to="/orders">Order History</Link>
-          <Link to="/favorites">Favorites</Link>
-          <Link to="/notifications">Notifications (3)</Link>
           <button 
             className="logout-button" 
             onClick={handleLogout}

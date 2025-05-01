@@ -1,6 +1,6 @@
 package com.fivesum.sumfood.config;
 
-import com.fivesum.sumfood.model.ErrorResponse;
+import com.fivesum.sumfood.dto.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.http.HttpStatus;

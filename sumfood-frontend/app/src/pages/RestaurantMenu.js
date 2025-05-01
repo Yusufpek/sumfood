@@ -14,6 +14,8 @@ function RestaurantMenu() {
   const [editingItem, setEditingItem] = useState(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null); // State for the image file
+  const fileInputRef = React.useRef(null); // Ref for file input
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -21,8 +23,7 @@ function RestaurantMenu() {
     description: '',
     price: '',
     stock: '',
-    category: '',
-    isDonated: false
+    category: ''
   });
 
   useEffect(() => {
@@ -38,15 +39,17 @@ function RestaurantMenu() {
         setLoading(true);
         // Fetch restaurant profile
         const restaurantResponse = await axios.get('http://localhost:8080/api/restaurant/profile', {
-          headers: { 'Authorization': `Bearer ${token}`,
-          'Role': `RESTAURANT` }
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Role': `RESTAURANT`
+          }
         });
         console.log('API Restaurant Response:', restaurantResponse);
         setRestaurantInfo(restaurantResponse.data);
-        
-        
+
+
         // Fetch food items
-        const foodResponse = await axios.get('http://localhost:8080/api/food/items', {
+        const foodResponse = await axios.get('http://localhost:8080/api/food/items/restaurant', {
           headers: { 'Authorization': `Bearer ${token}`,
           'Role': `RESTAURANT` }
         });
@@ -87,11 +90,15 @@ function RestaurantMenu() {
   }, [navigate]);
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value
-    });
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      setSelectedFile(files[0]); // Store the file object
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
   };
 
   const resetForm = () => {
@@ -100,13 +107,20 @@ function RestaurantMenu() {
       description: '',
       price: '',
       stock: '',
-      category: '',
-      isDonated: false
+      category: ''
     });
+    setSelectedFile(null); // Clear the selected file
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // Reset the file input visually
+    }
     setEditingItem(null);
   };
 
   const openForm = (item = null) => {
+    setSelectedFile(null); // Clear file on opening form
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // Reset the file input visually
+    }
     if (item) {
       // Edit mode
       setFormData({
@@ -114,8 +128,7 @@ function RestaurantMenu() {
         description: item.description,
         price: item.price,
         stock: item.stock,
-        category: item.categories[0] || '', // Use optional chaining and provide default value
-        isDonated: item.isDonated
+        category: item.categories[0] || '' // Use optional chaining and provide default value
       });
       console.log('Editing item:', item);
       setEditingItem(item);
@@ -131,42 +144,50 @@ function RestaurantMenu() {
     const token = localStorage.getItem('token');
     setError(''); // Clear any previous error
 
-    try {
-      const payload = {
-        ...formData,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock, 10),
-        // Fix: Send category as a direct string value, not as an object with id property
-        category: formData.category
-      };
+    // Create FormData object for both add and update
+    const data = new FormData();
+    const foodItemData = {
+      ...formData,
+      price: parseFloat(formData.price),
+      stock: parseInt(formData.stock, 10),
+      category: formData.category
+    };
+    // Append food item data as a JSON blob
+    data.append('foodItem', new Blob([JSON.stringify(foodItemData)], { type: 'application/json' }));
 
-      console.log('Submitting with payload:', payload);
-      
+    // Append the file only if it's selected (for both add and update)
+    if (selectedFile) {
+      data.append('file', selectedFile);
+    }
+
+    try {
+      let response;
       if (editingItem) {
-        // Update existing item - fixed to match the controller parameter name
-        console.log('Updating item with ID:', editingItem.id);
+        // Update existing item (PUT request with FormData)
+        console.log('Updating item with ID:', editingItem.foodItemId, 'using FormData');
         try {
-          // Fix: We need to use 'editingItem.id' as the idString parameter
-          const response = await axios.put(`http://localhost:8080/api/food/item/${editingItem.id}`, payload, {
-            headers: { 
+          response = await axios.put(`http://localhost:8080/api/food/item/${editingItem.foodItemId}`, data, {
+            headers: {
               'Authorization': `Bearer ${token}`,
               'Role': 'RESTAURANT'
+              // Axios sets Content-Type to multipart/form-data automatically
             }
           });
           console.log('Update response:', response.data);
         } catch (updateErr) {
           console.error('Error in update request:', updateErr);
-          if (updateErr.response) {
-            console.error('Response data:', updateErr.response.data);
-            console.error('Response status:', updateErr.response.status);
-          }
           const errorMsg = getErrorMessage(updateErr);
           throw new Error(errorMsg);
         }
       } else {
-        // Add new item
+        // Add new item (POST request with FormData)
+        if (!selectedFile) {
+          setError('Please select an image file for the new item.');
+          return; // Prevent submission without a file for new items
+        }
+        console.log('Submitting new item with FormData...');
         try {
-          const response = await axios.post('http://localhost:8080/api/food/item', payload, {
+          response = await axios.post('http://localhost:8080/api/food/item', data, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Role': 'RESTAURANT'
@@ -180,30 +201,28 @@ function RestaurantMenu() {
         }
       }
 
-      // Refresh food items after saving
-      const foodResponse = await axios.get('http://localhost:8080/api/food/items', {
-        headers: { 
+      // Refresh food items after successful save/update
+      const foodResponse = await axios.get('http://localhost:8080/api/food/items/restaurant', {
+        headers: {
           'Authorization': `Bearer ${token}`,
-          'Role': 'RESTAURANT' 
+          'Role': 'RESTAURANT'
         }
       });
-      
-      console.log('API Food Items Response after update:', foodResponse);
+
+      console.log('API Food Items Response after save/update:', foodResponse);
       setFoodItems(foodResponse.data || []);
-      
+
       setIsFormOpen(false);
       resetForm();
     } catch (err) {
       console.error('Error saving food item:', err);
-      setError(`Failed to save food item: ${err.message}`);
+      setError(`Failed to save food item: ${err.message || 'Unknown error'}`);
     }
   };
 
   // Helper function to extract meaningful error messages from Axios errors
   const getErrorMessage = (error) => {
     if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
       const responseData = error.response.data;
       if (typeof responseData === 'string') {
         return responseData;
@@ -215,10 +234,8 @@ function RestaurantMenu() {
         return `Server error: ${error.response.status}`;
       }
     } else if (error.request) {
-      // The request was made but no response was received
       return 'No response from server. Please check your connection.';
     } else if (error.message) {
-      // Something happened in setting up the request that triggered an Error
       return error.message;
     } else {
       return 'An unknown error occurred';
@@ -226,25 +243,23 @@ function RestaurantMenu() {
   };
 
   const handleDelete = (itemId) => {
-    // Find the item to delete by ID
     const itemToRemove = foodItems.find(item => item.id === itemId);
     setItemToDelete(itemToRemove);
     setIsDeleteConfirmOpen(true);
   };
-  
+
   const confirmDelete = async () => {
     if (!itemToDelete) return;
-    
+
     const token = localStorage.getItem('token');
     try {
       await axios.delete(`http://localhost:8080/api/food/item/${itemToDelete.id}`, {
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
-          'Role': 'RESTAURANT' 
+          'Role': 'RESTAURANT'
         }
       });
 
-      // Remove item from state
       setFoodItems(foodItems.filter(item => item.id !== itemToDelete.id));
       setIsDeleteConfirmOpen(false);
       setItemToDelete(null);
@@ -254,7 +269,7 @@ function RestaurantMenu() {
       setIsDeleteConfirmOpen(false);
     }
   };
-  
+
   const cancelDelete = () => {
     setIsDeleteConfirmOpen(false);
     setItemToDelete(null);
@@ -263,23 +278,19 @@ function RestaurantMenu() {
   const getCategoryDisplayName = (item) => {
     if (item.categories && item.categories.length > 0) {
       return item.categories.map(cat => {
-        // Handle both object format and string format
-        return typeof cat === 'object' ? cat.name : 
-          // Find the matching category in the categories array
+        return typeof cat === 'object' ? cat.name :
           categories.find(c => c.id === cat)?.name || cat;
       }).join(', ');
     }
-    
-    // Fallback for single category
+
     if (item.category) {
       if (typeof item.category === 'object') {
         return item.category.name;
       }
-      // Find the category name from our categories array
       const categoryObj = categories.find(c => c.id === item.category);
       return categoryObj ? categoryObj.name : item.category;
     }
-    
+
     return 'Uncategorized';
   };
 
@@ -299,7 +310,7 @@ function RestaurantMenu() {
 
   return (
     <>
-      <RestaurantNavbar restaurantName={restaurantInfo.businessName || 'Your Restaurant'} currentPage="menu" />
+      <RestaurantNavbar restaurantName={restaurantInfo.displayName || 'Your Restaurant'} currentPage="menu" />
       <div className="restaurant-menu-container">
         <header className="menu-header">
           <h1>Menu Management</h1>
@@ -315,6 +326,7 @@ function RestaurantMenu() {
           <div className="menu-form-overlay">
             <div className="menu-form-container">
               <h2 className="form-title">{editingItem ? 'Edit Food Item' : 'Add New Food Item'}</h2>
+              {error && <p className="error form-error">{error}</p>}
               <form onSubmit={handleSubmit} className="menu-form">
                 <div className="form-row">
                   <div className="form-group">
@@ -328,7 +340,7 @@ function RestaurantMenu() {
                       required
                     />
                   </div>
-                  
+
                   <div className="form-group">
                     <label htmlFor="category">Category</label>
                     <select
@@ -371,7 +383,7 @@ function RestaurantMenu() {
                       required
                     />
                   </div>
-                  
+
                   <div className="form-group">
                     <label htmlFor="stock">Stock</label>
                     <input
@@ -384,18 +396,31 @@ function RestaurantMenu() {
                     />
                   </div>
                 </div>
-                
-                <div className="form-group checkbox-container">
+
+                <div className="form-group full-width">
+                  <label htmlFor="image">Image {editingItem && '(Optional: Leave blank to keep current image)'}</label>
                   <input
-                    type="checkbox"
-                    id="isDonated"
-                    name="isDonated"
-                    checked={formData.isDonated}
+                    type="file"
+                    id="image"
+                    name="image"
+                    accept="image/png, image/jpeg, image/jpg"
                     onChange={handleInputChange}
+                    ref={fileInputRef}
+                    required={!editingItem} // Only required when adding a new item
                   />
-                  <label htmlFor="isDonated" className="checkbox-label">Donation Item</label>
+                  {selectedFile && <p className="file-info">Selected: {selectedFile.name}</p>}
+                  {editingItem && !selectedFile && editingItem.imageName && (
+                    <div className="current-image-preview">
+                      <p>Current Image:</p>
+                      <img
+                        src={`http://localhost:8080/api/food/public/image/${editingItem.restaurantName}/${editingItem.imageName}`}
+                        alt="Current item"
+                        style={{ maxWidth: '100px', maxHeight: '100px', marginTop: '10px' }}
+                      />
+                    </div>
+                  )}
                 </div>
-                
+
                 <div className="form-buttons">
                   <button type="submit" className="save-button">
                     {editingItem ? 'Update' : 'Save'}
@@ -409,7 +434,6 @@ function RestaurantMenu() {
           </div>
         )}
 
-        {/* Delete confirmation popup */}
         {isDeleteConfirmOpen && (
           <div className="menu-form-overlay">
             <div className="delete-confirm-container">
@@ -437,8 +461,13 @@ function RestaurantMenu() {
             <div className="menu-items-grid">
               {foodItems.map(item => (
                 <div key={item.id} className="menu-item-card">
+                  <img
+                    src={`http://localhost:8080/api/food/public/image/${item.restaurantName}/${item.imageName}`}
+                    alt={item.name}
+                    className="menu-item-image"
+                    onError={(e) => { e.target.onerror = null; e.target.src = "/path/to/default/image.png" }}
+                  />
                   <div className="menu-item-status">
-                    {item.isDonated && <span className="donation-badge">Donation</span>}
                     <span className="stock-info">{item.stock > 0 ? `${item.stock} in stock` : 'Out of stock'}</span>
                   </div>
                   <h3>{item.name}</h3>

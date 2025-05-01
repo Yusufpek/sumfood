@@ -11,7 +11,7 @@ public enum Category {
     PIDE_LAHMACUN,
     HOMEMADE,
     MEATBALL,
-    VEGATERIAN,
+    VEGETARIAN,
     SALAD,
     GLOBAL,
     MANTI,

@@ -12,4 +12,6 @@ public class RestaurantRegistrationRequest extends CustomerRegistrationRequest {
     private String businessName;
     private String displayName;
     private String description;
+    private String city;
+    private String address;
 }

@@ -1,4 +1,4 @@
-package com.fivesum.sumfood.model;
+package com.fivesum.sumfood.dto;
 
 import java.time.LocalDateTime;
 

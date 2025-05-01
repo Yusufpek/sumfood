@@ -4,12 +4,19 @@ import javax.persistence.*;
 
 import com.fivesum.sumfood.model.base.EntityBase;
 import com.fivesum.sumfood.model.enums.OrderStatus;
+import com.fivesum.sumfood.model.enums.OrderType;
 import com.fivesum.sumfood.model.enums.PaymentStatus;
 
 import lombok.experimental.SuperBuilder;
+import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 @SuperBuilder
 @Entity
+@NoArgsConstructor
+@Getter
+@Setter
 @Table(name = "orders")
 public class Order extends EntityBase {
 
@@ -27,6 +34,18 @@ public class Order extends EntityBase {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    private OrderType orderType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private OrderStatus orderStatus;
 
+    @Column(nullable = false, length = 500)
+    private String address;
+
+    @Column(nullable = true)
+    private double latitude;
+
+    @Column(nullable = true)
+    private double longitude;
 }
