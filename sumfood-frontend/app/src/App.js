@@ -15,6 +15,7 @@ import './styles/global.css';
 import './styles/auth.css';
 import Profile from "./pages/Profile/Profile";
 import CreateOrderPage from './pages/CreateOrderPage/CreateOrderPage';
+import RestaurantOrders from './pages/RestaurantOrders';
 
 function App() {
   return (
@@ -37,6 +38,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <RestaurantDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/restaurant-dashboard/orders"
+              element={
+                <ProtectedRoute>
+                  <RestaurantOrders />
                 </ProtectedRoute>
               }
             />
