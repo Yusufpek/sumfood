@@ -53,8 +53,20 @@ function RestaurantOrders() {
             'Role': 'RESTAURANT'
           }
         });
+        console.log('Orders:', ordersResponse.data);
+
+        // Process orders to use consistent field names
+        const processedOrders = (ordersResponse.data || []).map(order => ({
+          ...order,
+          id: order.id,
+          status: order.orderStatus || order.status, // Support both field names
+          items: order.foodItems || order.items || [], // Support both field names
+          totalAmount: order.totalPrice || order.totalAmount || 0, // Support both field names
+          customerName: order.customerName || 'Unknown Customer',
+          customerPhone: order.customerPhone || 'No Phone'
+        }));
         
-        setOrders(ordersResponse.data || []);
+        setOrders(processedOrders);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -76,21 +88,33 @@ function RestaurantOrders() {
   const updateOrderStatus = async (orderId, newStatus) => {
     const token = localStorage.getItem('token');
     try {
-      await axios.put(
-        `http://localhost:8080/api/restaurant/orders/${orderId}&${newStatus}`,
-        {},
+      console.log(`Updating order ${orderId} to status ${newStatus}`);
+      
+      // The backend expects the URL format with '&' between id and status
+      // Let's ensure it's properly formatted and logged for debugging
+      const url = `http://localhost:8080/api/restaurant/orders/${orderId}&${newStatus}`;
+      console.log(`Calling API: ${url}`);
+      
+      const response = await axios.put(
+        url,
+        {}, // Empty body
         {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Role': 'RESTAURANT'
+            'Role': 'RESTAURANT',
+            'Content-Type': 'application/json'
           }
         }
       );
+      
+      console.log('Response:', response.data);
+      
       // Refresh orders after status update
       setRefreshTrigger(prev => prev + 1);
     } catch (err) {
       console.error('Error updating order status:', err);
-      setError('Failed to update order status');
+      console.error('Error response:', err.response?.data);
+      setError(`Failed to update order status: ${err.response?.data || err.message}`);
     }
   };
 
@@ -114,7 +138,9 @@ function RestaurantOrders() {
   };
 
   const getStatusActions = (order) => {
-    switch(order.status) {
+    const orderStatus = order.status || order.orderStatus || '';
+    
+    switch(orderStatus) {
       case 'PENDING':
         return (
           <>
@@ -165,12 +191,27 @@ function RestaurantOrders() {
   };
 
   const getOrdersByStatus = (status) => {
-    return orders.filter(order => order.status === status);
+    if (!Array.isArray(orders)) {
+      console.error('orders is not an array:', orders);
+      return [];
+    }
+    
+    return orders.filter(order => {
+      // Check both field names to ensure we catch the status regardless of naming
+      const orderStatus = order.status || order.orderStatus || '';
+      return orderStatus === status;
+    });
   };
 
   const formatOrderDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString();
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    } catch (err) {
+      console.error('Error formatting date:', err);
+      return 'Invalid date';
+    }
   };
 
   if (loading) return (
@@ -206,24 +247,25 @@ function RestaurantOrders() {
                   <div key={order.id} className="order-card pending">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
-                      <span className="order-date">{formatOrderDate(order.orderDate)}</span>
+                      <span className="order-date">{formatOrderDate(order.orderDate || order.createdAt)}</span>
                     </div>
-                    <div className="order-customer">
-                      <p><strong>Customer:</strong> {order.customerName}</p>
-                      <p><strong>Phone:</strong> {order.customerPhone}</p>
+                    <div className="order-address">
+                      <h4>Address:</h4>
+                      <p>{order.address || 'No address provided'}</p>
                     </div>
                     <div className="order-items">
                       <h4>Items:</h4>
                       <ul>
-                        {order.items.map((item, idx) => (
+                        {Array.isArray(order.items || order.foodItems) ? (order.items || order.foodItems).map((item, idx) => (
                           <li key={idx}>
-                            {item.quantity}x {item.name} - ${item.price.toFixed(2)}
+                            {(item.quantity || item.amount || 1)}x {item.name || item.foodItemName} 
+                            {item.price !== undefined && ` - $${item.price.toFixed(2)}`}
                           </li>
-                        ))}
+                        )) : <li>No items information</li>}
                       </ul>
                     </div>
                     <div className="order-total">
-                      <p><strong>Total:</strong> ${order.totalAmount.toFixed(2)}</p>
+                      <p><strong>Total:</strong> ${(order.totalAmount || order.totalPrice || 0).toFixed(2)}</p>
                     </div>
                     <div className="order-actions">
                       {getStatusActions(order)}
@@ -304,10 +346,11 @@ function RestaurantOrders() {
                   <div key={order.id} className="order-card ready">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
-                      <span className="order-date">{formatOrderDate(order.orderDate)}</span>
+                      <span className="order-date">{formatOrderDate(order.orderDate || order.createdAt)}</span>
                     </div>
-                    <div className="order-customer">
-                      <p><strong>Customer:</strong> {order.customerName}</p>
+                    <div className="order-address">
+                      <h4>Address:</h4>
+                      <p>{order.address || 'No address provided'}</p>
                     </div>
                     <div className="order-actions">
                       {getStatusActions(order)}
@@ -328,10 +371,25 @@ function RestaurantOrders() {
                   <div key={order.id} className="order-card completed">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
-                      <span className="order-date">{formatOrderDate(order.orderDate)}</span>
+                      <span className="order-date">{formatOrderDate(order.orderDate || order.createdAt)}</span>
+                    </div>
+                    <div className="order-address">
+                      <h4>Address:</h4>
+                      <p>{order.address || 'No address provided'}</p>
+                    </div>
+                    <div className="order-items">
+                      <h4>Items:</h4>
+                      <ul>
+                        {Array.isArray(order.items || order.foodItems) ? (order.items || order.foodItems).map((item, idx) => (
+                          <li key={idx}>
+                            {(item.quantity || item.amount || 1)}x {item.name || item.foodItemName} 
+                            {item.price !== undefined && ` - $${item.price.toFixed(2)}`}
+                          </li>
+                        )) : <li>No items information</li>}
+                      </ul>
                     </div>
                     <div className="order-total">
-                      <p><strong>Total:</strong> ${order.totalAmount.toFixed(2)}</p>
+                      <p><strong>Total:</strong> ${(order.totalAmount || order.totalPrice || 0).toFixed(2)}</p>
                     </div>
                   </div>
                 ))}
