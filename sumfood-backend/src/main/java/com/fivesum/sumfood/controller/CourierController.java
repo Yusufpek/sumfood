@@ -4,7 +4,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import com.fivesum.sumfood.dto.OrderStatusRequest;
 import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.model.Delivery;
 import com.fivesum.sumfood.model.Order;
@@ -44,8 +43,8 @@ public class CourierController {
         }
     }
 
-    @PutMapping("update_delivery_status/{id}")
-    public ResponseEntity<?> updateDeliveryStatus(@PathVariable Long id, @RequestHeader("Authorization") String token, @RequestBody OrderStatusRequest status) {
+    @PutMapping("update_delivery_status/{id}&{status}")
+    public ResponseEntity<?> updateDeliveryStatus(@PathVariable Long id, @PathVariable OrderStatus status, @RequestHeader("Authorization") String token) {
         String email = jwtService.extractUsername(token.substring(7));
         try {
             Courier courier = courierService.loadUserByUsername(email);
@@ -53,7 +52,7 @@ public class CourierController {
             if (delivery == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Delivery not found");
             }
-            if (status.getOrderStatus() != OrderStatus.DELIVERED && status.getOrderStatus() != OrderStatus.FAILED) {
+            if (status != OrderStatus.DELIVERED && status != OrderStatus.FAILED) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid status");
             }
             if (delivery.getOrder().getOrderStatus() == OrderStatus.DELIVERED || delivery.getOrder().getOrderStatus() == OrderStatus.FAILED) {
@@ -66,7 +65,7 @@ public class CourierController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to update this delivery");
             }
 
-            return ResponseEntity.ok(deliveryService.updateDeliveryStatus(delivery, status.getOrderStatus()));
+            return ResponseEntity.ok(deliveryService.updateDeliveryStatus(delivery, status));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());

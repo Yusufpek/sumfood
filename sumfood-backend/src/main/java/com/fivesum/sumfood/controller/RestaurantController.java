@@ -8,9 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.fivesum.sumfood.model.Restaurant;
+import com.fivesum.sumfood.model.enums.OrderStatus;
 import com.fivesum.sumfood.responses.RestaurantProfileResponse;
 import com.fivesum.sumfood.dto.OrderResponse;
-import com.fivesum.sumfood.dto.OrderStatusRequest;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.RestaurantService;
 import com.fivesum.sumfood.service.OrderService;
@@ -55,12 +55,12 @@ public class RestaurantController {
         }
     }
 
-    @PutMapping("/orders/{id}")
-    public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @RequestHeader("Authorization") String token, @RequestBody OrderStatusRequest request) {
+    @PutMapping("/orders/{id}&{status}")
+    public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @PathVariable OrderStatus status, @RequestHeader("Authorization") String token) {
         String email = jwtService.extractUsername(token.substring(7));
         try {
             Restaurant restaurant = restaurantService.getRestaurantProfile(email);
-            return ResponseEntity.ok(orderService.updateOrderStatus(id, restaurant, request.getOrderStatus()));
+            return ResponseEntity.ok(orderService.updateOrderStatus(id, restaurant, status));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
