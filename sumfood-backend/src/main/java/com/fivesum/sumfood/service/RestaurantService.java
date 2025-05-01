@@ -150,6 +150,7 @@ public class RestaurantService implements UserDetailsService {
                 .address(restaurant.getAddress())
                 .latitude(restaurant.getLatitude())
                 .longitude(restaurant.getLongitude())
+                .logoName(restaurant.getLogoName())
                 .build();
     }
 
