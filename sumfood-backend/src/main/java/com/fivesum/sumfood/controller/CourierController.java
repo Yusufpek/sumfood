@@ -44,7 +44,8 @@ public class CourierController {
     }
 
     @PutMapping("update_delivery_status/{id}&{status}")
-    public ResponseEntity<?> updateDeliveryStatus(@PathVariable Long id, @PathVariable OrderStatus status, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> updateDeliveryStatus(@PathVariable Long id, @PathVariable OrderStatus status,
+            @RequestHeader("Authorization") String token) {
         String email = jwtService.extractUsername(token.substring(7));
         try {
             Courier courier = courierService.loadUserByUsername(email);
@@ -55,18 +56,31 @@ public class CourierController {
             if (status != OrderStatus.DELIVERED && status != OrderStatus.FAILED) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid status");
             }
-            if (delivery.getOrder().getOrderStatus() == OrderStatus.DELIVERED || delivery.getOrder().getOrderStatus() == OrderStatus.FAILED) {
+            if (delivery.getOrder().getOrderStatus() == OrderStatus.DELIVERED
+                    || delivery.getOrder().getOrderStatus() == OrderStatus.FAILED) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Delivery already completed");
             }
             if (delivery.getOrder().getOrderStatus() != OrderStatus.ON_THE_WAY) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Delivery is not picked up yet");
             }
             if (delivery.getCourier().getId() != courier.getId()) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to update this delivery");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("You are not authorized to update this delivery");
             }
 
             return ResponseEntity.ok(deliveryService.updateDeliveryStatus(delivery, status));
 
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/deliveries")
+    public ResponseEntity<?> getPastDeliveries(@RequestHeader("Authorization") String token) {
+        String email = jwtService.extractUsername(token.substring(7));
+        try {
+            Courier courier = courierService.loadUserByUsername(email);
+            return ResponseEntity.ok(deliveryService.getDeliveriesByCourier(courier));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
