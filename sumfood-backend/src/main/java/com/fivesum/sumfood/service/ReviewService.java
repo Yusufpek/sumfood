@@ -17,22 +17,23 @@ import com.fivesum.sumfood.model.enums.OrderStatus;
 import com.fivesum.sumfood.repository.DeliveryReviewRepository;
 import com.fivesum.sumfood.repository.FoodReviewRepository;
 import com.fivesum.sumfood.repository.OrderReviewRepository;
+
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class ReviewService {
     // Repositories
-    private OrderReviewRepository orderReviewRepository;
-    private FoodReviewRepository foodReviewRepository;
-    private DeliveryReviewRepository deliveryReviewRepository;
+    private final OrderReviewRepository orderReviewRepository;
+    private final FoodReviewRepository foodReviewRepository;
+    private final DeliveryReviewRepository deliveryReviewRepository;
     // Services
-    private OrderService orderService;
-    private DeliveryService deliveryService;
+    private final OrderService orderService;
+    private final DeliveryService deliveryService;
 
     @Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class,
             UnauthorizedAccessException.class })
-    public boolean creatReview(Customer customer, Long orderId, ReviewRequest request) {
+    public boolean createReview(Customer customer, Long orderId, ReviewRequest request) {
         Order order = orderService.findById(orderId);
         if (order == null) {
             throw new InvalidRequestException("Order is not found!");
@@ -57,7 +58,6 @@ public class ReviewService {
                 .build();
 
         orderReviewRepository.save(orderReview);
-
         FoodReview foodReview = FoodReview.builder()
                 .orderReview(orderReview)
                 .comment(request.getFoodComment())

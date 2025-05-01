@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Service
 public class DeliveryService {
-    private DeliveryRepository deliveryRepository;
+    private final DeliveryRepository deliveryRepository;
 
     public Delivery findByOrderId(Long orderId) {
         return deliveryRepository.findByOrderId(orderId).orElse(null);

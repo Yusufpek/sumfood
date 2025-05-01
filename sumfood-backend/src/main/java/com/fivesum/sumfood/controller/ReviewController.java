@@ -37,9 +37,9 @@ public class ReviewController {
         if (customer.isPresent()) {
             try {
                 long id = Long.parseLong(orderId);
-                boolean response = reviewService.creatReview(customer.get(), id, request);
+                boolean response = reviewService.createReview(customer.get(), id, request);
                 if (response)
-                    return ResponseEntity.ok("Address deleted successfully");
+                    return ResponseEntity.ok("Review added successfully");
             } catch (NumberFormatException e) {
                 System.out.printf("Invalid item ID format: %s%n", orderId);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid item ID format.");
