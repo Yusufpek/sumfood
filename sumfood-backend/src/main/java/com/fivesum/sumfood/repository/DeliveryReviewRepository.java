@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface DeliveryReviewRepository extends JpaRepository<DeliveryReview, Long> {
     Optional<DeliveryReview> findByDeliveryId(Long orderId);
 
-    List<DeliveryReview> findByDeliveryCourirId(Long courierId);
+    List<DeliveryReview> findByDelivery_Courier_Id(Long courierId);
 
     Optional<DeliveryReview> findByOrderReviewId(Long orderId);
 }

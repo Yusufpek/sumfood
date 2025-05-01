@@ -98,7 +98,7 @@ public class ReviewService {
     }
 
     public List<DeliveryReviewResponse> getReviewsByCourier(Courier courier) {
-        List<DeliveryReview> deliveryReview = deliveryReviewRepository.findByDeliveryCourirId(courier.getId());
+        List<DeliveryReview> deliveryReview = deliveryReviewRepository.findByDelivery_Courier_Id(courier.getId());
         return deliveryReview.stream().map(review -> toDeliveryReviewResponse(review)).collect(Collectors.toList());
     }
 
