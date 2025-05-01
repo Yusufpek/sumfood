@@ -8,9 +8,11 @@ import javax.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import com.fivesum.sumfood.dto.ReviewRequest;
+import com.fivesum.sumfood.dto.responses.DeliveryReviewResponse;
 import com.fivesum.sumfood.dto.responses.ReviewResponse;
 import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.exception.UnauthorizedAccessException;
+import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.Delivery;
 import com.fivesum.sumfood.model.DeliveryReview;
@@ -93,6 +95,20 @@ public class ReviewService {
         deliveryReviewRepository.save(deliveryReview);
 
         return toResponseMap(orderReview);
+    }
+
+    public List<DeliveryReviewResponse> getReviewsByCourier(Courier courier) {
+        List<DeliveryReview> deliveryReview = deliveryReviewRepository.findByDeliveryCourirId(courier.getId());
+        return deliveryReview.stream().map(review -> toDeliveryReviewResponse(review)).collect(Collectors.toList());
+    }
+
+    DeliveryReviewResponse toDeliveryReviewResponse(DeliveryReview deliveryReview) {
+        return DeliveryReviewResponse.builder()
+                .createdAt(deliveryReview.getCreateAt())
+                .orderId(deliveryReview.getOrderReview().getId())
+                .customerName(deliveryReview.getOrderReview().getCustomer().getName())
+                .deliveryScore(deliveryReview.getScore())
+                .build();
     }
 
     ReviewResponse toResponseMap(OrderReview review) {

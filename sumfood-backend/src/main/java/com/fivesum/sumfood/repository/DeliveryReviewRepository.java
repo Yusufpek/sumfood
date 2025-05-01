@@ -4,11 +4,14 @@ import com.fivesum.sumfood.model.DeliveryReview;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface DeliveryReviewRepository extends JpaRepository<DeliveryReview, Long> {
     Optional<DeliveryReview> findByDeliveryId(Long orderId);
+
+    List<DeliveryReview> findByDeliveryCourirId(Long courierId);
 
     Optional<DeliveryReview> findByOrderReviewId(Long orderId);
 }

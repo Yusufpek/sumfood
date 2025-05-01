@@ -9,6 +9,7 @@ import com.fivesum.sumfood.model.Delivery;
 import com.fivesum.sumfood.model.Order;
 import com.fivesum.sumfood.model.enums.OrderStatus;
 import com.fivesum.sumfood.service.OrderService;
+import com.fivesum.sumfood.service.ReviewService;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.CourierService;
 import com.fivesum.sumfood.service.DeliveryService;
@@ -23,6 +24,7 @@ public class CourierController {
     private final OrderService orderService;
     private final CourierService courierService;
     private final DeliveryService deliveryService;
+    private final ReviewService reviewService;
 
     @PostMapping("assign_order/{id}")
     public ResponseEntity<?> assignOrder(@PathVariable Long id, @RequestHeader("Authorization") String token) {
@@ -81,6 +83,17 @@ public class CourierController {
         try {
             Courier courier = courierService.loadUserByUsername(email);
             return ResponseEntity.ok(deliveryService.getDeliveriesByCourier(courier));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/reviews")
+    public ResponseEntity<?> getReviews(@RequestHeader("Authorization") String token) {
+        String email = jwtService.extractUsername(token.substring(7));
+        try {
+            Courier courier = courierService.loadUserByUsername(email);
+            return ResponseEntity.ok(reviewService.getReviewsByCourier(courier));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
