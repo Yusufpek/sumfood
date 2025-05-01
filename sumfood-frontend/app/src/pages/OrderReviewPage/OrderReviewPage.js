@@ -341,6 +341,7 @@ const OrderReviewPage = () => {
           )}
         </form>
       </div>
+    <Footer />
     </>
   );
 };
