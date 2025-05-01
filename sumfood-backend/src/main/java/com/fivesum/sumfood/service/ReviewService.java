@@ -1,5 +1,8 @@
 package com.fivesum.sumfood.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
@@ -39,10 +42,12 @@ public class ReviewService {
     public ReviewResponse getReviewById(Long id) {
         OrderReview orderReview = orderReviewRepository.findById(id)
                 .orElseThrow(() -> new InvalidRequestException("Review is not found!"));
-        FoodReview foodReview = foodReviewRepository.findByOrderReviewId(id);
-        DeliveryReview deliveryReview = deliveryReviewRepository.findByOrderReviewId(id).orElse(null);
+        return toResponseMap(orderReview);
+    }
 
-        return toResponseMap(orderReview, foodReview, deliveryReview);
+    public List<ReviewResponse> getReviewsByRestaurantId(Long id) {
+        List<OrderReview> orderReviews = orderReviewRepository.findByOrder_ShoppingCart_Restaurant_Id(id);
+        return orderReviews.stream().map(orderReview -> toResponseMap(orderReview)).collect(Collectors.toList());
     }
 
     @Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class,
@@ -87,10 +92,13 @@ public class ReviewService {
                 .build();
         deliveryReviewRepository.save(deliveryReview);
 
-        return toResponseMap(orderReview, foodReview, deliveryReview);
+        return toResponseMap(orderReview);
     }
 
-    ReviewResponse toResponseMap(OrderReview review, FoodReview foodReview, DeliveryReview deliveryReview) {
+    ReviewResponse toResponseMap(OrderReview review) {
+        FoodReview foodReview = foodReviewRepository.findByOrderReviewId(review.getId());
+        DeliveryReview deliveryReview = deliveryReviewRepository.findByOrderReviewId(review.getId()).orElse(null);
+
         ReviewResponse response = ReviewResponse.builder()
                 .createdAt(review.getCreateAt())
                 .orderId(review.getOrder().getId())

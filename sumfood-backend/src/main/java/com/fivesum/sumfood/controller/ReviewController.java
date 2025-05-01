@@ -1,5 +1,6 @@
 package com.fivesum.sumfood.controller;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,24 @@ public class ReviewController {
             return ResponseEntity.ok(response);
         } catch (NumberFormatException e) {
             System.out.printf("Invalid item ID format: %s%n", reviewId);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid item ID format.");
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred: " + e.getMessage());
+        }
+
+    }
+
+    @GetMapping("/public/restaurant/{restaurantId}")
+    public ResponseEntity<?> getOrdersByRestaurant(@PathVariable() String restaurantId) {
+        try {
+            long id = Long.parseLong(restaurantId);
+            List<ReviewResponse> responses = reviewService.getReviewsByRestaurantId(id);
+            return ResponseEntity.ok(responses);
+        } catch (NumberFormatException e) {
+            System.out.printf("Invalid item ID format: %s%n", restaurantId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid item ID format.");
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
