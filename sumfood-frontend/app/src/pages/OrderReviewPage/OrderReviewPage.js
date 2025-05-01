@@ -77,6 +77,9 @@ const StarRating = ({ rating, onRatingChange, disabled = false }) => {
 const OrderReviewPage = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
+  const location = window.location;
+  const queryParams = new URLSearchParams(location.search);
+  const reviewId = queryParams.get('reviewId');
   
   const [order, setOrder] = useState(null);
   const [foodRating, setFoodRating] = useState(0);
@@ -100,7 +103,25 @@ const OrderReviewPage = () => {
         if (!token) {
           throw new Error("Authentication token not found. Please log in.");
         }
+
+        // If reviewId is provided directly, fetch the review first
+        if (reviewId) {
+          try {
+            // Fetch the existing review using the review ID
+            const reviewResponse = await axios.get(`http://localhost:8080/api/review/public/${reviewId}`);
+            
+            setExistingReview(reviewResponse.data);
+            setFoodRating(reviewResponse.data.foodReviewScore || 0);
+            setDeliveryRating(reviewResponse.data.deliveryScore || 0);
+            setFoodComment(reviewResponse.data.foodReviewComment || '');
+            setIsViewMode(true);
+            setSubmitted(true);
+          } catch (reviewErr) {
+            console.error("Error fetching review:", reviewErr);
+          }
+        }
         
+        // Fetch the order details
         const response = await axios.get(`http://localhost:8080/api/order/${orderId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -110,8 +131,9 @@ const OrderReviewPage = () => {
         
         setOrder(response.data);
         
-        // Check if order has been reviewed
-        if (response.data.isReviewed) {
+        // If no reviewId was provided but order has been reviewed, fetch review by order ID
+        if (!reviewId && response.data.reviewId != null) {
+          setSubmitted(true);
           try {
             // Fetch the existing review
             const reviewResponse = await axios.get(`http://localhost:8080/api/review/order/${orderId}`, {
@@ -122,9 +144,9 @@ const OrderReviewPage = () => {
             });
             
             setExistingReview(reviewResponse.data);
-            setFoodRating(reviewResponse.data.foodScore || 0);
+            setFoodRating(reviewResponse.data.foodReviewScore || 0);
             setDeliveryRating(reviewResponse.data.deliveryScore || 0);
-            setFoodComment(reviewResponse.data.foodComment || '');
+            setFoodComment(reviewResponse.data.foodReviewComment || '');
             setIsViewMode(true);
           } catch (reviewErr) {
             console.error("Error fetching review:", reviewErr);
@@ -150,13 +172,13 @@ const OrderReviewPage = () => {
       setOrderError("Order ID is missing");
       setOrderLoading(false);
     }
-  }, [orderId, navigate]);
+  }, [orderId, reviewId, navigate]);
 
   const formatReviewsForSubmission = () => {
     return {
       deliveryScore: deliveryRating,
-      foodScore: foodRating,
-      foodComment: foodComment
+      foodReviewScore: foodRating,
+      foodReviewComment: foodComment
     };
   };
 
@@ -326,8 +348,6 @@ const OrderReviewPage = () => {
           </div>
 
           {(submitted || isViewMode) ? (
-            <div className="success-message">
-              {isViewMode ? "Review submitted previously." : "Thank you for your reviews!"}
               <div style={{ marginTop: '20px' }}>
                 <button
                   onClick={() => navigate('/orders')}
@@ -336,7 +356,6 @@ const OrderReviewPage = () => {
                   Return to Orders
                 </button>
               </div>
-            </div>
           ) : (
             <div className="form-actions">
               {error && (
