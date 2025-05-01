@@ -22,4 +22,7 @@ public class Delivery extends EntityBase {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DeliveryStatus status;
+
+    @Column(nullable = false)
+    private String deliveryAddress;
 }

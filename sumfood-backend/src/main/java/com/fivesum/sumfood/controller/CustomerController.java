@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.fivesum.sumfood.dto.CustomerUpdateRequest;
 import com.fivesum.sumfood.dto.AddressRequest;
-import com.fivesum.sumfood.dto.OrderResponse;
 import com.fivesum.sumfood.responses.RestaurantProfileResponse;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.Address;
@@ -44,7 +43,7 @@ public class CustomerController {
 
             return ResponseEntity.ok(updatedCustomer);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -64,7 +63,7 @@ public class CustomerController {
 
             return ResponseEntity.ok(resp);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -131,7 +130,7 @@ public class CustomerController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error " + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -176,7 +175,7 @@ public class CustomerController {
 
             return ResponseEntity.ok("Address updated successfully");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -202,26 +201,7 @@ public class CustomerController {
 
             return ResponseEntity.ok("Address deleted successfully");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
-        }
-    }
-
-    @GetMapping("/orders")
-    public ResponseEntity<?> getOrders(@RequestHeader("Authorization") String token) {
-        try {
-            String email = jwtService.extractUsername(token.substring(7));
-            Optional<Customer> customerOpt = customerService.findByEmail(email);
-
-            if (!customerOpt.isPresent()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
-            }
-
-            Customer customer = customerOpt.get();
-            List<OrderResponse> orders = customerService.getOrders(customer);
-
-            return ResponseEntity.ok(orders);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -249,4 +229,5 @@ public class CustomerController {
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
 }

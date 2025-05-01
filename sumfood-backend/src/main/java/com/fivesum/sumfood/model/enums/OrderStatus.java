@@ -1,6 +1,10 @@
 package com.fivesum.sumfood.model.enums;
 
 public enum OrderStatus {
-    DONATION,
-    REGULAR
+    PENDING,
+    PREPARING,
+    ON_THE_WAY,
+    DELIVERED,
+    CANCELLED,
+    FAILED
 }

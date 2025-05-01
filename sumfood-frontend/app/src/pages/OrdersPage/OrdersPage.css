@@ -1,0 +1,249 @@
+/* OrdersPage.css */
+
+.orders-page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  .orders-main-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  
+  .orders-main-content h2 {
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  
+  .loading-container, 
+  .error-container, 
+  .no-orders-container {
+    text-align: center;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  .error-message {
+    color: #dc3545;
+    font-weight: 500;
+  }
+  
+  .browse-foods-btn {
+    margin-top: 1rem;
+    padding: 0.5rem 1.5rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  
+  .browse-foods-btn:hover {
+    background-color: #0069d9;
+  }
+  
+  .orders-table-container {
+    overflow-x: auto;
+  }
+  
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .orders-table th, 
+  .orders-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .orders-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+  }
+  
+  .orders-table tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-align: center;
+  }
+  
+  .status-pending {
+    background-color: #ffeeba;
+    color: #856404;
+  }
+  
+  .status-processing {
+    background-color: #fff4de;
+    color: #ffa000;
+  }
+  
+  .status-preparing {
+    background-color: #e0f7fa;
+    color: #0097a7;
+  }
+  
+  .status-on-the-way {
+    background-color: #e8f5e9;
+    color: #388e3c;
+  }
+  
+  .status-accepted {
+    background-color: #e8eaf6;
+    color: #3f51b5;
+  }
+  
+  .status-completed, .status-delivered {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .status-cancelled {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+  
+  .status-waiting-payment {
+    background-color: #fff8e1;
+    color: #ff8f00;
+  }
+  
+  /* Payment status */
+  .payment-complete {
+    color: #2e7d32;
+    font-weight: bold;
+  }
+  
+  .payment-pending {
+    color: #ff8f00;
+  }
+  
+  .payment-failed {
+    color: #c62828;
+  }
+  
+  /* Track order button */
+  .track-order-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: background-color 0.2s;
+  }
+  
+  .track-order-btn:hover {
+    background-color: #388e3c;
+  }
+  
+  /* Retry button */
+  .retry-button {
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    margin-top: 10px;
+    cursor: pointer;
+  }
+  
+  .retry-button:hover {
+    background-color: #1976d2;
+  }
+  
+  /* Loading spinner */
+  .loading-spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid #3498db;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Order details when expanded */
+  .order-details-panel {
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    margin-top: 5px;
+  }
+  
+  .order-items-list {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+  }
+  
+  .order-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  
+  .item-name {
+    flex: 1;
+  }
+  
+  .item-quantity {
+    margin: 0 10px;
+  }
+  
+  .item-price {
+    flex: 1;
+    text-align: right;
+  }
+  
+  .delivery-info {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+    font-size: 0.9rem;
+  }
+  
+  /* Make the page responsive */
+  @media (max-width: 768px) {
+    .orders-table {
+      font-size: 0.8rem;
+    }
+    
+    .orders-table th, 
+    .orders-table td {
+      padding: 6px 4px;
+    }
+    
+    .status-badge {
+      font-size: 0.7rem;
+      padding: 3px 6px;
+    }
+  }
