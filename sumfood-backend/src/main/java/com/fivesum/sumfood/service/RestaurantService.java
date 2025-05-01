@@ -21,7 +21,6 @@ import com.fivesum.sumfood.dto.responses.RestaurantProfileResponse;
 import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.repository.RestaurantRepository;
-import com.fivesum.sumfood.service.CustomerService;
 
 import lombok.AllArgsConstructor;
 
@@ -71,6 +70,7 @@ public class RestaurantService implements UserDetailsService {
                 .city(request.getCity())
                 .longitude(longitude)
                 .latitude(latitude)
+                .logoName(request.getImagePath())
                 .isValidated(false)
                 .build();
 
@@ -155,6 +155,9 @@ public class RestaurantService implements UserDetailsService {
 
     public double distFromLatLong(double lat1, double lat2, double lon1, double lon2) {
         double rad = 6371;
-        return Math.acos((Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2))) + (Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(lon2) - Math.toRadians(lon1)))) * rad;
+        return Math.acos(
+                (Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2))) + (Math.cos(Math.toRadians(lat1))
+                        * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(lon2) - Math.toRadians(lon1))))
+                * rad;
     }
 }

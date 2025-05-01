@@ -1,10 +1,16 @@
 package com.fivesum.sumfood.controller;
 
 import lombok.RequiredArgsConstructor;
+
+import java.io.IOException;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.fivesum.sumfood.constants.ImagePath;
 import com.fivesum.sumfood.dto.requests.AuthRequest;
 import com.fivesum.sumfood.dto.requests.CourierRegistrationRequest;
 import com.fivesum.sumfood.dto.requests.CustomerRegistrationRequest;
@@ -17,6 +23,7 @@ import com.fivesum.sumfood.model.base.UserBase;
 import com.fivesum.sumfood.model.enums.Role;
 import com.fivesum.sumfood.service.CourierService;
 import com.fivesum.sumfood.service.CustomerService;
+import com.fivesum.sumfood.service.ImageService;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.RestaurantService;
 
@@ -29,6 +36,7 @@ public class AuthController {
     private final CourierService courierService;
     private final RestaurantService restaurantService;
     private final JwtService jwtService;
+    private final ImageService imageService;
 
     @PostMapping("/register/customer")
     public ResponseEntity<Customer> registerCustomer(@RequestBody CustomerRegistrationRequest request) {
@@ -52,14 +60,25 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(courierService.registerCourier(request));
     }
 
-    @PostMapping("/register/restaurant")
-    public ResponseEntity<Restaurant> registerRestaurant(@RequestBody RestaurantRegistrationRequest request) {
+    @PostMapping(value = "/register/restaurant", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Restaurant> registerRestaurant(
+            @RequestPart("restaurantRegistration") RestaurantRegistrationRequest request,
+            @RequestPart("file") MultipartFile file) {
         // Check if email already exists
         if (customerService.existsByEmail(request.getEmail()) || courierService.existsByEmail(request.getEmail())
                 || restaurantService.existsByEmail(request.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
+        String imagePath;
 
+        try {
+            imagePath = imageService.saveImageToStorage(ImagePath.RESTAURANT_LOGO_PATH, file);
+        } catch (IOException exception) {
+            imagePath = null;
+            System.out.println("Restaurant image save error: " + exception.getMessage());
+        }
+
+        request.setImagePath(imagePath);
         return ResponseEntity.status(HttpStatus.CREATED).body(restaurantService.registerRestaurant(request));
     }
 
