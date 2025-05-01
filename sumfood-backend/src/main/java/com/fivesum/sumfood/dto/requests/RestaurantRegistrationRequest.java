@@ -14,4 +14,6 @@ public class RestaurantRegistrationRequest extends CustomerRegistrationRequest {
     private String description;
     private String city;
     private String address;
+    String imagePath;
+
 }
