@@ -1,14 +1,14 @@
 package com.fivesum.sumfood.service;
 
-import com.fivesum.sumfood.dto.ShoppingCartCreateRequest;
-import com.fivesum.sumfood.dto.ShoppingCartUpdateRequest;
+import com.fivesum.sumfood.dto.requests.ShoppingCartCreateRequest;
+import com.fivesum.sumfood.dto.requests.ShoppingCartUpdateRequest;
+import com.fivesum.sumfood.dto.responses.ShoppingCartItemResponse;
+import com.fivesum.sumfood.dto.responses.ShoppingCartResponse;
 import com.fivesum.sumfood.exception.ConflictException;
 import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.exception.UnauthorizedAccessException;
 import com.fivesum.sumfood.model.*;
 import com.fivesum.sumfood.repository.*;
-import com.fivesum.sumfood.responses.ShoppingCartItemResponse;
-import com.fivesum.sumfood.responses.ShoppingCartResponse;
 
 import java.util.ArrayList;
 import java.util.List;

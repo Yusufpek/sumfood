@@ -1,13 +1,13 @@
 package com.fivesum.sumfood.controller;
 
-import com.fivesum.sumfood.dto.ShoppingCartCreateRequest;
-import com.fivesum.sumfood.dto.ShoppingCartUpdateRequest;
+import com.fivesum.sumfood.dto.requests.ShoppingCartCreateRequest;
+import com.fivesum.sumfood.dto.requests.ShoppingCartUpdateRequest;
+import com.fivesum.sumfood.dto.responses.ShoppingCartResponse;
 import com.fivesum.sumfood.exception.ConflictException;
 import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.exception.UnauthorizedAccessException;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.ShoppingCart;
-import com.fivesum.sumfood.responses.ShoppingCartResponse;
 import com.fivesum.sumfood.service.CustomerService;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.ShoppingCartService;
