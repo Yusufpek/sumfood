@@ -49,7 +49,7 @@ public class RestaurantService implements UserDetailsService {
         double latitude = 0;
 
         try {
-            double[] points = googleMapsService.getLatLongByAddress(request.getAddress());
+            double[] points = googleMapsService.getLatLongByAddress(request.getAddress() + " " + request.getCity());
             latitude = points[0];
             longitude = points[1];
         } catch (Exception e) {
@@ -147,7 +147,7 @@ public class RestaurantService implements UserDetailsService {
                 .id(restaurant.getId())
                 .displayName(restaurant.getDisplayName())
                 .description(restaurant.getDescription())
-                .address(restaurant.getAddress())
+                .address(restaurant.getAddress() + " " + restaurant.getCity())
                 .latitude(restaurant.getLatitude())
                 .longitude(restaurant.getLongitude())
                 .logoName(restaurant.getLogoName())
