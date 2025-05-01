@@ -14,6 +14,7 @@ import './styles/global.css';
 import './styles/auth.css';
 import Profile from "./pages/Profile/Profile";
 import CreateOrderPage from './pages/CreateOrderPage/CreateOrderPage';
+import RestaurantPublicPage from './pages/RestaurantPublicPage/RestaurantPublicPage';
 import OrderReviewPage from './pages/OrderReviewPage/OrderReviewPage';
 
 function App() {
@@ -32,6 +33,9 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            
+            <Route path="/restaurant/:restaurantId" element={<RestaurantPublicPage />} />
+
             <Route
               path="/restaurant-dashboard"
               element={

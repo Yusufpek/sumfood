@@ -48,6 +48,9 @@ public class Restaurant extends UserBase {
     @Column(nullable = true)
     private double longitude;
 
+    @Column(nullable = true)
+    private String logoName;
+
     @PrePersist
     public void prePersist() {
         setRole(Role.RESTAURANT);
