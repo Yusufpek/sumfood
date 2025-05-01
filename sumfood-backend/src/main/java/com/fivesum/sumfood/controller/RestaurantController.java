@@ -60,7 +60,8 @@ public class RestaurantController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching restaurant details.");
-
+        }
+    }
     @GetMapping("/orders")
     public ResponseEntity<?> getOrders(@RequestHeader("Authorization") String token) {
         String email = jwtService.extractUsername(token.substring(7));
