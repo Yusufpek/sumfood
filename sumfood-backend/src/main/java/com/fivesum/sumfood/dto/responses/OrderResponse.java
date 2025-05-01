@@ -13,6 +13,7 @@ import lombok.experimental.SuperBuilder;
 @Setter
 public class OrderResponse {
     private Long id;
+    private Long reviewId;
     private Date createdAt;
     private String orderStatus;
     private String orderType;
