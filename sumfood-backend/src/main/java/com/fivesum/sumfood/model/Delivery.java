@@ -3,12 +3,19 @@ package com.fivesum.sumfood.model;
 import javax.persistence.*;
 
 import com.fivesum.sumfood.model.base.EntityBase;
-import com.fivesum.sumfood.model.enums.DeliveryStatus;
 
 import lombok.experimental.SuperBuilder;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
+@Setter
+@Getter
 @Table(name = "deliveries")
 public class Delivery extends EntityBase {
     @ManyToOne(optional = false)
@@ -18,11 +25,4 @@ public class Delivery extends EntityBase {
     @OneToOne(optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private DeliveryStatus status;
-
-    @Column(nullable = false)
-    private String deliveryAddress;
 }
