@@ -64,6 +64,8 @@ const formatErrorMessage = (err, defaultMessage) => {
 };
 
 const MainPage = () => {
+  // Add after existing API constants
+  const RESTAURANT_IMAGE_BASE = `${API_BASE_URL}/restaurant/public/image/`;
   const navigate = useNavigate();
   
   // User state
@@ -626,7 +628,8 @@ const MainPage = () => {
               ) : restaurantState.restaurants.length === 0 ? (
                 <p style={{ textAlign: 'center' }}>No restaurants available at the moment.</p>
               ) : (
-                <div className="restaurant-grid">
+                // Replace the existing restaurant-grid section
+              <div className="restaurant-grid">
                 {restaurantState.restaurants.map((restaurant) => (
                   <Link 
                     key={restaurant.id}
@@ -634,14 +637,22 @@ const MainPage = () => {
                     className="restaurant-card-link"
                   >
                     <div className="restaurant-card-simple">
-                      <h3>{restaurant.name}</h3>
-                      {restaurant.description && <p>{restaurant.description}</p>}
-                      {restaurant.address && (
-                        <p>
-                          <strong>Address:</strong> {restaurant.address}
-                        </p>
-                      )}
-                      {}
+                      <div className="restaurant-logo">
+                        <img 
+                          src={`${RESTAURANT_IMAGE_BASE}${restaurant.logoName}`}
+                          alt={restaurant.name}
+                          onError={(e) => {e.target.src = '/placeholder-restaurant.png';}}
+                        />
+                      </div>
+                      <div className="restaurant-info">
+                        <h3>{restaurant.name}</h3>
+                        {restaurant.description && <p className="description">{restaurant.description}</p>}
+                        {restaurant.address && (
+                          <p className="address">
+                            <span role="img" aria-label="location">📍</span> {restaurant.address}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </Link>
                 ))}
