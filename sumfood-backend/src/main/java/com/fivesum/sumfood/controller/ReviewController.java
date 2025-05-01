@@ -32,14 +32,13 @@ public class ReviewController {
     private final JwtService jwtService;
 
     @GetMapping("/public/{reviewId}")
-    public ResponseEntity<?> getOrder(@PathVariable() String orderId) {
-
+    public ResponseEntity<?> getOrder(@PathVariable() String reviewId) {
         try {
-            long id = Long.parseLong(orderId);
+            long id = Long.parseLong(reviewId);
             OrderReview orderReview = reviewService.getReviewById(id);
             return ResponseEntity.ok(orderReview);
         } catch (NumberFormatException e) {
-            System.out.printf("Invalid item ID format: %s%n", orderId);
+            System.out.printf("Invalid item ID format: %s%n", reviewId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid item ID format.");
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
