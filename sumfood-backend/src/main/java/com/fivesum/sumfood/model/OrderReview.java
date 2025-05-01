@@ -4,8 +4,10 @@ import javax.persistence.*;
 
 import com.fivesum.sumfood.model.base.EntityBase;
 
+import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+@Data
 @SuperBuilder
 @Entity
 @Table(name = "order_reviews")
