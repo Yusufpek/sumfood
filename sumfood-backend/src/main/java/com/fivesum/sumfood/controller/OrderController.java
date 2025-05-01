@@ -1,7 +1,9 @@
 package com.fivesum.sumfood.controller;
 
+import java.text.Collator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -14,10 +16,12 @@ import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.exception.UnauthorizedAccessException;
 import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.model.Customer;
+import com.fivesum.sumfood.model.OrderReview;
 import com.fivesum.sumfood.service.CourierService;
 import com.fivesum.sumfood.service.CustomerService;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.OrderService;
+import com.fivesum.sumfood.service.ReviewService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class OrderController {
     private final OrderService orderService;
     private final CustomerService customerService;
+    private final ReviewService reviewService;
     private final CourierService courierService;
     private final JwtService jwtService;
 
@@ -63,6 +68,11 @@ public class OrderController {
 
             Customer customer = customerOpt.get();
             List<OrderResponse> orders = orderService.getOrdersByCustomer(customer);
+            orders.stream().map(orderResponse -> {
+                OrderReview review = reviewService.getReviewByOrderId(orderResponse.getId());
+                orderResponse.setReviewId(review.getId());
+                return orderResponse;
+            }).collect(Collectors.toList());
 
             return ResponseEntity.ok(orders);
         } catch (Exception e) {
