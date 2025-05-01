@@ -3,6 +3,8 @@ import { FaStar, FaStarHalfAlt } from 'react-icons/fa';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import './OrderReviewPage.css';
+import Navbar from '../../components/layout/Navbar';
+import Footer from '../../components/layout/Footer';
 
 const StarRating = ({ rating, onRatingChange, disabled = false }) => {
   const [hover, setHover] = useState(null);
@@ -221,122 +223,125 @@ const OrderReviewPage = () => {
   }
 
   return (
-    <div className="review-page-container">
-      <h2 className="review-page-title">Review Your Order</h2>
-      <div className="order-summary">
-        <p className="order-id">
-          <strong>Order #{order?.id}</strong> from <strong>{order?.restaurantName}</strong>
-        </p>
-        <p className="order-meta">
-          Date: {order?.createdAt ? new Date(order.createdAt).toLocaleString() : ''}
-        </p>
-        <p className="order-meta">
-          Total: ${order?.totalPrice ? order.totalPrice.toFixed(2) : '0.00'}
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit}>
-        {/* Delivery Rating Section */}
-        <div className="delivery-rating-section">
-          <h3 className="delivery-section-title">Rate Your Delivery Experience</h3>
-          <div className="rating-container">
-            <label className="rating-label">
-              Delivery Rating:
-            </label>
-            <StarRating
-              rating={deliveryRating}
-              onRatingChange={(value) => setDeliveryRating(value)}
-              disabled={submitted}
-            />
-          </div>
-          <div className="review-container">
-            <label className="rating-label">
-              Delivery Comments:
-            </label>
-            <textarea
-              className="review-textarea"
-              value={deliveryComment}
-              onChange={e => setDeliveryComment(e.target.value)}
-              placeholder="How was your delivery experience? (Optional)"
-              disabled={submitted}
-            />
-          </div>
+    <>
+      <Navbar />
+      <div className="review-page-container">
+        <h2 className="review-page-title">Review Your Order</h2>
+        <div className="order-summary">
+          <p className="order-id">
+            <strong>Order #{order?.id}</strong> from <strong>{order?.restaurantName}</strong>
+          </p>
+          <p className="order-meta">
+            Date: {order?.createdAt ? new Date(order.createdAt).toLocaleString() : ''}
+          </p>
+          <p className="order-meta">
+            Total: ${order?.totalPrice ? order.totalPrice.toFixed(2) : '0.00'}
+          </p>
         </div>
 
-        {/* Food Rating Section */}
-        <div className="food-rating-section">
-          <h3 className="food-section-title">Rate Your Food Experience</h3>
-          <div className="rating-container">
-            <label className="rating-label">
-              Food Rating:
-            </label>
-            <StarRating
-              rating={foodRating}
-              onRatingChange={(value) => setFoodRating(value)}
-              disabled={submitted}
-            />
+        <form onSubmit={handleSubmit}>
+          {/* Delivery Rating Section */}
+          <div className="delivery-rating-section">
+            <h3 className="delivery-section-title">Rate Your Delivery Experience</h3>
+            <div className="rating-container">
+              <label className="rating-label">
+                Delivery Rating:
+              </label>
+              <StarRating
+                rating={deliveryRating}
+                onRatingChange={(value) => setDeliveryRating(value)}
+                disabled={submitted}
+              />
+            </div>
+            <div className="review-container">
+              <label className="rating-label">
+                Delivery Comments:
+              </label>
+              <textarea
+                className="review-textarea"
+                value={deliveryComment}
+                onChange={e => setDeliveryComment(e.target.value)}
+                placeholder="How was your delivery experience? (Optional)"
+                disabled={submitted}
+              />
+            </div>
           </div>
-          <div className="review-container">
-            <label className="rating-label">
-              Food Comments:
-            </label>
-            <textarea
-              className="review-textarea"
-              value={foodComment}
-              onChange={e => setFoodComment(e.target.value)}
-              placeholder="How was your food? (Optional)"
-              disabled={submitted}
-            />
-          </div>
-        </div>
 
-        {/* Food Items List (for reference only) */}
-        <div className="food-items-list">
-          <h3 className="food-items-section-title">Your Order Items</h3>
-          {order?.foodItems?.map(item => (
-            <div key={item.foodItemId} className="food-item">
-              <div className="food-item-header">
-                <strong className="food-item-name">{item.foodItemName}</strong>
-                <span className="food-item-quantity">(x{item.amount})</span>
-                <span className="food-item-price">${(item.price / item.amount).toFixed(2)} each</span>
+          {/* Food Rating Section */}
+          <div className="food-rating-section">
+            <h3 className="food-section-title">Rate Your Food Experience</h3>
+            <div className="rating-container">
+              <label className="rating-label">
+                Food Rating:
+              </label>
+              <StarRating
+                rating={foodRating}
+                onRatingChange={(value) => setFoodRating(value)}
+                disabled={submitted}
+              />
+            </div>
+            <div className="review-container">
+              <label className="rating-label">
+                Food Comments:
+              </label>
+              <textarea
+                className="review-textarea"
+                value={foodComment}
+                onChange={e => setFoodComment(e.target.value)}
+                placeholder="How was your food? (Optional)"
+                disabled={submitted}
+              />
+            </div>
+          </div>
+
+          {/* Food Items List (for reference only) */}
+          <div className="food-items-list">
+            <h3 className="food-items-section-title">Your Order Items</h3>
+            {order?.foodItems?.map(item => (
+              <div key={item.foodItemId} className="food-item">
+                <div className="food-item-header">
+                  <strong className="food-item-name">{item.foodItemName}</strong>
+                  <span className="food-item-quantity">(x{item.amount})</span>
+                  <span className="food-item-price">${(item.price / item.amount).toFixed(2)} each</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {submitted ? (
+            <div className="success-message">
+              Thank you for your reviews!
+              <div style={{ marginTop: '20px' }}>
+                <button
+                  onClick={() => navigate('/orders')}
+                  className="return-button"
+                >
+                  Return to Orders
+                </button>
               </div>
             </div>
-          ))}
-        </div>
-
-        {submitted ? (
-          <div className="success-message">
-            Thank you for your reviews!
-            <div style={{ marginTop: '20px' }}>
+          ) : (
+            <div className="form-actions">
+              {error && (
+                <div className="error-message">
+                  {error}
+                </div>
+              )}
               <button
-                onClick={() => navigate('/orders')}
-                className="return-button"
+                type="submit"
+                disabled={!canSubmit() || loading}
+                className={`submit-button ${(!canSubmit() || loading) ? 'submit-button-disabled' : ''}`}
               >
-                Return to Orders
+                {loading ? 'Submitting...' : 'Submit Reviews'}
               </button>
+              {!canSubmit() && !loading && (
+                <p className="validation-message">Please provide both food and delivery ratings.</p>
+              )}
             </div>
-          </div>
-        ) : (
-          <div className="form-actions">
-            {error && (
-              <div className="error-message">
-                {error}
-              </div>
-            )}
-            <button
-              type="submit"
-              disabled={!canSubmit() || loading}
-              className={`submit-button ${(!canSubmit() || loading) ? 'submit-button-disabled' : ''}`}
-            >
-              {loading ? 'Submitting...' : 'Submit Reviews'}
-            </button>
-            {!canSubmit() && !loading && (
-              <p className="validation-message">Please provide both food and delivery ratings.</p>
-            )}
-          </div>
-        )}
-      </form>
-    </div>
+          )}
+        </form>
+      </div>
+    </>
   );
 };
 
