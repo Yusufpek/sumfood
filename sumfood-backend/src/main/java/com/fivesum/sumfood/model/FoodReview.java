@@ -4,9 +4,13 @@ import javax.persistence.*;
 
 import com.fivesum.sumfood.model.base.EntityBase;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+@Data
 @SuperBuilder
+@NoArgsConstructor
 @Entity
 @Table(name = "food_reviews")
 public class FoodReview extends EntityBase {
