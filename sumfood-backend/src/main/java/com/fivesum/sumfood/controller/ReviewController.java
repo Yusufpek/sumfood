@@ -31,7 +31,7 @@ public class ReviewController {
     private final CustomerService customerService;
     private final JwtService jwtService;
 
-    @GetMapping("/pulic/{reviewId}")
+    @GetMapping("/public/{reviewId}")
     public ResponseEntity<?> getOrder(@PathVariable() String orderId) {
 
         try {
