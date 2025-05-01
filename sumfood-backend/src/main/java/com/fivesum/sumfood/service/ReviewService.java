@@ -13,6 +13,7 @@ import com.fivesum.sumfood.model.DeliveryReview;
 import com.fivesum.sumfood.model.FoodReview;
 import com.fivesum.sumfood.model.Order;
 import com.fivesum.sumfood.model.OrderReview;
+import com.fivesum.sumfood.model.enums.OrderStatus;
 import com.fivesum.sumfood.repository.DeliveryReviewRepository;
 import com.fivesum.sumfood.repository.FoodReviewRepository;
 import com.fivesum.sumfood.repository.OrderReviewRepository;
@@ -38,7 +39,11 @@ public class ReviewService {
         }
 
         if (order.getCustomer() != customer) {
-            throw new UnauthorizedAccessException("You are not allowed to update this shopping cart.");
+            throw new UnauthorizedAccessException("You are not allowed to review this order.");
+        }
+
+        if (order.getOrderStatus() != OrderStatus.DELIVERED) {
+            throw new UnauthorizedAccessException("You can not leave review to not delivered orders.");
         }
 
         Delivery delivery = deliveryService.findByOrderId(orderId);
