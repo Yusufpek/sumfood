@@ -46,6 +46,7 @@ function CourierDashboard() {
           }
         });
         
+        console.log("Orders received:", response.data); // Debug: log received orders
         setOrders(response.data || []);
         setLoading(false);
       } catch (err) {
@@ -174,29 +175,33 @@ function CourierDashboard() {
               
               <div className="order-details-section" style={{ background: 'transparent' }}>
                 <h4>Restaurant</h4>
-                <p>{selectedOrder.restaurantName}</p>
+                <p>{selectedOrder?.restaurantName || 'Unknown'}</p>
                 
                 <h4>Customer</h4>
-                <p>{selectedOrder.customerName}</p>
+                <p>{selectedOrder?.customerName || 'Unknown'}</p>
                 
                 <h4>Delivery Address</h4>
-                <p>{selectedOrder.deliveryAddress || 'Address not available'}</p>
+                <p>{selectedOrder?.deliveryAddress || 'Address not available'}</p>
                 
                 <h4>Status</h4>
-                <p>{getStatusDisplay(selectedOrder.status)}</p>
+                <p>{getStatusDisplay(selectedOrder?.status)}</p>
                 
                 <h4>Order Items</h4>
-                <ul className="order-items-list">
-                  {selectedOrder.items.map((item, index) => (
-                    <li key={index}>
-                      {item.name} × {item.quantity}
-                    </li>
-                  ))}
-                </ul>
+                {selectedOrder?.items && Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0 ? (
+                  <ul className="order-items-list">
+                    {selectedOrder.items.map((item, index) => (
+                      <li key={index}>
+                        {item?.name || 'Unknown item'} × {item?.quantity || 1}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No items available</p>
+                )}
                 
                 <div className="order-total">
                   <h4>Total Amount</h4>
-                  <p>${Number(selectedOrder.totalAmount).toFixed(2)}</p>
+                  <p>${(selectedOrder?.totalAmount ? Number(selectedOrder.totalAmount) : 0).toFixed(2)}</p>
                 </div>
               </div>
               
@@ -204,7 +209,6 @@ function CourierDashboard() {
                 <button 
                   className={`primary-button ${assigningOrder ? 'loading' : ''}`}
                   onClick={() => handleAcceptOrder(selectedOrder.id)}
-                  disabled={assigningOrder || selectedOrder.status !== 'READY' && selectedOrder.status !== 'READY_FOR_PICKUP'}
                 >
                   {assigningOrder ? 'Processing...' : 'Accept Order'}
                 </button>
