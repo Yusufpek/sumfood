@@ -331,3 +331,46 @@
         font-size: 1.5em;
     }
 }
+
+/* New styles */
+.restaurant-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.main-content-area {
+  min-width: 0; /* Prevents content overflow */
+}
+
+.sidebar-area {
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+}
+
+.sidebar-reviews {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.compact-review {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+  .restaurant-content-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sidebar-area {
+    position: static;
+  }
+}
