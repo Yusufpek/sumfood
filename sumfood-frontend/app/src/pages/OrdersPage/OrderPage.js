@@ -13,6 +13,32 @@ const OrdersPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Helper function to handle common API errors
+  const handleApiError = (err) => {
+    let msg = 'Failed to load orders.';
+    if (err.response) {
+      if (err.response.status === 401 || err.response.status === 403) {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        navigate('/login');
+        return true; // Indicate that we redirected
+      }
+      if (err.response.data?.message) {
+        msg = err.response.data.message;
+      } else if (typeof err.response.data === 'string') {
+        msg = err.response.data;
+      } else {
+        msg += ` (Error ${err.response.status})`;
+      }
+    } else if (err.request) {
+      msg = 'Could not connect to server. Please try again later.';
+    } else {
+      msg = `Error: ${err.message}`;
+    }
+    setError(msg);
+    return false; // No redirect
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -39,27 +65,7 @@ const OrdersPage = () => {
         const ordersData = Array.isArray(response.data) ? response.data : [];
         setActiveOrders(ordersData);
       } catch (err) {
-        let msg = 'Failed to load orders.';
-        if (err.response) {
-          if (err.response.status === 401 || err.response.status === 403) {
-            localStorage.removeItem('token');
-            setIsLoggedIn(false);
-            navigate('/login');
-            return;
-          }
-          if (err.response.data?.message) {
-            msg = err.response.data.message;
-          } else if (typeof err.response.data === 'string') {
-            msg = err.response.data;
-          } else {
-            msg += ` (Error ${err.response.status})`;
-          }
-        } else if (err.request) {
-          msg = 'Could not connect to server. Please try again later.';
-        } else {
-          msg = `Error: ${err.message}`;
-        }
-        setError(msg);
+        handleApiError(err);
       } finally {
         setLoading(false);
       }
@@ -83,27 +89,7 @@ const OrdersPage = () => {
         const ordersData = Array.isArray(response.data) ? response.data : [];
         setPastOrders(ordersData);
       } catch (err) {
-        let msg = 'Failed to load orders.';
-        if (err.response) {
-          if (err.response.status === 401 || err.response.status === 403) {
-            localStorage.removeItem('token');
-            setIsLoggedIn(false);
-            navigate('/login');
-            return;
-          }
-          if (err.response.data?.message) {
-            msg = err.response.data.message;
-          } else if (typeof err.response.data === 'string') {
-            msg = err.response.data;
-          } else {
-            msg += ` (Error ${err.response.status})`;
-          }
-        } else if (err.request) {
-          msg = 'Could not connect to server. Please try again later.';
-        } else {
-          msg = `Error: ${err.message}`;
-        }
-        setError(msg);
+        handleApiError(err);
       } finally {
         setLoading(false);
       }
@@ -228,36 +214,28 @@ const OrdersPage = () => {
                           </td>
                           <td>${Number(order.totalPrice || 0).toFixed(2)}</td>
                           <td>
-                            <button 
-                              className="track-order-btn"
-                              onClick={() => handleTrackOrder(order.id)}
-                            >
-                              Track Order
-                            </button>
-
-                          
-                            {((order.orderStatus || order.status) || '').toUpperCase() === 'PENDING' && ( // !! for testing it is set to PENDING, change later and add it to PAST ORDERS
-                            <button
-                              className="review-order-btn"
-                              onClick={() => navigate(`/order/${order.id}/review`)} 
-                              style={{ marginRight: '9px' }}
-                            >
-                              Review Order (Test)
-                            </button>
-                            )}
-                            <details>
-                              <summary>View Items</summary>
-                              <div className="order-details-panel">
-                                <ul className="order-items-list">
-                                  {renderOrderItems(order.foodItems)}
-                                </ul>
-                                {(order.deliveryAddress || order.address) && (
-                                  <div className="delivery-info">
-                                    <strong>Delivery Address:</strong> {order.deliveryAddress || order.address}
-                                  </div>
-                                )}
-                              </div>
-                            </details>
+                            <div className="order-actions">
+                              <button 
+                                className="track-order-btn"
+                                onClick={() => handleTrackOrder(order.id)}
+                              >
+                                Track Order
+                              </button>
+                              
+                              <details>
+                                <summary>View Items</summary>
+                                <div className="order-details-panel">
+                                  <ul className="order-items-list">
+                                    {renderOrderItems(order.foodItems)}
+                                  </ul>
+                                  {(order.deliveryAddress || order.address) && (
+                                    <div className="delivery-info">
+                                      <strong>Delivery Address:</strong> {order.deliveryAddress || order.address}
+                                    </div>
+                                  )}
+                                </div>
+                              </details>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -281,7 +259,7 @@ const OrdersPage = () => {
                         <th>Order Status</th>
                         <th>Payment Status</th>
                         <th>Total</th>
-                        <th>Details</th>
+                        <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -302,19 +280,30 @@ const OrdersPage = () => {
                           </td>
                           <td>${Number(order.totalPrice || 0).toFixed(2)}</td>
                           <td>
-                            <details>
-                              <summary>View Items</summary>
-                              <div className="order-details-panel">
-                                <ul className="order-items-list">
-                                  {renderOrderItems(order.foodItems)}
-                                </ul>
-                                {(order.deliveryAddress || order.address) && (
-                                  <div className="delivery-info">
-                                    <strong>Delivery Address:</strong> {order.deliveryAddress || order.address}
-                                  </div>
-                                )}
-                              </div>
-                            </details>
+                            <div className="order-actions">
+                              {((order.orderStatus || order.status) || '').toUpperCase() === 'DELIVERED' && (
+                                <button
+                                  className="review-order-btn"
+                                  onClick={() => navigate(`/order/${order.id}/review`)}
+                                >
+                                  Leave Review
+                                </button>
+                              )}
+                              
+                              <details>
+                                <summary>View Items</summary>
+                                <div className="order-details-panel">
+                                  <ul className="order-items-list">
+                                    {renderOrderItems(order.foodItems)}
+                                  </ul>
+                                  {(order.deliveryAddress || order.address) && (
+                                    <div className="delivery-info">
+                                      <strong>Delivery Address:</strong> {order.deliveryAddress || order.address}
+                                    </div>
+                                  )}
+                                </div>
+                              </details>
+                            </div>
                           </td>
                         </tr>
                       ))}
