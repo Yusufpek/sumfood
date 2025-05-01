@@ -358,19 +358,76 @@
 }
 
 .compact-review {
-  padding: 1rem;
+  padding: 15px;
   margin-bottom: 1rem;
   border-radius: 8px;
   background-color: #f8f9fa;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
+.reviews-background {
+  background-color: #e9ecef;
+  padding: 30px 20px;
+  margin-top: 40px;
+  border-radius: 8px;
+}
+
+.reviews-background h2 {
+  color: #343a40;
+  border-bottom-color: #ced4da;
+}
+
+.reviews-background .compact-review {
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.reviews-list {
+  display: grid;
+  gap: 15px;
+  grid-template-columns: 1fr;
+}
+
+/* Layout for Location and Reviews sections */
+.location-reviews-container {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+/* Style for both location and reviews sections */
+.location-reviews-container .restaurant-section {
+  background-color: #f8f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Specific styling for the location section */
+.location-reviews-container #location {
+  margin-bottom: 0;  /* Override default margin */
+}
+
+/* Specific styling for the reviews section */
+.location-reviews-container #reviews {
+  height: fit-content;
+}
+
+.reviews-list {
+  max-height: 400px;  /* Limit height and enable scroll */
+  overflow-y: auto;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .restaurant-content-grid {
+  .location-reviews-container {
     grid-template-columns: 1fr;
   }
   
-  .sidebar-area {
-    position: static;
+  .location-reviews-container #location,
+  .location-reviews-container #reviews {
+    margin-bottom: 20px;
   }
 }

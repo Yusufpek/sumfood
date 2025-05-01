@@ -428,108 +428,113 @@ function RestaurantPublicPage() {
         {/* Display non-critical errors (e.g., menu/reviews failed but restaurant loaded) */}
         {error && restaurantData && <p className="error-message warning">{error}</p>}
 
-        {/* --- Main Content Area (using Flexbox for side-by-side layout) --- */}
-        <div className="restaurant-content-grid">
-          {/* Main Column (Menu & Location) */}
-          <div className="main-content-area">
-            {/* --- Menu Section --- */}
-            <section id="menu" className="restaurant-section">
-              <h2>Menu</h2>
-              {loadingMenu ? (
-                  <p>Loading menu...</p>
-              ) : menuItems.length === 0 ? (
-                  <p>No menu items available for this restaurant.</p>
-              ) : (
-                  Object.keys(groupedMenuItems).map(categoryId => (
-                      <div key={categoryId} className="category-group">
-                          {/* Ensure categoryId is treated as a string for display */}
-                          <h3 className="category-title">
-                              {String(categoryId) !== 'uncategorized' ? String(categoryId).replace(/_/g, ' ') : 'Other Items'}
-                          </h3>
-                          <div className="food-item-grid">
-                              {groupedMenuItems[categoryId]?.map(item => {
-                                  // Ensure all required fields exist
-                                  if (!item?.name || !item?.price) return null;
+        {/* --- Sections will now flow directly --- */}
+        
+        {/* --- Menu Section --- */}
+        <section id="menu" className="restaurant-section">
+          <h2>Menu</h2>
+          {loadingMenu ? (
+              <p>Loading menu...</p>
+          ) : menuItems.length === 0 ? (
+              <p>No menu items available for this restaurant.</p>
+          ) : (
+              Object.keys(groupedMenuItems).map(categoryId => (
+                  <div key={categoryId} className="category-group">
+                      {/* Ensure categoryId is treated as a string for display */}
+                      <h3 className="category-title">
+                          {String(categoryId) !== 'uncategorized' ? String(categoryId).replace(/_/g, ' ') : 'Other Items'}
+                      </h3>
+                      <div className="food-item-grid">
+                          {groupedMenuItems[categoryId]?.map(item => {
+                              // Ensure all required fields exist
+                              if (!item?.name || !item?.price) return null;
 
-                                  const foodImageUrl = FOOD_IMAGE_BASE + item.restaurantName.replace(" ", "_") + "/" + item.imageName;
-                                  return (
-                                      <div key={item.id || item.image_name} className="food-item-card-simple">
-                                          <img 
-                                              src={foodImageUrl} 
-                                              alt={item.name} 
-                                              onError={(e) => {e.target.src = '/placeholder-food.jpg';}} 
-                                          />
-                                          <h3>{item.name}</h3>
-                                          {item.description && (
-                                              <p className="item-description-small">{item.description}</p>
-                                          )}
-                                          <p className="item-price">
-                                              <strong>${Number(item.price).toFixed(2)}</strong>
-                                          </p>
-                                          <button
-                                              className="btn btn-add-to-cart-small"
-                                              onClick={() => addToCart(item)}
-                                          >
-                                              Add +
-                                          </button>
-                                      </div>
-                                  );
-                              })}
-                          </div>
+                              const foodImageUrl = FOOD_IMAGE_BASE + item.restaurantName.replace(" ", "_") + "/" + item.imageName;
+                              return (
+                                  <div key={item.id || item.image_name} className="food-item-card-simple">
+                                      <img 
+                                          src={foodImageUrl} 
+                                          alt={item.name} 
+                                          onError={(e) => {e.target.src = '/placeholder-food.jpg';}} 
+                                      />
+                                      <h3>{item.name}</h3>
+                                      {item.description && (
+                                          <p className="item-description-small">{item.description}</p>
+                                      )}
+                                      <p className="item-price">
+                                          <strong>${Number(item.price).toFixed(2)}</strong>
+                                      </p>
+                                      <button
+                                          className="btn btn-add-to-cart-small"
+                                          onClick={() => addToCart(item)}
+                                      >
+                                          Add +
+                                      </button>
+                                  </div>
+                              );
+                          })}
                       </div>
-                  ))
-              )}
-            </section>
-
-            {/* --- Location Section --- */}
-            <section id="location" className="restaurant-section">
-              <h2>Location</h2>
-              {(restaurantData.latitude && restaurantData.longitude) ? (
-                  <div className="map-container-public">
-                      {/* Ensure API key is configured for react-google-maps */}
-                      <Map
-                          defaultCenter={{ lat: restaurantData.latitude, lng: restaurantData.longitude }}
-                          defaultZoom={15}
-                          gestureHandling={'greedy'}
-                          disableDefaultUI={true}
-                          style={{ width: '100%', height: '300px' }}
-                          mapId={'RESTAURANT_LOCATION_MAP'}
-                      >
-                          <Marker
-                              position={{ lat: restaurantData.latitude, lng: restaurantData.longitude }}
-                              title={restaurantData.displayName || restaurantData.name}
-                          />
-                      </Map>
-                      <p>{restaurantData.address}</p>
                   </div>
-              ) : (
-                  <p>Location information is not available.</p>
-              )}
-            </section>
-          </div>
+              ))
+          )}
+        </section>
 
-          {/* Sidebar Column (Reviews) */}
-          <div className="sidebar-area">
-            {/* --- Reviews Section --- */}
-            <section id="reviews" className="restaurant-section">
-              <h2>Reviews & Ratings</h2>
-              {loadingReviews ? (
-                <p>Loading reviews...</p>
-              ) : reviews.length === 0 ? (
-                <p>No reviews yet.</p>
-              ) : (
-                <div className="reviews-list sidebar-reviews">
-                  {reviews.map(review => (
-                    <div key={review.id} className="review-card compact-review">
-                      <StarRatingDisplay rating={review.rating} size={16} />
-                      <p className="review-comment">"{review.comment}"</p>
-                      <p className="review-author">- {review.customerName || 'Anonymous'} on {new Date(review.date).toLocaleDateString()}</p>
-                    </div>
-                  ))}
+        {/* Location and Reviews Container */}
+        <div className="location-reviews-container">
+          <section id="location" className="restaurant-section">
+            <h2>Location</h2>
+            {(restaurantData.latitude && restaurantData.longitude) ? (
+                <div className="map-container-public">
+                    {/* Ensure API key is configured for react-google-maps */}
+                    <Map
+                        defaultCenter={{ lat: restaurantData.latitude, lng: restaurantData.longitude }}
+                        defaultZoom={15}
+                        gestureHandling={'none'} // Prevents panning
+                        disableDefaultUI={true}
+                        clickableIcons={false} // Prevents clicking on POIs
+                        draggable={false} // Prevents dragging
+                        scrollwheel={false} // Prevents zooming with mouse wheel
+                        style={{ width: '100%', height: '300px' }}
+                        mapId={'RESTAURANT_LOCATION_MAP'}
+                        options={{
+                            disableDoubleClickZoom: true,
+                            keyboardShortcuts: false,
+                            zoomControl: false,
+                            streetViewControl: false,
+                            fullscreenControl: false,
+                            mapTypeControl: false,
+                        }}
+                    >
+                        <Marker
+                            position={{ lat: restaurantData.latitude, lng: restaurantData.longitude }}
+                            title={restaurantData.displayName || restaurantData.name}
+                        />
+                    </Map>
+                    <p>{restaurantData.address}</p>
                 </div>
-              )}
-            </section>
-          </div>
+            ) : (
+                <p>Location information is not available.</p>
+            )}
+          </section>
+          
+          <section id="reviews" className="restaurant-section">
+            <h2>Reviews & Ratings</h2>
+            {loadingReviews ? (
+              <p>Loading reviews...</p>
+            ) : reviews.length === 0 ? (
+              <p>No reviews yet.</p>
+            ) : (
+              <div className="reviews-list">
+                {reviews.map(review => (
+                  <div key={review.id} className="review-card compact-review">
+                    <StarRatingDisplay rating={review.rating} size={16} />
+                    <p className="review-comment">"{review.comment}"</p>
+                    <p className="review-author">- {review.customerName || 'Anonymous'} on {new Date(review.date).toLocaleDateString()}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
       </div>
       <Footer />
