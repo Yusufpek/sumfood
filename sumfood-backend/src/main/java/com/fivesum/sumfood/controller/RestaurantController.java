@@ -1,7 +1,6 @@
 package com.fivesum.sumfood.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,8 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import com.fivesum.sumfood.dto.responses.RestaurantProfileResponse;
 import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.model.enums.OrderStatus;
-import com.fivesum.sumfood.responses.RestaurantProfileResponse;
-import com.fivesum.sumfood.dto.OrderResponse;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.RestaurantService;
 import com.fivesum.sumfood.service.OrderService;
@@ -57,7 +54,8 @@ public class RestaurantController {
     }
 
     @PutMapping("/orders/{id}&{status}")
-    public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @PathVariable OrderStatus status, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @PathVariable OrderStatus status,
+            @RequestHeader("Authorization") String token) {
         String email = jwtService.extractUsername(token.substring(7));
         try {
             Restaurant restaurant = restaurantService.getRestaurantProfile(email);
