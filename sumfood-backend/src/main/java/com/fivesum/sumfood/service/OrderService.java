@@ -3,6 +3,7 @@ package com.fivesum.sumfood.service;
 import com.fivesum.sumfood.dto.responses.OrderResponse;
 import com.fivesum.sumfood.dto.responses.ShoppingCartItemResponse;
 import com.fivesum.sumfood.exception.InvalidRequestException;
+import com.fivesum.sumfood.exception.UnauthorizedAccessException;
 import com.fivesum.sumfood.model.*;
 import com.fivesum.sumfood.model.enums.OrderStatus;
 import com.fivesum.sumfood.model.enums.OrderType;
@@ -100,6 +101,19 @@ public class OrderService {
 
 		List<Order> orders = orderRepository.findByOrderStatusIn(activeStatusList);
 		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
+	}
+
+	public OrderResponse getOrderById(Customer customer, Long orderId) {
+		Order order = findById(orderId);
+		if (order == null) {
+			throw new InvalidRequestException("Order is not found!");
+		}
+
+		if (order.getCustomer() != customer) {
+			throw new UnauthorizedAccessException("You are not allowed to see this order.");
+		}
+
+		return toResponseDTO(order);
 	}
 
 	@Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class })

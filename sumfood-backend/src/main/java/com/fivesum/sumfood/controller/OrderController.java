@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.fivesum.sumfood.dto.responses.OrderResponse;
 import com.fivesum.sumfood.exception.InvalidRequestException;
+import com.fivesum.sumfood.exception.UnauthorizedAccessException;
 import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.service.CourierService;
@@ -65,7 +66,37 @@ public class OrderController {
 
             return ResponseEntity.ok(orders);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<?> getOrder(@RequestHeader("Authorization") String token,
+            @PathVariable() String orderId) {
+
+        String email = jwtService.extractUsername(token.substring(7));
+        Optional<Customer> customerOpt = customerService.findByEmail(email);
+
+        if (!customerOpt.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
+        }
+        Customer customer = customerOpt.get();
+        long id;
+        try {
+            id = Long.parseLong(orderId);
+            OrderResponse response = orderService.getOrderById(customer, id);
+            return ResponseEntity.ok(response);
+        } catch (NumberFormatException e) {
+            System.out.printf("Invalid item ID format: %s%n", orderId);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid item ID format.");
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (UnauthorizedAccessException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -85,7 +116,8 @@ public class OrderController {
 
             return ResponseEntity.ok(orders);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -104,7 +136,8 @@ public class OrderController {
 
             return ResponseEntity.ok(orders);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -134,7 +167,8 @@ public class OrderController {
 
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
         }
     }
 }
