@@ -8,9 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.fivesum.sumfood.dto.CustomerUpdateRequest;
-import com.fivesum.sumfood.dto.AddressRequest;
-import com.fivesum.sumfood.responses.RestaurantProfileResponse;
+import com.fivesum.sumfood.dto.requests.AddressRequest;
+import com.fivesum.sumfood.dto.requests.CustomerUpdateRequest;
+import com.fivesum.sumfood.dto.responses.CustomerGetResponse;
+import com.fivesum.sumfood.dto.responses.RestaurantProfileResponse;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.Order;
 import com.fivesum.sumfood.model.Address;
@@ -18,7 +19,6 @@ import com.fivesum.sumfood.service.CustomerService;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.OrderService;
 import com.fivesum.sumfood.service.RestaurantService;
-import com.fivesum.sumfood.responses.CustomerGetResponse;
 
 @RestController
 @RequestMapping("/api/customer")

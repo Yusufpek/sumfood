@@ -4,9 +4,15 @@ import javax.persistence.*;
 
 import com.fivesum.sumfood.model.base.EntityBase;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+@Data
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "order_reviews")
 public class OrderReview extends EntityBase {
@@ -17,12 +23,4 @@ public class OrderReview extends EntityBase {
     @OneToOne(optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
-
-    @OneToOne(optional = false)
-    @JoinColumn(name = "delivery_review", nullable = false)
-    private DeliveryReview deliveryReview;
-
-    @OneToOne(optional = false)
-    @JoinColumn(name = "food_review", nullable = false)
-    private FoodReview foodReview;
 }

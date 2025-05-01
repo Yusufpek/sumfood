@@ -2,6 +2,7 @@ package com.fivesum.sumfood.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import com.fivesum.sumfood.model.Order;
 import com.fivesum.sumfood.model.enums.OrderStatus;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
+    Optional<Order> findById(Long id);
+
     List<Order> findByCustomer(Customer customer);
 
     List<Order> findByCustomerAndOrderStatus(Customer customer, OrderStatus status);

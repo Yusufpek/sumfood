@@ -1,4 +1,4 @@
-package com.fivesum.sumfood.dto;
+package com.fivesum.sumfood.dto.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerRegistrationRequest {
-    private String email;
+public class CustomerUpdateRequest {
     private String password;
     private String name;
     private String lastName;

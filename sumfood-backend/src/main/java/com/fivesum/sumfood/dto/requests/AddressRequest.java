@@ -1,4 +1,4 @@
-package com.fivesum.sumfood.dto;
+package com.fivesum.sumfood.dto.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
