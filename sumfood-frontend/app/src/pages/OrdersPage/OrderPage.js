@@ -234,6 +234,17 @@ const OrdersPage = () => {
                             >
                               Track Order
                             </button>
+
+                          
+                            {((order.orderStatus || order.status) || '').toUpperCase() === 'PENDING' && ( // !! for testing it is set to PENDING, change later and add it to PAST ORDERS
+                            <button
+                              className="review-order-btn"
+                              onClick={() => navigate(`/order/${order.id}/review`)} 
+                              style={{ marginRight: '9px' }}
+                            >
+                              Review Order (Test)
+                            </button>
+                            )}
                             <details>
                               <summary>View Items</summary>
                               <div className="order-details-panel">

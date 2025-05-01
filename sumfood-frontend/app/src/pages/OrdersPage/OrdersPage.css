@@ -247,3 +247,18 @@
       padding: 3px 6px;
     }
   }
+
+.review-order-btn {
+  padding: 5px 10px;
+  background-color: #28a745; /* Green */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease;
+}
+
+.review-order-btn:hover {
+  background-color: #218838;
+}
