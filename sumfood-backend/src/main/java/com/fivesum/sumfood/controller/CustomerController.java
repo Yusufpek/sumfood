@@ -12,9 +12,11 @@ import com.fivesum.sumfood.dto.CustomerUpdateRequest;
 import com.fivesum.sumfood.dto.AddressRequest;
 import com.fivesum.sumfood.responses.RestaurantProfileResponse;
 import com.fivesum.sumfood.model.Customer;
+import com.fivesum.sumfood.model.Order;
 import com.fivesum.sumfood.model.Address;
 import com.fivesum.sumfood.service.CustomerService;
 import com.fivesum.sumfood.service.JwtService;
+import com.fivesum.sumfood.service.OrderService;
 import com.fivesum.sumfood.service.RestaurantService;
 import com.fivesum.sumfood.responses.CustomerGetResponse;
 
@@ -25,6 +27,7 @@ public class CustomerController {
 
     private final CustomerService customerService;
     private final RestaurantService restaurantService;
+    private final OrderService orderService;
     private final JwtService jwtService;
 
     @PutMapping("/")
@@ -230,4 +233,26 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    @PostMapping("/cancel_order/{orderId}")
+    public ResponseEntity<?> cancelOrder(@PathVariable Long orderId,
+            @RequestHeader("Authorization") String token) {
+        try {
+            String email = jwtService.extractUsername(token.substring(7));
+            Optional<Customer> customerOpt = customerService.findByEmail(email);
+
+            if (!customerOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
+            }
+
+            Customer customer = customerOpt.get();
+
+            Order order = orderService.getOrderById(orderId);
+
+            orderService.cancelOrder(order, customer);
+
+            return ResponseEntity.ok("Order cancelled successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+        }
+    }
 }
