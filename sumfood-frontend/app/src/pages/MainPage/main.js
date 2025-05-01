@@ -645,7 +645,7 @@ const MainPage = () => {
                         />
                       </div>
                       <div className="restaurant-info">
-                        <h3>{restaurant.name}</h3>
+                        <h3>{restaurant.displayName}</h3>
                         {restaurant.description && <p className="description">{restaurant.description}</p>}
                         {restaurant.address && (
                           <p className="address">
