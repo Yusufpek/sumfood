@@ -1,12 +1,11 @@
-// pages/CourierDashboard.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CourierNavbar from '../components/layout/CourierNavbar';
 import './CourierDashboard.css';
 
-function CourierDashboard() {
+function CourierOrdersHistory() {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState([]);
+  const [pastOrders, setPastOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
@@ -28,55 +27,71 @@ function CourierDashboard() {
       navigate('/login');
     }
 
-    // Fetch orders (mock data for now)
+    // Fetch past orders (mock data for now)
     setTimeout(() => {
-      const mockOrders = [
+      const mockPastOrders = [
         {
-          id: '1001',
+          id: '982',
           restaurant: 'Burger Palace',
-          customer: 'John Doe',
-          address: '123 Main St, City',
-          status: 'Ready for pickup',
-          time: '10:30 AM',
-          distance: '2.5 miles',
+          customer: 'Emma Wilson',
+          address: '742 Maple Ave, City',
+          status: 'Delivered',
+          time: 'Yesterday, 2:30 PM',
+          distance: '3.1 miles',
           items: [
-            { name: 'Cheeseburger', quantity: 2 },
-            { name: 'French Fries', quantity: 1 },
+            { name: 'Double Cheeseburger', quantity: 1 },
+            { name: 'Onion Rings', quantity: 1 },
+            { name: 'Milkshake', quantity: 1 }
+          ],
+          total: '$21.99'
+        },
+        {
+          id: '965',
+          restaurant: 'Taco Town',
+          customer: 'Robert Chen',
+          address: '123 Oak St, City',
+          status: 'Delivered',
+          time: 'Yesterday, 12:15 PM',
+          distance: '2.8 miles',
+          items: [
+            { name: 'Taco Combo', quantity: 1 },
+            { name: 'Nachos', quantity: 1 },
             { name: 'Soda', quantity: 2 }
           ],
-          total: '$24.99'
+          total: '$18.50'
         },
         {
-          id: '1002',
+          id: '943',
           restaurant: 'Pizza Corner',
-          customer: 'Jane Smith',
-          address: '456 Oak St, City',
-          status: 'In delivery',
-          time: '11:15 AM',
-          distance: '3.2 miles',
+          customer: 'Sarah Miller',
+          address: '567 Pine Ave, City',
+          status: 'Delivered',
+          time: '2 days ago, 7:20 PM',
+          distance: '1.5 miles',
           items: [
-            { name: 'Large Pepperoni Pizza', quantity: 1 },
-            { name: 'Garlic Bread', quantity: 1 }
+            { name: 'Medium Veggie Pizza', quantity: 1 },
+            { name: 'Cheese Sticks', quantity: 1 }
           ],
-          total: '$19.99'
+          total: '$22.75'
         },
         {
-          id: '1003',
+          id: '921',
           restaurant: 'Sushi Express',
-          customer: 'Mike Johnson',
-          address: '789 Pine St, City',
-          status: 'New order',
-          time: '12:00 PM',
-          distance: '1.8 miles',
+          customer: 'Daniel Brown',
+          address: '890 Cedar St, City',
+          status: 'Delivered',
+          time: '3 days ago, 6:45 PM',
+          distance: '4.2 miles',
           items: [
-            { name: 'California Roll', quantity: 2 },
-            { name: 'Miso Soup', quantity: 1 }
+            { name: 'Dragon Roll', quantity: 1 },
+            { name: 'Spicy Tuna Roll', quantity: 1 },
+            { name: 'Green Tea', quantity: 2 }
           ],
-          total: '$27.50'
+          total: '$32.99'
         }
       ];
 
-      setOrders(mockOrders);
+      setPastOrders(mockPastOrders);
       setLoading(false);
     }, 1000); // Simulating API call delay
   }, [navigate]);
@@ -91,29 +106,29 @@ function CourierDashboard() {
 
   return (
     <>
-      <CourierNavbar currentPage="dashboard" />
+      <CourierNavbar currentPage="orders" />
       <div className="courier-dashboard">
         <div className="dashboard-header">
-          <h1>Courier Dashboard</h1>
+          <h1>Order History</h1>
         </div>
 
-        <div className="recent-orders">
-          <h3>Current Orders</h3>
+        <div className="past-orders">
+          <h3>Past Deliveries</h3>
           {loading ? (
-            <div className="loading">Loading orders...</div>
-          ) : orders.length === 0 ? (
-            <div className="orders-list">No orders available at the moment.</div>
+            <div className="loading">Loading order history...</div>
+          ) : pastOrders.length === 0 ? (
+            <div className="orders-list">No past orders found.</div>
           ) : (
             <div className="orders-container">
-              {orders.map((order) => (
+              {pastOrders.map((order) => (
                 <div 
                   key={order.id} 
-                  className="order-item" 
+                  className="order-item past-order" 
                   onClick={() => handleOrderClick(order)}
                 >
                   <div className="order-header">
                     <h4>{order.restaurant}</h4>
-                    <span className={`order-status status-${order.status.toLowerCase().replace(/\s/g, '-')}`}>
+                    <span className="order-status status-delivered">
                       {order.status}
                     </span>
                   </div>
@@ -148,6 +163,9 @@ function CourierDashboard() {
                 <h4>Status</h4>
                 <p>{selectedOrder.status}</p>
                 
+                <h4>Delivered</h4>
+                <p>{selectedOrder.time}</p>
+                
                 <h4>Order Items</h4>
                 <ul className="order-items-list">
                   {selectedOrder.items.map((item, index) => (
@@ -162,10 +180,6 @@ function CourierDashboard() {
                   <p>{selectedOrder.total}</p>
                 </div>
               </div>
-              
-              <div className="order-actions">
-                <button className="primary-button">Accept Order</button>
-              </div>
             </div>
           </div>
         )}
@@ -174,4 +188,4 @@ function CourierDashboard() {
   );
 }
 
-export default CourierDashboard;
+export default CourierOrdersHistory;

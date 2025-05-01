@@ -8,6 +8,7 @@ import RestaurantDashboard from './pages/RestaurantDashboard';
 import RestaurantMenu from './pages/RestaurantMenu';
 import ProtectedRoute from './components/ProtectedRoute';
 import CourierDashboard from './pages/CourierDashboard';
+import CourierOrdersHistory from './pages/CourierOrdersHistory';
 import OrdersPage from './pages/OrdersPage/OrderPage';
 import './App.css';
 import './styles/global.css';
@@ -64,6 +65,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CourierDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/courier-dashboard/orders-history"
+              element={
+                <ProtectedRoute>
+                  <CourierOrdersHistory />
                 </ProtectedRoute>
               }
             />
