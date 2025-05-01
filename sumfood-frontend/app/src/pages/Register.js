@@ -60,7 +60,7 @@ function Register() {
     let url = "http://localhost:8080/api/auth/register/";
     let body;
     if (userType === 'restaurant') {
-      body = FormData()
+      body = new FormData()
       userData['taxIdentificationNumber'] = userData['taxId'];
       url += userType;
       body.append('restaurantRegistration', new Blob([JSON.stringify(userData)], { type: 'application/json' }));
