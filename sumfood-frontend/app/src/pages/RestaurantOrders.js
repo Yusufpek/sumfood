@@ -16,12 +16,12 @@ function RestaurantOrders() {
     // Check for authentication
     const token = localStorage.getItem('token');
     const tokenExpiry = localStorage.getItem('tokenExpiry');
-    
+
     if (!token) {
       navigate('/login');
       return;
     }
-    
+
     // Check if token is expired
     if (tokenExpiry && new Date(tokenExpiry) < new Date()) {
       localStorage.removeItem('token');
@@ -36,7 +36,7 @@ function RestaurantOrders() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // Get restaurant profile
         const restaurantResponse = await axios.get('http://localhost:8080/api/restaurant/profile', {
           headers: {
@@ -45,7 +45,7 @@ function RestaurantOrders() {
           }
         });
         setRestaurantInfo(restaurantResponse.data);
-        
+
         // Get restaurant orders
         const ordersResponse = await axios.get('http://localhost:8080/api/restaurant/orders', {
           headers: {
@@ -53,7 +53,7 @@ function RestaurantOrders() {
             'Role': 'RESTAURANT'
           }
         });
-        
+
         setOrders(ordersResponse.data || []);
         setLoading(false);
       } catch (err) {
@@ -114,49 +114,31 @@ function RestaurantOrders() {
   };
 
   const getStatusActions = (order) => {
-    switch(order.status) {
+    switch (order.status) {
       case 'PENDING':
         return (
           <>
-            <button 
-              className="status-action-btn accept" 
-              onClick={() => updateOrderStatus(order.id, 'CONFIRMED')}
+            <button
+              className="status-action-btn accept"
+              onClick={() => updateOrderStatus(order.id, 'PREPARING')}
             >
               Confirm Order
             </button>
-            <button 
-              className="status-action-btn reject" 
+            <button
+              className="status-action-btn reject"
               onClick={() => cancelOrder(order.id)}
             >
               Reject Order
             </button>
           </>
         );
-      case 'CONFIRMED':
-        return (
-          <button 
-            className="status-action-btn prepare" 
-            onClick={() => updateOrderStatus(order.id, 'PREPARING')}
-          >
-            Start Preparing
-          </button>
-        );
       case 'PREPARING':
         return (
-          <button 
-            className="status-action-btn ready" 
-            onClick={() => updateOrderStatus(order.id, 'READY')}
+          <button
+            className="status-action-btn ready"
+            onClick={() => updateOrderStatus(order.id, 'READY_FOR_PICKUP')}
           >
-            Mark as Ready
-          </button>
-        );
-      case 'READY':
-        return (
-          <button 
-            className="status-action-btn complete" 
-            onClick={() => updateOrderStatus(order.id, 'COMPLETED')}
-          >
-            Complete Order
+            Ready For pickup
           </button>
         );
       default:
@@ -179,7 +161,7 @@ function RestaurantOrders() {
       <div className="loading">Loading orders...</div>
     </>
   );
-  
+
   if (error) return (
     <>
       <RestaurantNavbar restaurantName="Error" currentPage="orders" />
@@ -224,37 +206,6 @@ function RestaurantOrders() {
                     </div>
                     <div className="order-total">
                       <p><strong>Total:</strong> ${order.totalAmount.toFixed(2)}</p>
-                    </div>
-                    <div className="order-actions">
-                      {getStatusActions(order)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="tab-section">
-            <h2>Confirmed Orders</h2>
-            {getOrdersByStatus('CONFIRMED').length === 0 ? (
-              <div className="no-orders">No confirmed orders</div>
-            ) : (
-              <div className="orders-list">
-                {getOrdersByStatus('CONFIRMED').map(order => (
-                  <div key={order.id} className="order-card confirmed">
-                    <div className="order-header">
-                      <span className="order-number">Order #{order.id}</span>
-                      <span className="order-date">{formatOrderDate(order.orderDate)}</span>
-                    </div>
-                    <div className="order-items">
-                      <h4>Items:</h4>
-                      <ul>
-                        {order.items.map((item, idx) => (
-                          <li key={idx}>
-                            {item.quantity}x {item.name}
-                          </li>
-                        ))}
-                      </ul>
                     </div>
                     <div className="order-actions">
                       {getStatusActions(order)}
@@ -320,11 +271,11 @@ function RestaurantOrders() {
 
           <div className="tab-section">
             <h2>Completed Orders</h2>
-            {getOrdersByStatus('COMPLETED').length === 0 ? (
+            {getOrdersByStatus('DELIVERED').length === 0 ? (
               <div className="no-orders">No completed orders</div>
             ) : (
               <div className="orders-list completed-list">
-                {getOrdersByStatus('COMPLETED').map(order => (
+                {getOrdersByStatus('DELIVERED').map(order => (
                   <div key={order.id} className="order-card completed">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
