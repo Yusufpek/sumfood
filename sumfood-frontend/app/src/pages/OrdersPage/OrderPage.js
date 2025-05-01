@@ -87,6 +87,7 @@ const OrdersPage = () => {
           }
         });
         const ordersData = Array.isArray(response.data) ? response.data : [];
+        console.log(ordersData);
         setPastOrders(ordersData);
       } catch (err) {
         handleApiError(err);
@@ -282,10 +283,10 @@ const OrdersPage = () => {
                           <td>
                             <div className="order-actions">
                               {((order.orderStatus || order.status) || '').toUpperCase() === 'DELIVERED' && (
-                                order.isReviewed ? (
+                                order.reviewId ? (
                                   <button
                                     className="view-review-btn"
-                                    onClick={() => navigate(`/order/${order.id}/review`)}
+                                    onClick={() => navigate(`/order/${order.id}/review?reviewId=${order.reviewId}`)}
                                   >
                                     See Review
                                   </button>
