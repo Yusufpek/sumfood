@@ -83,8 +83,11 @@ function StarRatingDisplay({ rating = 0, totalStars = 5, size = 20, activeColor 
   }
 
 function RestaurantPublicPage() {
+  const IMAGEBASE = `${API_BASE_URL}/restaurant/public/image/`;
+  const [image, setImage] = useState('');
   const { restaurantId } = useParams();
   const navigate = useNavigate();
+
 
   // State for different data parts
   const [restaurantData, setRestaurantData] = useState(null);
@@ -115,6 +118,7 @@ function RestaurantPublicPage() {
         // This endpoint MUST exist on the backend (GET /api/restaurant/public/{id})
         const response = await axios.get(RESTAURANT_ENDPOINT(restaurantId));
         setRestaurantData(response.data);
+        setImage(IMAGEBASE + response.data.logoName);
         console.log('Restaurant details response:', response.data);
       } catch (err) {
         console.error("Error fetching restaurant details:", err);
@@ -430,21 +434,32 @@ function RestaurantPublicPage() {
       <div className="restaurant-public-page">
         {/* --- Header Section --- */}
         <header className="restaurant-header">
-          
-          <div className="restaurant-header-info">
-            <h1>{restaurantData.displayName || restaurantData.name || 'Restaurant'}</h1>
-            <div className="restaurant-rating">
-                {restaurantData.averageRating != null ? (
-                    <StarRatingDisplay rating={restaurantData.averageRating} size={24} />
-                ) : (
-                    <span className="no-rating">Not Rated Yet</span>
-                )}
-            </div>
-            <p className="restaurant-description">{restaurantData.description || 'No description available.'}</p>
-            <p className="restaurant-address">📍 {restaurantData.address || 'Address not available'}</p>
-            {/* Add opening hours if available in restaurantData */}
-          </div>
-        </header>
+      <div className="restaurant-logo-container">
+        <img 
+          src={image} 
+          alt={restaurantData.displayName} 
+          className="restaurant-logo" 
+          onError={(e) => {e.target.src = '/placeholder-restaurant.png';}}
+        />
+      </div>
+      
+      <div className="restaurant-header-info">
+        <h1>{restaurantData.displayName || restaurantData.name || 'Restaurant'}</h1>
+        <p className="restaurant-description">{restaurantData.description || 'No description available.'}</p>
+        <p className="restaurant-address">
+          <span role="img" aria-label="location">📍</span>
+          {restaurantData.address || 'Address not available'}
+        </p>
+      </div>
+
+      <div className="restaurant-rating">
+        {restaurantData.averageRate != null ? (
+          <StarRatingDisplay rating={restaurantData.averageRate} size={24} />
+        ) : (
+          <span className="no-rating">Not Rated Yet</span>
+        )}
+      </div>
+    </header>
 
         {/* Display non-critical errors (e.g., menu/reviews failed but restaurant loaded) */}
         {error && restaurantData && <p className="error-message warning">{error}</p>}
@@ -550,17 +565,25 @@ function RestaurantPublicPage() {
                   <div key={review.orderId || `review-${Math.random()}`} className="review-card compact-review">
                     
                     {review.foodReviewComment && review.foodReviewComment.trim() !== '' ? (
+                        
                        <p className="review-comment">"{review.foodReviewComment}"</p>
+
                     ) : (
-                       <p className="review-comment no-comment"><i>No comment provided.</i></p>
+                       <div className="delivery-score-display">
+                        <span>Rating: </span>
+                        <StarRatingDisplay rating={review.foodReviewScore} size={14} inactiveColor="#cccccc"/>
+                    </div>
+
                     )}
                     <p className="review-author">
                        - {review.customerName || 'Anonymous Customer'} on {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Unknown Date'}
                     </p>
-                    <div className="delivery-score-display">
-                        <span>Delivery Rating: </span>
-                        <StarRatingDisplay rating={review.deliveryScore} size={14} inactiveColor="#cccccc"/>
-                    </div>
+                    {review.foodReviewComment && review.foodReviewComment.trim() !== '' && (
+                      <div className="delivery-score-display">
+                          <span>Rating: </span>
+                          <StarRatingDisplay rating={review.foodReviewScore} size={14} inactiveColor="#cccccc"/>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

@@ -28,7 +28,7 @@
 /* Header */
 .restaurant-header {
     display: flex;
-    align-items: center;
+    align-items: left;
     gap: 30px; /* Space between image and info */
     margin-bottom: 30px;
     padding-bottom: 20px;
@@ -431,3 +431,116 @@
     margin-bottom: 20px;
   }
 }
+
+/* Restaurant Header Styles */
+/* Restaurant Header Styles */
+.restaurant-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 20px;
+    align-items: start;
+    padding: 20px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .restaurant-logo-container {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+  
+  .restaurant-logo {
+    max-width: 100px;
+    max-height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .restaurant-header-info {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left; /* Ensure left alignment */
+  }
+  
+  .restaurant-header-info h1 {
+    margin: 0;
+    font-size: 2em;
+    color: #333;
+    text-align: left; /* Explicit left alignment for heading */
+  }
+  
+  .restaurant-description {
+    margin: 8px 0;
+    color: #666;
+    line-height: 1.4;
+    text-align: left; /* Explicit left alignment for description */
+  }
+  
+  .restaurant-address {
+    display: flex;
+    align-items: flex-start; /* Align items to top */
+    gap: 5px;
+    color: #555;
+    margin: 0;
+    text-align: left; /* Explicit left alignment for address */
+  }
+  
+  .restaurant-rating {
+    grid-column: 3;
+    grid-row: 1;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    text-align: center;
+    justify-self: end; /* Align rating to the right */
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .restaurant-header {
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto auto;
+    }
+  
+    .restaurant-rating {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: end;
+    }
+  
+    .restaurant-header-info {
+      grid-column: 2;
+      grid-row: 2 / span 2;
+      text-align: left; /* Maintain left alignment on tablet */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .restaurant-header {
+      grid-template-columns: 1fr;
+      text-align: left; /* Keep left alignment on mobile */
+    }
+  
+    .restaurant-logo-container {
+      grid-column: 1;
+      grid-row: 1;
+      justify-self: left; /* Align logo to the left on mobile */
+    }
+  
+    .restaurant-rating {
+      grid-column: 1;
+      grid-row: 2;
+      justify-self: left; /* Align rating to the left on mobile */
+    }
+  
+    .restaurant-header-info {
+      grid-column: 1;
+      grid-row: 3;
+      align-items: flex-start; /* Align content to the left on mobile */
+      text-align: left;
+    }
+  }
