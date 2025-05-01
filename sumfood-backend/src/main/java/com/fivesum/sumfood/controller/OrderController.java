@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.fivesum.sumfood.dto.OrderResponse;
+import com.fivesum.sumfood.dto.responses.OrderResponse;
 import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.model.Customer;

@@ -1,13 +1,13 @@
 package com.fivesum.sumfood.service;
 
-import com.fivesum.sumfood.dto.OrderResponse;
+import com.fivesum.sumfood.dto.responses.OrderResponse;
+import com.fivesum.sumfood.dto.responses.ShoppingCartItemResponse;
 import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.model.*;
 import com.fivesum.sumfood.model.enums.OrderStatus;
 import com.fivesum.sumfood.model.enums.OrderType;
 import com.fivesum.sumfood.model.enums.PaymentStatus;
 import com.fivesum.sumfood.repository.OrderRepository;
-import com.fivesum.sumfood.responses.ShoppingCartItemResponse;
 
 import java.util.List;
 import java.util.ArrayList;

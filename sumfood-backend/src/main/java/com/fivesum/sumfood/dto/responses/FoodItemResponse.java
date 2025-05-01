@@ -1,4 +1,4 @@
-package com.fivesum.sumfood.dto;
+package com.fivesum.sumfood.dto.responses;
 
 import java.util.List;
 

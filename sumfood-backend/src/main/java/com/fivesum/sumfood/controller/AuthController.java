@@ -5,10 +5,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.fivesum.sumfood.dto.AuthRequest;
-import com.fivesum.sumfood.dto.CourierRegistrationRequest;
-import com.fivesum.sumfood.dto.CustomerRegistrationRequest;
-import com.fivesum.sumfood.dto.RestaurantRegistrationRequest;
+import com.fivesum.sumfood.dto.requests.AuthRequest;
+import com.fivesum.sumfood.dto.requests.CourierRegistrationRequest;
+import com.fivesum.sumfood.dto.requests.CustomerRegistrationRequest;
+import com.fivesum.sumfood.dto.requests.RestaurantRegistrationRequest;
+import com.fivesum.sumfood.dto.responses.LoginResponse;
 import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.Restaurant;
@@ -18,7 +19,6 @@ import com.fivesum.sumfood.service.CourierService;
 import com.fivesum.sumfood.service.CustomerService;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.RestaurantService;
-import com.fivesum.sumfood.responses.LoginResponse;
 
 @RestController
 @RequestMapping("/api/auth")

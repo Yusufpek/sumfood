@@ -1,4 +1,4 @@
-package com.fivesum.sumfood.responses;
+package com.fivesum.sumfood.dto.responses;
 
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
