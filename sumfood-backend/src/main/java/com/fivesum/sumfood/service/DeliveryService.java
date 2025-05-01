@@ -1,5 +1,8 @@
 package com.fivesum.sumfood.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 
 import com.fivesum.sumfood.dto.DeliveryResponse;
@@ -17,7 +20,7 @@ public class DeliveryService {
     private final OrderService orderService;
     private final DeliveryRepository deliveryRepository;
 
-     public Delivery findByOrderId(Long orderId) {
+    public Delivery findByOrderId(Long orderId) {
         return deliveryRepository.findByOrderId(orderId).orElse(null);
     }
 
@@ -48,6 +51,11 @@ public class DeliveryService {
     public DeliveryResponse updateDeliveryStatus(Delivery delivery, OrderStatus status) {
         orderService.updateStatus(delivery.getOrder(), status);
         delivery = getDeliveryById(delivery.getId());
-        return toDeliveryResponse(delivery); 
+        return toDeliveryResponse(delivery);
+    }
+
+    public List<DeliveryResponse> getDeliveriesByCourier(Courier courier) {
+        List<Delivery> deliveries = deliveryRepository.findByCourierId(courier.getId());
+        return deliveries.stream().map(delivery -> toDeliveryResponse(delivery)).collect(Collectors.toList());
     }
 }
