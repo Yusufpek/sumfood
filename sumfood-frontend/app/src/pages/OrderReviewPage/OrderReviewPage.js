@@ -348,8 +348,6 @@ const OrderReviewPage = () => {
           </div>
 
           {(submitted || isViewMode) ? (
-            <div className="success-message">
-              {isViewMode ? "Review submitted previously." : "Thank you for your reviews!"}
               <div style={{ marginTop: '20px' }}>
                 <button
                   onClick={() => navigate('/orders')}
@@ -358,7 +356,6 @@ const OrderReviewPage = () => {
                   Return to Orders
                 </button>
               </div>
-            </div>
           ) : (
             <div className="form-actions">
               {error && (
