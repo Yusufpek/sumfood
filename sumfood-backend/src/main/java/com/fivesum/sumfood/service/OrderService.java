@@ -156,6 +156,18 @@ public class OrderService {
 	}
 
 	@Transactional
+	public void cancelOrder(Order order, Customer customer) {
+		if (order.getCustomer().getId() != customer.getId()) {
+			throw new InvalidRequestException("You are not authorized to cancel this order!");
+		}
+		if (order.getOrderStatus() != OrderStatus.PENDING && order.getOrderStatus() != OrderStatus.PREPARING) {
+			throw new InvalidRequestException("Order is not cancellable!");
+		}
+		order.setOrderStatus(OrderStatus.CANCELLED);
+		orderRepository.save(order);
+	}
+
+	@Transactional
 	public void updateStatus(Order order, OrderStatus orderStatus) {
 		order.setOrderStatus(orderStatus);
 		orderRepository.save(order);
