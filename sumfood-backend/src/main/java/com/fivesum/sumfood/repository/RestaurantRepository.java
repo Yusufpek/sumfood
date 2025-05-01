@@ -15,4 +15,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     List<Restaurant> getByIsValidated(boolean isValidated);
 
     boolean existsByEmail(String email);
+
+    boolean existsByTaxIdentificationNumber(String taxIdentificationNumber);
+
+    boolean existsByPhoneNumber(String phoneNumber);
 }

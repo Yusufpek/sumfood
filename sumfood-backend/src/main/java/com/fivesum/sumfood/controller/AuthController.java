@@ -61,13 +61,20 @@ public class AuthController {
     }
 
     @PostMapping(value = "/register/restaurant", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Restaurant> registerRestaurant(
+    public ResponseEntity<?> registerRestaurant(
             @RequestPart("restaurantRegistration") RestaurantRegistrationRequest request,
             @RequestPart("file") MultipartFile file) {
         // Check if email already exists
         if (customerService.existsByEmail(request.getEmail()) || courierService.existsByEmail(request.getEmail())
                 || restaurantService.existsByEmail(request.getEmail())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email must be unique");
+        }
+        if (restaurantService.existsByTaxIdentificationNumber(request.getTaxIdentificationNumber())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Tax Identification Number must be unique");
+        }
+
+        if (restaurantService.existsByPhoneNumber(request.getPhoneNumber())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Phone Number must be unique");
         }
         String imagePath;
 

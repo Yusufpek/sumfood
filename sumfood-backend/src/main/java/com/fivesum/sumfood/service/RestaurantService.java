@@ -112,6 +112,14 @@ public class RestaurantService implements UserDetailsService {
         return restaurantRepository.existsByEmail(email);
     }
 
+    public boolean existsByTaxIdentificationNumber(String taxIdentification) {
+        return restaurantRepository.existsByTaxIdentificationNumber(taxIdentification);
+    }
+
+    public boolean existsByPhoneNumber(String phoneNumber) {
+        return restaurantRepository.existsByPhoneNumber(phoneNumber);
+    }
+
     public List<RestaurantProfileResponse> getRestaurantByCustomer(Customer customer, double maxDistance) {
         List<Restaurant> allRestaurants = getAllRaw();
         List<RestaurantProfileResponse> restaurantResponses = new ArrayList<>();
