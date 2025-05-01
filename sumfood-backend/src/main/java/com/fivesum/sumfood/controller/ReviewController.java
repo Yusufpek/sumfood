@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -15,6 +16,7 @@ import com.fivesum.sumfood.dto.ReviewRequest;
 import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.exception.UnauthorizedAccessException;
 import com.fivesum.sumfood.model.Customer;
+import com.fivesum.sumfood.model.OrderReview;
 import com.fivesum.sumfood.service.CustomerService;
 import com.fivesum.sumfood.service.JwtService;
 import com.fivesum.sumfood.service.ReviewService;
@@ -28,6 +30,25 @@ public class ReviewController {
     private final ReviewService reviewService;
     private final CustomerService customerService;
     private final JwtService jwtService;
+
+    @GetMapping("/pulic/{reviewId}")
+    public ResponseEntity<?> getOrder(@PathVariable() String orderId) {
+
+        try {
+            long id = Long.parseLong(orderId);
+            OrderReview orderReview = reviewService.getReviewById(id);
+            return ResponseEntity.ok(orderReview);
+        } catch (NumberFormatException e) {
+            System.out.printf("Invalid item ID format: %s%n", orderId);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid item ID format.");
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred: " + e.getMessage());
+        }
+
+    }
 
     @PostMapping("/order/{orderId}")
     public ResponseEntity<?> addOrder(@RequestHeader("Authorization") String token, @RequestBody ReviewRequest request,

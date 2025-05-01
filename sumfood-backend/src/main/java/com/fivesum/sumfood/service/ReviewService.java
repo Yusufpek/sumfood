@@ -31,6 +31,11 @@ public class ReviewService {
     private final OrderService orderService;
     private final DeliveryService deliveryService;
 
+    public OrderReview getReviewById(Long id) {
+        return orderReviewRepository.findById(id)
+                .orElseThrow(() -> new InvalidRequestException("Review is not found!"));
+    }
+
     @Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class,
             UnauthorizedAccessException.class })
     public boolean createReview(Customer customer, Long orderId, ReviewRequest request) {
