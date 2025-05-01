@@ -25,15 +25,6 @@ public class CourierController {
     private final CourierService courierService;
     private final DeliveryService deliveryService;
 
-    @GetMapping("/orders")
-    public ResponseEntity<?> getAvailableOrders(@RequestHeader("Authorization") String token) {
-        try {
-            return ResponseEntity.ok(orderService.getReadyOrders());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-
     @PostMapping("assign_order/{id}")
     public ResponseEntity<?> assignOrder(@PathVariable Long id, @RequestHeader("Authorization") String token) {
         String email = jwtService.extractUsername(token.substring(7));

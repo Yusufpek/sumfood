@@ -173,13 +173,6 @@ public class OrderService {
 		orderRepository.save(order);
 	}
 
-	@Transactional
-	public List<OrderResponse> getReadyOrders() {
-		OrderStatus activeStatus = OrderStatus.READY_FOR_PICKUP;
-		List<Order> orders = orderRepository.findByOrderStatus(activeStatus);
-		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
-	}
-
 	public OrderResponse toResponseDTO(Order order) {
 		List<ShoppingCartItemResponse> items = order.getShoppingCart().getItems().stream()
 				.map(item -> ShoppingCartItemResponse.builder()
