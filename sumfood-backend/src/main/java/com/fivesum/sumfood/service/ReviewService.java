@@ -56,15 +56,14 @@ public class ReviewService {
                 .customer(customer)
                 .order(order)
                 .build();
-
         orderReviewRepository.save(orderReview);
+
         FoodReview foodReview = FoodReview.builder()
                 .orderReview(orderReview)
                 .comment(request.getFoodComment())
                 .score(request.getFoodScore())
                 .restaurant(order.getShoppingCart().getRestaurant())
                 .build();
-
         foodReviewRepository.save(foodReview);
 
         DeliveryReview deliveryReview = DeliveryReview.builder()
@@ -72,12 +71,8 @@ public class ReviewService {
                 .delivery(delivery)
                 .score(request.getDeliveryScore())
                 .build();
-
         deliveryReviewRepository.save(deliveryReview);
 
-        orderReview.setDeliveryReview(deliveryReview);
-        orderReview.setFoodReview(foodReview);
-        orderReviewRepository.save(orderReview);
         return true;
     }
 }

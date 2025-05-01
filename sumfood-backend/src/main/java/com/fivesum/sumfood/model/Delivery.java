@@ -5,9 +5,13 @@ import javax.persistence.*;
 import com.fivesum.sumfood.model.base.EntityBase;
 import com.fivesum.sumfood.model.enums.DeliveryStatus;
 
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+@Data
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "deliveries")
 public class Delivery extends EntityBase {

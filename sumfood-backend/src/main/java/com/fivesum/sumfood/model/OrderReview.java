@@ -19,12 +19,4 @@ public class OrderReview extends EntityBase {
     @OneToOne(optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
-
-    @OneToOne(optional = false)
-    @JoinColumn(name = "delivery_review", nullable = false)
-    private DeliveryReview deliveryReview;
-
-    @OneToOne(optional = false)
-    @JoinColumn(name = "food_review", nullable = false)
-    private FoodReview foodReview;
 }
