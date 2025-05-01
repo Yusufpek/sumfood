@@ -119,6 +119,15 @@
   color: #e53e3e;
 }
 
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 12px;
+  margin: 12px 0;
+  border-radius: 4px;
+  border-left: 4px solid #c62828;
+}
+
 /* Dashboard content styles for error state replacement */
 .dashboard-content {
   padding: 30px;
@@ -316,6 +325,17 @@
 
 .primary-button:hover {
   background-color: #2f855a;
+}
+
+.primary-button.loading {
+  background-color: #bbb;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.primary-button:disabled {
+  background-color: #bbb;
+  cursor: not-allowed;
 }
 
 .secondary-button {

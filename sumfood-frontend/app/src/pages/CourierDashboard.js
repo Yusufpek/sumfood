@@ -1,6 +1,7 @@
 // pages/CourierDashboard.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import CourierNavbar from '../components/layout/CourierNavbar';
 import './CourierDashboard.css';
 
@@ -8,7 +9,10 @@ function CourierDashboard() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [assigningOrder, setAssigningOrder] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     // Basic authentication check
@@ -26,60 +30,40 @@ function CourierDashboard() {
       localStorage.removeItem('tokenExpiry');
       localStorage.removeItem('userType');
       navigate('/login');
+      return;
     }
 
-    // Fetch orders (mock data for now)
-    setTimeout(() => {
-      const mockOrders = [
-        {
-          id: '1001',
-          restaurant: 'Burger Palace',
-          customer: 'John Doe',
-          address: '123 Main St, City',
-          status: 'Ready for pickup',
-          time: '10:30 AM',
-          distance: '2.5 miles',
-          items: [
-            { name: 'Cheeseburger', quantity: 2 },
-            { name: 'French Fries', quantity: 1 },
-            { name: 'Soda', quantity: 2 }
-          ],
-          total: '$24.99'
-        },
-        {
-          id: '1002',
-          restaurant: 'Pizza Corner',
-          customer: 'Jane Smith',
-          address: '456 Oak St, City',
-          status: 'In delivery',
-          time: '11:15 AM',
-          distance: '3.2 miles',
-          items: [
-            { name: 'Large Pepperoni Pizza', quantity: 1 },
-            { name: 'Garlic Bread', quantity: 1 }
-          ],
-          total: '$19.99'
-        },
-        {
-          id: '1003',
-          restaurant: 'Sushi Express',
-          customer: 'Mike Johnson',
-          address: '789 Pine St, City',
-          status: 'New order',
-          time: '12:00 PM',
-          distance: '1.8 miles',
-          items: [
-            { name: 'California Roll', quantity: 2 },
-            { name: 'Miso Soup', quantity: 1 }
-          ],
-          total: '$27.50'
+    // Fetch active orders from API
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        
+        const response = await axios.get('http://localhost:8080/api/order/orders/active', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Role': 'COURIER'
+          }
+        });
+        
+        setOrders(response.data || []);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching orders:', err);
+        setError('Failed to load orders. Please try again.');
+        setLoading(false);
+        
+        if (err.response && err.response.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('tokenExpiry');
+          localStorage.removeItem('userType');
+          navigate('/login');
         }
-      ];
+      }
+    };
 
-      setOrders(mockOrders);
-      setLoading(false);
-    }, 1000); // Simulating API call delay
-  }, [navigate]);
+    fetchOrders();
+  }, [navigate, refreshTrigger]);
 
   const handleOrderClick = (order) => {
     setSelectedOrder(order);
@@ -87,6 +71,55 @@ function CourierDashboard() {
 
   const closeOrderDetails = () => {
     setSelectedOrder(null);
+  };
+
+  const handleAcceptOrder = async (orderId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      setAssigningOrder(true);
+      
+      await axios.post(
+        `http://localhost:8080/api/courier/assign_order/${orderId}`,
+        {},
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Role': 'COURIER'
+          }
+        }
+      );
+      
+      // Close the modal and refresh orders
+      setSelectedOrder(null);
+      setRefreshTrigger(prev => prev + 1);
+      
+      // Show success message (you could implement a toast notification here)
+      alert('Order accepted successfully!');
+      
+    } catch (err) {
+      console.error('Error accepting order:', err);
+      alert(`Failed to accept order: ${err.response?.data || 'Unknown error'}`);
+    } finally {
+      setAssigningOrder(false);
+    }
+  };
+
+  // Get status display text
+  const getStatusDisplay = (status) => {
+    switch (status) {
+      case 'READY':
+      case 'READY_FOR_PICKUP':
+        return 'Ready for pickup';
+      case 'ON_THE_WAY':
+        return 'In delivery';
+      default:
+        return status?.replace(/_/g, ' ') || 'Unknown';
+    }
   };
 
   return (
@@ -97,8 +130,10 @@ function CourierDashboard() {
           <h1>Courier Dashboard</h1>
         </div>
 
+        {error && <div className="error-message">{error}</div>}
+
         <div className="recent-orders">
-          <h3>Current Orders</h3>
+          <h3>Available Orders</h3>
           {loading ? (
             <div className="loading">Loading orders...</div>
           ) : orders.length === 0 ? (
@@ -112,16 +147,18 @@ function CourierDashboard() {
                   onClick={() => handleOrderClick(order)}
                 >
                   <div className="order-header">
-                    <h4>{order.restaurant}</h4>
-                    <span className={`order-status status-${order.status.toLowerCase().replace(/\s/g, '-')}`}>
-                      {order.status}
+                    <h4>{order.restaurantName}</h4>
+                    <span className={`order-status status-${order.status?.toLowerCase().replace(/[\s_]/g, '-')}`}>
+                      {getStatusDisplay(order.status)}
                     </span>
                   </div>
                   <div className="order-details-preview">
                     <p><strong>Order #:</strong> {order.id}</p>
-                    <p><strong>Customer:</strong> {order.customer}</p>
-                    <p><strong>Time:</strong> {order.time}</p>
-                    <p><strong>Distance:</strong> {order.distance}</p>
+                    <p><strong>Customer:</strong> {order.customerName}</p>
+                    <p><strong>Time:</strong> {new Date(order.orderDate).toLocaleTimeString()}</p>
+                    {order.estimatedDeliveryTime && (
+                      <p><strong>Est. Delivery:</strong> {new Date(order.estimatedDeliveryTime).toLocaleTimeString()}</p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -137,16 +174,16 @@ function CourierDashboard() {
               
               <div className="order-details-section" style={{ background: 'transparent' }}>
                 <h4>Restaurant</h4>
-                <p>{selectedOrder.restaurant}</p>
+                <p>{selectedOrder.restaurantName}</p>
                 
                 <h4>Customer</h4>
-                <p>{selectedOrder.customer}</p>
+                <p>{selectedOrder.customerName}</p>
                 
                 <h4>Delivery Address</h4>
-                <p>{selectedOrder.address}</p>
+                <p>{selectedOrder.deliveryAddress || 'Address not available'}</p>
                 
                 <h4>Status</h4>
-                <p>{selectedOrder.status}</p>
+                <p>{getStatusDisplay(selectedOrder.status)}</p>
                 
                 <h4>Order Items</h4>
                 <ul className="order-items-list">
@@ -159,12 +196,18 @@ function CourierDashboard() {
                 
                 <div className="order-total">
                   <h4>Total Amount</h4>
-                  <p>{selectedOrder.total}</p>
+                  <p>${Number(selectedOrder.totalAmount).toFixed(2)}</p>
                 </div>
               </div>
               
               <div className="order-actions">
-                <button className="primary-button">Accept Order</button>
+                <button 
+                  className={`primary-button ${assigningOrder ? 'loading' : ''}`}
+                  onClick={() => handleAcceptOrder(selectedOrder.id)}
+                  disabled={assigningOrder || selectedOrder.status !== 'READY' && selectedOrder.status !== 'READY_FOR_PICKUP'}
+                >
+                  {assigningOrder ? 'Processing...' : 'Accept Order'}
+                </button>
               </div>
             </div>
           </div>
