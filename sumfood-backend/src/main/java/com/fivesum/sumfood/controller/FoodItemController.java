@@ -245,4 +245,26 @@ public class FoodItemController {
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
+        @GetMapping("/items/restaurant/{restaurantId}")
+        public ResponseEntity<List<FoodItemResponse>> getMenuItemsByRestaurantId(
+                @PathVariable Long restaurantId,
+                @RequestHeader(value = "Authorization", required = false) String token) {
+    
+            try {
+                Restaurant restaurant = restaurantService.getRestaurantById(restaurantId);
+    
+                if (restaurant == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
+                }
+                List<FoodItemResponse> foodItems = foodItemService.getFoodItemByRestaurant(restaurant);
+    
+                return ResponseEntity.ok(foodItems);
+    
+            } catch (Exception e) {
+                System.err.println("Error fetching menu items for restaurant ID " + restaurantId + ": " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+            }
+        }
+    
 }
