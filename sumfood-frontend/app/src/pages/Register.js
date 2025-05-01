@@ -21,6 +21,7 @@ function Register() {
   const [description, setDescription] = useState('');
   const [city, setCity] = useState('');
   const [address, setAddress] = useState('');
+  const [logo, setLogo] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
@@ -33,7 +34,7 @@ function Register() {
       phoneNumber,
       password,
       ...(userType === 'courier' && { driverLicenceId, birthDate, vehicleType }),
-      ...(userType === 'restaurant' && { taxId, businessName, displayName, description, city, address }),
+      ...(userType === 'restaurant' && { taxId, businessName, displayName, description, city, address, logo}),
     };
 
     register(userData)
@@ -242,6 +243,24 @@ function Register() {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   required
+                />
+              </div>
+              <div>
+                <label>Restaurant Logo</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        console.log('File preview:', reader.result);
+                      };
+                      reader.readAsDataURL(file);
+                      setLogo(file);
+                    }
+                  }}
                 />
               </div>
             </>
