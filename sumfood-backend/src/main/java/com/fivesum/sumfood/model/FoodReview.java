@@ -11,15 +11,11 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "food_reviews")
 public class FoodReview extends EntityBase {
     @OneToOne(optional = false)
-    @JoinColumn(name = "delivery_id", nullable = false)
-    private Delivery delivery;
-
-    @OneToOne(optional = false)
     @JoinColumn(name = "order_review_id", nullable = false)
     private OrderReview orderReview;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "restaurant_id", nullable=false)
+    @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
     @Column
