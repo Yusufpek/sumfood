@@ -177,6 +177,8 @@
   transition: all 0.2s ease;
   cursor: pointer;
   border: 1px solid #e2e8f0;
+  flex-direction: column;
+  text-align: left;
 }
 
 .order-item:hover {
@@ -190,7 +192,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
-  padding-bottom: 8px;
+  padding: 8px;
   border-bottom: 1px solid #f7fafc;
 }
 
@@ -222,10 +224,18 @@
   color: #6b46c1;
 }
 
+.order-details-preview {
+  margin-left: 8px;
+  text-align: left;
+  align-items: left;
+  justify-items: left;
+}
+
 .order-details-preview p {
   margin: 6px 0;
   font-size: 0.9rem;
   color: #4a5568;
+  text-align: left;
 }
 
 .order-details-modal {
@@ -306,6 +316,13 @@
   display: flex;
   gap: 10px;
   margin-top: 20px;
+  justify-content: flex-end;
+}
+
+.delivery-actions {
+  display: flex;
+  gap: 10px;
+  margin: 10px;
   justify-content: flex-end;
 }
 
