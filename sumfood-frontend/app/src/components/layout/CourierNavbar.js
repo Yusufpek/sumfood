@@ -26,10 +26,10 @@ function CourierNavbar({ currentPage = 'dashboard' }) {
             <Link to="/courier-dashboard">Dashboard</Link>
           </li>
           <li className={currentPage === 'orders' ? 'active' : ''}>
-            <Link to="/courier-dashboard/orders-history">Orders</Link>
+            <Link to="/courier-dashboard/orders-history">Deliveries</Link>
           </li>
-          <li className={currentPage === 'availability' ? 'active' : ''}>
-            <Link to="/courier-dashboard/availability">Availability</Link>
+          <li className={currentPage === 'reviews' ? 'active' : ''}>
+            <Link to="/courier-dashboard/reviews">Reviews</Link>
           </li>
           <li className={currentPage === 'earnings' ? 'active' : ''}>
             <Link to="/courier-dashboard/earnings">Earnings</Link>

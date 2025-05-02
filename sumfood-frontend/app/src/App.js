@@ -18,6 +18,7 @@ import CreateOrderPage from './pages/CreateOrderPage/CreateOrderPage';
 import RestaurantOrders from './pages/RestaurantOrders';
 import RestaurantPublicPage from './pages/RestaurantPublicPage/RestaurantPublicPage';
 import OrderReviewPage from './pages/OrderReviewPage/OrderReviewPage';
+import CourierReviews from './pages/CourierReviews/CourierReviews';
 
 function App() {
   return (
@@ -35,7 +36,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            
+
             <Route path="/restaurant/:restaurantId" element={<RestaurantPublicPage />} />
 
             <Route
@@ -87,6 +88,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CourierOrdersHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/courier-dashboard/reviews"
+              element={
+                <ProtectedRoute>
+                  <CourierReviews />
                 </ProtectedRoute>
               }
             />
