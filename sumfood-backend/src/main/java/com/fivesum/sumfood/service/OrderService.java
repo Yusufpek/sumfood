@@ -25,7 +25,7 @@ public class OrderService {
 	private final ShoppingCartService shoppingCartService;
 	private final OrderRepository orderRepository;
 	private final CustomerService customerService;
-	
+
 	@Transactional
 	public Order getOrderById(Long orderId) {
 		return orderRepository.findById(orderId).orElseThrow(() -> new InvalidRequestException("Order not found!"));
@@ -143,6 +143,7 @@ public class OrderService {
 		activeStatusList.add(OrderStatus.PREPARING);
 		activeStatusList.add(OrderStatus.READY_FOR_PICKUP);
 		activeStatusList.add(OrderStatus.ON_THE_WAY);
+		activeStatusList.add(OrderStatus.DELIVERED);
 
 		List<Order> orders = orderRepository.findByShoppingCartRestaurantAndOrderStatusIn(restaurant, activeStatusList);
 		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
@@ -150,7 +151,8 @@ public class OrderService {
 
 	@Transactional
 	public OrderResponse updateOrderStatus(Long orderId, Restaurant restaurant, OrderStatus orderStatus) {
-		Order order = orderRepository.findById(orderId).orElseThrow(() -> new InvalidRequestException("Order not found!"));
+		Order order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new InvalidRequestException("Order not found!"));
 		if (order.getShoppingCart().getRestaurant().getId() != restaurant.getId()) {
 			throw new InvalidRequestException("Order not found!");
 		}
@@ -161,7 +163,8 @@ public class OrderService {
 
 	@Transactional
 	public void cancelOrder(Long orderId, Restaurant restaurant) {
-		Order order = orderRepository.findById(orderId).orElseThrow(() -> new InvalidRequestException("Order not found!"));
+		Order order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new InvalidRequestException("Order not found!"));
 		if (order.getShoppingCart().getRestaurant().getId() != restaurant.getId()) {
 			throw new InvalidRequestException("Order not found!");
 		}
