@@ -12,4 +12,6 @@ public interface CourierRepository extends JpaRepository<Courier, Long> {
     Optional<Courier> findByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    boolean existsByPhoneNumber(String phoneNumber);
 }

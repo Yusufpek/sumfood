@@ -16,9 +16,7 @@ import com.fivesum.sumfood.dto.requests.CourierRegistrationRequest;
 import com.fivesum.sumfood.dto.requests.CustomerRegistrationRequest;
 import com.fivesum.sumfood.dto.requests.RestaurantRegistrationRequest;
 import com.fivesum.sumfood.dto.responses.LoginResponse;
-import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.model.Customer;
-import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.model.base.UserBase;
 import com.fivesum.sumfood.model.enums.Role;
 import com.fivesum.sumfood.service.CourierService;
@@ -50,11 +48,14 @@ public class AuthController {
     }
 
     @PostMapping("/register/courier")
-    public ResponseEntity<Courier> registerCouirer(@RequestBody CourierRegistrationRequest request) {
+    public ResponseEntity<?> registerCouirer(@RequestBody CourierRegistrationRequest request) {
         // Check if email already exists
         if (customerService.existsByEmail(request.getEmail()) || courierService.existsByEmail(request.getEmail())
                 || restaurantService.existsByEmail(request.getEmail())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email must be unique");
+        }
+        if (courierService.existsByPhoneNumber(request.getPhoneNumber())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Phone Number must be unique");
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(courierService.registerCourier(request));
@@ -72,7 +73,6 @@ public class AuthController {
         if (restaurantService.existsByTaxIdentificationNumber(request.getTaxIdentificationNumber())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Tax Identification Number must be unique");
         }
-
         if (restaurantService.existsByPhoneNumber(request.getPhoneNumber())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Phone Number must be unique");
         }

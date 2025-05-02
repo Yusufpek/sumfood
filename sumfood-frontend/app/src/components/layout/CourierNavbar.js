@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './CourierNavbar.css';
 
-function CourierNavbar({ courierName = 'Courier', currentPage = 'dashboard' }) {
+function CourierNavbar({ currentPage = 'dashboard' }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -17,7 +17,7 @@ function CourierNavbar({ courierName = 'Courier', currentPage = 'dashboard' }) {
     <nav className="courier-navbar">
       <div className="courier-navbar-container">
         <div className="courier-navbar-logo">
-          <Link to="/courier-dashboard">FoodExpress</Link>
+          <Link to="/courier-dashboard">SumFood</Link>
           <span className="courier-portal">Courier Portal</span>
         </div>
 
@@ -26,10 +26,10 @@ function CourierNavbar({ courierName = 'Courier', currentPage = 'dashboard' }) {
             <Link to="/courier-dashboard">Dashboard</Link>
           </li>
           <li className={currentPage === 'orders' ? 'active' : ''}>
-            <Link to="/courier-dashboard/orders">Orders</Link>
+            <Link to="/courier-dashboard/orders-history">Deliveries</Link>
           </li>
-          <li className={currentPage === 'availability' ? 'active' : ''}>
-            <Link to="/courier-dashboard/availability">Availability</Link>
+          <li className={currentPage === 'reviews' ? 'active' : ''}>
+            <Link to="/courier-dashboard/reviews">Reviews</Link>
           </li>
           <li className={currentPage === 'earnings' ? 'active' : ''}>
             <Link to="/courier-dashboard/earnings">Earnings</Link>
@@ -37,7 +37,6 @@ function CourierNavbar({ courierName = 'Courier', currentPage = 'dashboard' }) {
         </ul>
 
         <div className="courier-navbar-user">
-          <span className="courier-name">{courierName}</span>
           <button className="logout-btn" onClick={handleLogout}>
             Logout
           </button>

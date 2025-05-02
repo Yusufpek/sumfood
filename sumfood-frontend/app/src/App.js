@@ -8,14 +8,17 @@ import RestaurantDashboard from './pages/RestaurantDashboard';
 import RestaurantMenu from './pages/RestaurantMenu';
 import ProtectedRoute from './components/ProtectedRoute';
 import CourierDashboard from './pages/CourierDashboard';
+import CourierOrdersHistory from './pages/CourierOrdersHistory';
 import OrdersPage from './pages/OrdersPage/OrderPage';
 import './App.css';
 import './styles/global.css';
 import './styles/auth.css';
 import Profile from "./pages/Profile/Profile";
 import CreateOrderPage from './pages/CreateOrderPage/CreateOrderPage';
+import RestaurantOrders from './pages/RestaurantOrders';
 import RestaurantPublicPage from './pages/RestaurantPublicPage/RestaurantPublicPage';
 import OrderReviewPage from './pages/OrderReviewPage/OrderReviewPage';
+import CourierReviews from './pages/CourierReviews/CourierReviews';
 
 function App() {
   return (
@@ -33,7 +36,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            
+
             <Route path="/restaurant/:restaurantId" element={<RestaurantPublicPage />} />
 
             <Route
@@ -41,6 +44,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <RestaurantDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/restaurant-dashboard/orders"
+              element={
+                <ProtectedRoute>
+                  <RestaurantOrders />
                 </ProtectedRoute>
               }
             />
@@ -69,6 +80,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CourierDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/courier-dashboard/orders-history"
+              element={
+                <ProtectedRoute>
+                  <CourierOrdersHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/courier-dashboard/reviews"
+              element={
+                <ProtectedRoute>
+                  <CourierReviews />
                 </ProtectedRoute>
               }
             />
