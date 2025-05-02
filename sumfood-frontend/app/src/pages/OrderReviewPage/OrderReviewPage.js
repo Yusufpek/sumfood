@@ -178,7 +178,7 @@ const OrderReviewPage = () => {
     return {
       deliveryScore: deliveryRating,
       foodScore: foodRating,
-      foodwComment: foodComment
+      foodComment: foodComment
     };
   };
 
