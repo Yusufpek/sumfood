@@ -26,7 +26,7 @@ function RestaurantOrders() {
     if (tokenExpiry && new Date(tokenExpiry) < new Date()) {
       localStorage.removeItem('token');
       localStorage.removeItem('tokenExpiry');
-      localStorage.removeItem('userType');  
+      localStorage.removeItem('userType');
       setError('Session expired. Please login again.');
       navigate('/login');
       return;
@@ -118,8 +118,8 @@ function RestaurantOrders() {
       case 'PENDING':
         return (
           <>
-            <button 
-              className="status-action-btn accept" 
+            <button
+              className="status-action-btn accept"
               onClick={() => updateOrderStatus(order.id, 'PREPARING')}
             >
               Start Preparing
@@ -135,8 +135,8 @@ function RestaurantOrders() {
 
       case 'PREPARING':
         return (
-          <button 
-            className="status-action-btn ready" 
+          <button
+            className="status-action-btn ready"
             onClick={() => updateOrderStatus(order.id, 'READY_FOR_PICKUP')}
           >
             Mark as Ready
@@ -223,8 +223,8 @@ function RestaurantOrders() {
                   <div key={order.id} className="order-card preparing">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
-                      <span className="order-date">{formatOrderDate(order.createdAt)}</span>
                     </div>
+                    <span className="order-date">{formatOrderDate(order.createdAt)}</span>
                     <div className="order-items">
                       <h4>Items:</h4>
                       <ul>
@@ -252,8 +252,26 @@ function RestaurantOrders() {
                   <div key={order.id} className="order-card ready">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
-                      <span className="order-date">{formatOrderDate(order.createdAt)}</span>
                     </div>
+                    <span className="order-date">{formatOrderDate(order.createdAt)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="tab-section">
+            <h2>On The Way Orders</h2>
+            {getOrdersByStatus('READY_FOR_PICKUP').length === 0 ? (
+              <div className="no-orders">No orders on the way right now</div>
+            ) : (
+              <div className="orders-list">
+                {getOrdersByStatus('ON_THE_WAY').map(order => (
+                  <div key={order.id} className="order-card ready">
+                    <div className="order-header">
+                      <span className="order-number">Order #{order.id}</span>
+                    </div>
+                    <span className="order-date">{formatOrderDate(order.createdAt)}</span>
                   </div>
                 ))}
               </div>
@@ -270,10 +288,10 @@ function RestaurantOrders() {
                   <div key={order.id} className="order-card completed">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
-                      <span className="order-date">{formatOrderDate(order.orderDate)}</span>
                     </div>
+                    <span className="order-date">{formatOrderDate(order.createdAt)}</span>
                     <div className="order-total">
-                      <p><strong>Total:</strong> ${order.totalAmount.toFixed(2)}</p>
+                      <p><strong>Total:</strong> ${order.totalPrice}</p>
                     </div>
                   </div>
                 ))}
