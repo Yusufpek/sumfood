@@ -177,8 +177,8 @@ const OrderReviewPage = () => {
   const formatReviewsForSubmission = () => {
     return {
       deliveryScore: deliveryRating,
-      foodReviewScore: foodRating,
-      foodReviewComment: foodComment
+      foodScore: foodRating,
+      foodwComment: foodComment
     };
   };
 
