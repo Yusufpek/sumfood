@@ -11,7 +11,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 public class DeliveryReviewResponse {
     private Date createdAt;
-    private Long orderId;
+    private OrderResponse order;
+    private String fromAddress;
     private String customerName;
     private double deliveryScore;
 }

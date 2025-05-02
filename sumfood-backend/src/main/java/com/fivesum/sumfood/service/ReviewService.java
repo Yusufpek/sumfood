@@ -105,8 +105,9 @@ public class ReviewService {
     DeliveryReviewResponse toDeliveryReviewResponse(DeliveryReview deliveryReview) {
         return DeliveryReviewResponse.builder()
                 .createdAt(deliveryReview.getCreateAt())
-                .orderId(deliveryReview.getOrderReview().getId())
+                .order(orderService.toResponseDTO(deliveryReview.getOrderReview().getOrder()))
                 .customerName(deliveryReview.getOrderReview().getCustomer().getName())
+                .fromAddress(deliveryReview.getDelivery().getOrder().getShoppingCart().getRestaurant().getAddress())
                 .deliveryScore(deliveryReview.getScore())
                 .build();
     }
