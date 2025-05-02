@@ -1,0 +1,218 @@
+.restaurant-orders-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.orders-header h1 {
+  font-size: 24px;
+  color: #333;
+}
+
+.orders-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.tab-section {
+  flex: 1;
+  min-width: 300px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.tab-section h2 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.no-orders {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.order-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 15px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.order-card:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Different colors for different order statuses */
+.order-card.pending {
+  border-left: 4px solid #ff9800;
+}
+
+.order-card.confirmed {
+  border-left: 4px solid #2196f3;
+}
+
+.order-card.preparing {
+  border-left: 4px solid #9c27b0;
+}
+
+.order-card.ready {
+  border-left: 4px solid #4caf50;
+}
+
+.order-card.completed {
+  border-left: 4px solid #8bc34a;
+  opacity: 0.8;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.order-number {
+  font-weight: bold;
+  color: #333;
+}
+
+.order-date {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.order-customer {
+  margin-bottom: 10px;
+}
+
+.order-customer p {
+  margin: 5px 0;
+  font-size: 0.9em;
+}
+
+.order-items {
+  margin-bottom: 10px;
+}
+
+.order-items h4 {
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.order-items ul {
+  list-style-type: none;
+  padding-left: 5px;
+}
+
+.order-items li {
+  margin: 5px 0;
+  font-size: 0.9em;
+}
+
+.order-total {
+  margin: 10px 0;
+  font-weight: bold;
+}
+
+.order-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.status-action-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.status-action-btn.accept {
+  background-color: #4caf50;
+  color: white;
+}
+
+.status-action-btn.accept:hover {
+  background-color: #45a049;
+}
+
+.status-action-btn.reject {
+  background-color: #f44336;
+  color: white;
+}
+
+.status-action-btn.reject:hover {
+  background-color: #d32f2f;
+}
+
+.status-action-btn.prepare {
+  background-color: #2196f3;
+  color: white;
+}
+
+.status-action-btn.prepare:hover {
+  background-color: #0b7dda;
+}
+
+.status-action-btn.ready {
+  background-color: #ff9800;
+  color: white;
+}
+
+.status-action-btn.ready:hover {
+  background-color: #e68a00;
+}
+
+.status-action-btn.complete {
+  background-color: #9c27b0;
+  color: white;
+}
+
+.status-action-btn.complete:hover {
+  background-color: #7b1fa2;
+}
+
+.completed-list {
+  opacity: 0.7;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .tab-section {
+    min-width: 100%;
+  }
+  
+  .order-actions {
+    flex-direction: column;
+  }
+}

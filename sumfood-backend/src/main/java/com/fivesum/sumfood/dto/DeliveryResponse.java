@@ -17,6 +17,9 @@ public class DeliveryResponse {
     private Long id;
     private Date createdAt;
     private OrderResponse order;
+    private String fromAddress;
+    private double fromLat;
+    private double fromLong;
     private String courierName;
     private VehicleType courierVehicleType;
 }

@@ -5,7 +5,7 @@ import { Map, Marker } from '@vis.gl/react-google-maps';
 
 import Navbar from '../../components/layout/Navbar'; // Customer Navbar
 import Footer from '../../components/layout/Footer';
-import { FaStar } from 'react-icons/fa';
+import StarRatingDisplay from '../../components/common/StarRatingDisplay';
 import './RestaurantPublicPage.css'; // Create this CSS file
 
 // --- Constants ---
@@ -61,26 +61,6 @@ const groupItemsByCategory = (items) => {
     return acc;
   }, {});
 };
-
-// --- Reusable Star Rating Component ---
-function StarRatingDisplay({ rating = 0, totalStars = 5, size = 20, activeColor = "#ffc107", inactiveColor = "#e4e5e9" }) {
-    return (
-      <div className="star-rating-display" style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
-        {[...Array(totalStars)].map((_, index) => {
-          const starValue = index + 1;
-          return (
-            <FaStar
-              key={index}
-              size={size}
-              color={starValue <= rating ? activeColor : inactiveColor}
-            />
-          );
-        })}
-        {/* Optional: Display numeric rating next to stars */}
-        {/* <span style={{ marginLeft: '5px', fontSize: '0.9em' }}>({Number(rating).toFixed(1)}/{totalStars})</span> */}
-      </div>
-    );
-  }
 
 function RestaurantPublicPage() {
   const IMAGEBASE = `${API_BASE_URL}/restaurant/public/image/`;

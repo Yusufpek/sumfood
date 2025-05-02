@@ -144,7 +144,7 @@ const OrdersPage = () => {
     return items.map((item, idx) => (
       <li key={idx} className="order-item">
         <span className="item-name">{item.name || item.foodItemName || 'Unknown Item'}</span>
-        <span className="item-quantity">× {item.quantity || 1}</span>
+        <span className="item-quantity">× {item.amount || 1}</span>
         <span className="item-price">${Number(item.price || 0).toFixed(2)}</span>
       </li>
     ));
