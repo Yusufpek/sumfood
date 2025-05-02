@@ -252,8 +252,9 @@ function RestaurantMenu() {
     if (!itemToDelete) return;
 
     const token = localStorage.getItem('token');
+    console.log('Deleting item with ID:', itemToDelete);
     try {
-      await axios.delete(`http://localhost:8080/api/food/item/${itemToDelete.id}`, {
+      await axios.delete(`http://localhost:8080/api/food/item/${itemToDelete.foodItemId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Role': 'RESTAURANT'
