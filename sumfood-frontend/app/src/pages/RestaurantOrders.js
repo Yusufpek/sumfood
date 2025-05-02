@@ -189,8 +189,8 @@ function RestaurantOrders() {
                   <div key={order.id} className="order-card pending">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
-                      <span className="order-date">{formatOrderDate(order.createdAt)}</span>
                     </div>
+                    <span className="order-date">{formatOrderDate(order.createdAt)}</span>
                     <div className="order-items">
                       <h4>Items:</h4>
                       <ul>
@@ -262,7 +262,7 @@ function RestaurantOrders() {
 
           <div className="tab-section">
             <h2>On The Way Orders</h2>
-            {getOrdersByStatus('READY_FOR_PICKUP').length === 0 ? (
+            {getOrdersByStatus('ON_THE_WAY').length === 0 ? (
               <div className="no-orders">No orders on the way right now</div>
             ) : (
               <div className="orders-list">
