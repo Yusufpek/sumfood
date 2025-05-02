@@ -330,7 +330,7 @@ function CourierDashboard() {
                   <ul className="order-items-list">
                     {selectedOrder.foodItems.map((item, index) => (
                       <li key={index}>
-                        {item?.foodItemName || 'Unknown item'} × {item?.price || 1}
+                        {item?.foodItemName || 'Unknown item'} × {item?.amount || 1} ({item?.price} $)
                       </li>
                     ))}
                   </ul>
