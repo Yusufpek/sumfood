@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import com.fivesum.sumfood.exception.ConflictException;
 import com.fivesum.sumfood.model.Courier;
 import com.fivesum.sumfood.model.Delivery;
 import com.fivesum.sumfood.model.Order;
@@ -40,6 +41,8 @@ public class CourierController {
             }
 
             return ResponseEntity.ok(deliveryService.createDelivery(order, courier));
+        } catch (ConflictException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
@@ -72,6 +75,17 @@ public class CourierController {
 
             return ResponseEntity.ok(deliveryService.updateDeliveryStatus(delivery, status));
 
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/delivery")
+    public ResponseEntity<?> getActiveDelivery(@RequestHeader("Authorization") String token) {
+        String email = jwtService.extractUsername(token.substring(7));
+        try {
+            Courier courier = courierService.loadUserByUsername(email);
+            return ResponseEntity.ok(deliveryService.getActiveDeliveryByCourier(courier));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
