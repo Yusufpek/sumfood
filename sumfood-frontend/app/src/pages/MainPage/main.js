@@ -424,6 +424,42 @@ const MainPage = () => {
     }
   };
 
+  // Add spinwheel state
+  const [spinwheels, setSpinwheels] = useState({
+    items: [],
+    loading: true,
+    error: null
+  });
+
+  // Fetch spinwheels
+  useEffect(() => {
+    const fetchSpinwheels = async () => {
+      if (userState.isLoggedIn && !addressState.selectedAddress) {
+        setSpinwheels(prevState => ({ ...prevState, items: [], loading: false }));
+        return;
+      }
+      
+      setSpinwheels(prevState => ({ ...prevState, loading: true, error: null }));
+      try {
+        const response = await axios.get(`${API_BASE_URL}/restaurant/spinwheel/public/all`);
+        console.log('Fetched spinwheels:', response.data);
+        const items = Array.isArray(response.data) ? response.data : [];
+        setSpinwheels(prevState => ({ ...prevState, items }));
+      } catch (err) {
+        console.error("Error fetching spinwheels:", err);
+        // Don't show error for spinwheels as they might not be implemented yet
+        setSpinwheels(prevState => ({
+          ...prevState,
+          error: null,
+          items: []
+        }));
+      } finally {
+        setSpinwheels(prevState => ({ ...prevState, loading: false }));
+      }
+    };
+    fetchSpinwheels();
+  }, [userState.isLoggedIn, addressState.selectedAddress]);
+
   const placeOrder = async () => {
     navigate('/create_order');
   }
@@ -568,6 +604,39 @@ const MainPage = () => {
       <main className="main-content">
         {(!userState.isLoggedIn || addressState.selectedAddress) && (
           <>
+            {/* Spinwheel section */}
+            {spinwheels.items.length > 0 && (
+              <div className="spinwheel-section">
+                <h2>Try Your Luck with Restaurant Spinwheels!</h2>
+                <div className="spinwheel-display">
+                  {spinwheels.items.map(wheel => (
+                    <div key={wheel.id} className="spinwheel-card-display">
+                      <div className="spinwheel-card-image">
+                        <span className="spinwheel-badge">Spin & Win</span>
+                        <img 
+                          src={`${API_BASE_URL}/restaurant/public/image/${wheel.restaurant.logoName}`} 
+                          alt={wheel.restaurant.displayName}
+                          onError={(e) => {e.target.src = '/placeholder-restaurant.png';}}
+                        />
+                      </div>
+                      <div className="spinwheel-card-info">
+                        <h3>{wheel.name}</h3>
+                        <p>{wheel.description || `Try your luck at ${wheel.restaurant.displayName}`}</p>
+                        <p>From: <strong>{wheel.restaurant.displayName}</strong></p>
+                        <span className="spinwheel-card-price">${wheel.price.toFixed(2)} per spin</span>
+                      </div>
+                      <button 
+                        className="try-btn"
+                        onClick={() => navigate(`/restaurant/${wheel.restaurant.id}/spinwheel/${wheel.id}`)}
+                      >
+                        Try Your Luck!
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="food-items-container">
               <h2 style={{ textAlign: 'center' }}>Available Food Items</h2>
               {foodState.loading ? (

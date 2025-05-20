@@ -47,11 +47,8 @@ const RestaurantNavbar = ({ restaurantName }) => {
           <li className={isActive('/restaurant-dashboard/menu') ? 'active' : ''}>
             <Link to="/restaurant-dashboard/menu">Menu</Link>
           </li>
-          <li className={isActive('/restaurant-dashboard/profile') ? 'active' : ''}>
-            <Link to="/restaurant-dashboard/profile">Profile</Link>
-          </li>
-          <li className={isActive('/restaurant-dashboard/analytics') ? 'active' : ''}>
-            <Link to="/restaurant-dashboard/analytics">Analytics</Link>
+          <li className={isActive('/restaurant-dashboard/spinwheel') ? 'active' : ''}>
+            <Link to="/restaurant-dashboard/spinwheel">Spinwheel</Link>
           </li>
         </ul>
 

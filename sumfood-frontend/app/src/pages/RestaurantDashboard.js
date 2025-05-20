@@ -133,6 +133,12 @@ function RestaurantDashboard() {
             <p>View sales and performance reports</p>
             <div className="card-icon">📊</div>
           </div>
+
+          <div className="dashboard-card" onClick={() => navigate('/restaurant-dashboard/spinwheel')}>
+            <h3>Spinwheel</h3>
+            <p>Create and manage luck-based spinwheels</p>
+            <div className="card-icon">🎡</div>
+          </div>
         </div>
 
         <div className="recent-activity">

@@ -19,15 +19,16 @@ import RestaurantOrders from './pages/RestaurantOrders';
 import RestaurantPublicPage from './pages/RestaurantPublicPage/RestaurantPublicPage';
 import OrderReviewPage from './pages/OrderReviewPage/OrderReviewPage';
 import CourierReviews from './pages/CourierReviews/CourierReviews';
+import NotFoundPage from './pages/NotFoundPage';
+import SpinwheelPage from './pages/SpinwheelPage';
+import RestaurantSpinwheelPage from './pages/RestaurantSpinwheelPage';
 
 function App() {
   return (
     <APIProvider apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY} onLoad={() => console.log('API loaded')} onError={(error) => console.error('Google Maps API error:', error)}>
       <Router>
         <div className="App">
-          { }
           <Routes>
-            { }
             <Route
               path="/main"
               element={
@@ -39,6 +40,7 @@ function App() {
 
             <Route path="/restaurant/:restaurantId" element={<RestaurantPublicPage />} />
 
+            {/* Restaurant dashboard routes */}
             <Route
               path="/restaurant-dashboard"
               element={
@@ -127,6 +129,12 @@ function App() {
             />
             <Route path="/order/:orderId/review" element={<OrderReviewPage />} />
 
+            {/* Direct spinwheel routes - replaces SpinwheelRouter */}
+            <Route path="/restaurant/:restaurantId/spinwheel/:spinwheelId" element={<SpinwheelPage />} />
+            <Route path="/restaurant-dashboard/spinwheel" element={<RestaurantSpinwheelPage />} />
+
+            {/* 404 route */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </div>
       </Router>
