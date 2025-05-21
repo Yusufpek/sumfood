@@ -260,20 +260,33 @@ public class OrderService {
 						.price(item.getFoodItem().getPrice())
 						.build())
 				.collect(Collectors.toList());
-
-		return OrderResponse
-				.builder()
-				.id(order.getId())
-				.createdAt(order.getCreateAt())
-				.orderStatus(order.getOrderStatus().toString())
-				.orderType(order.getOrderType().toString())
-				.paymentStatus(order.getPaymentStatus().toString())
-				.totalPrice(order.getShoppingCart().getTotalPrice())
-				.restaurantName(order.getShoppingCart().getRestaurant().getDisplayName())
-				.address(order.getAddress())
-				.latitude(order.getLatitude())
-				.longitude(order.getLongitude())
-				.foodItems(items)
-				.build();
+		if (order.getOrderType() == OrderType.DONATION) {
+			return OrderResponse
+					.builder()
+					.id(order.getId())
+					.createdAt(order.getCreateAt())
+					.orderStatus(order.getOrderStatus().toString())
+					.orderType(order.getOrderType().toString())
+					.paymentStatus(order.getPaymentStatus().toString())
+					.totalPrice(order.getShoppingCart().getTotalPrice())
+					.restaurantName(order.getShoppingCart().getRestaurant().getDisplayName())
+					.foodItems(items)
+					.build();
+		} else {
+			return OrderResponse
+					.builder()
+					.id(order.getId())
+					.createdAt(order.getCreateAt())
+					.orderStatus(order.getOrderStatus().toString())
+					.orderType(order.getOrderType().toString())
+					.paymentStatus(order.getPaymentStatus().toString())
+					.totalPrice(order.getShoppingCart().getTotalPrice())
+					.restaurantName(order.getShoppingCart().getRestaurant().getDisplayName())
+					.address(order.getAddress())
+					.latitude(order.getLatitude())
+					.longitude(order.getLongitude())
+					.foodItems(items)
+					.build();
+		}
 	}
 }
