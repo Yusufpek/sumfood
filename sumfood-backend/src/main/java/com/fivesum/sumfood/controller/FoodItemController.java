@@ -84,6 +84,18 @@ public class FoodItemController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    @GetMapping("/items/restaurant/donated")
+    public ResponseEntity<List<FoodItemResponse>> getDonatedFoodItemsByRestaurant(
+            @RequestHeader("Authorization") String token) {
+        String email = jwtService.extractUsername(token.substring(7));
+        Optional<Restaurant> restaurant = restaurantService.findByEmail(email);
+        if (restaurant.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(foodItemService.getDonatedFoodItemByRestaurant(restaurant.get()));
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
     @GetMapping("items/customer/{maxDistance}")
     public ResponseEntity<List<FoodItemResponse>> getFoodItemsByCustomer(
             @PathVariable("maxDistance") double maxDistance,
@@ -246,25 +258,25 @@ public class FoodItemController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
-        @GetMapping("/items/restaurant/{restaurantId}")
-        public ResponseEntity<List<FoodItemResponse>> getMenuItemsByRestaurantId(
-                @PathVariable Long restaurantId,
-                @RequestHeader(value = "Authorization", required = false) String token) {
-    
-            try {
-                Restaurant restaurant = restaurantService.getRestaurantById(restaurantId);
-    
-                if (restaurant == null) {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
-                }
-                List<FoodItemResponse> foodItems = foodItemService.getFoodItemByRestaurant(restaurant);
-    
-                return ResponseEntity.ok(foodItems);
-    
-            } catch (Exception e) {
-                System.err.println("Error fetching menu items for restaurant ID " + restaurantId + ": " + e.getMessage());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+    @GetMapping("/items/restaurant/{restaurantId}")
+    public ResponseEntity<List<FoodItemResponse>> getMenuItemsByRestaurantId(
+            @PathVariable Long restaurantId,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+
+        try {
+            Restaurant restaurant = restaurantService.getRestaurantById(restaurantId);
+
+            if (restaurant == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
             }
+            List<FoodItemResponse> foodItems = foodItemService.getFoodItemByRestaurant(restaurant);
+
+            return ResponseEntity.ok(foodItems);
+
+        } catch (Exception e) {
+            System.err.println("Error fetching menu items for restaurant ID " + restaurantId + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
         }
-    
+    }
+
 }

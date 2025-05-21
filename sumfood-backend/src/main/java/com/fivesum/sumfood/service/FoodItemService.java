@@ -39,7 +39,12 @@ public class FoodItemService {
     }
 
     public List<FoodItemResponse> getFoodItemByRestaurant(Restaurant restaurant) {
-        List<FoodItem> foodItems = foodItemRepository.findByRestaurant(restaurant);
+        List<FoodItem> foodItems = foodItemRepository.findByRestaurantAndIsDonated(restaurant, false);
+        return foodItems.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
+    }
+
+    public List<FoodItemResponse> getDonatedFoodItemByRestaurant(Restaurant restaurant) {
+        List<FoodItem> foodItems = foodItemRepository.findByRestaurantAndIsDonated(restaurant, true);
         return foodItems.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
     }
 
