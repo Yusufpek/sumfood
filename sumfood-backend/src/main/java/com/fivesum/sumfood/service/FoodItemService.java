@@ -16,8 +16,6 @@ import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.enums.Category;
 import com.fivesum.sumfood.repository.FoodItemRepository;
-import com.fivesum.sumfood.service.CustomerService;
-import com.fivesum.sumfood.service.RestaurantService;
 
 import lombok.AllArgsConstructor;
 
@@ -26,7 +24,6 @@ import lombok.AllArgsConstructor;
 public class FoodItemService {
 
     private final FoodItemRepository foodItemRepository;
-    private final CustomerService customerService;
     private final RestaurantService restaurantService;
 
     public FoodItem getById(Long id) {
@@ -109,8 +106,11 @@ public class FoodItemService {
                     .isDonated(true)
                     .restaurant(foodItem.getRestaurant())
                     .imageName(foodItem.getImageName())
-                    .categories(foodItem.getCategories())
+                    .categories(new ArrayList<Category>())
                     .build();
+            for (Category category : foodItem.getCategories()) {
+                item.getCategories().add(category);
+            }
         }
         foodItemRepository.save(item);
         decreaseStock(foodItem);
