@@ -1,6 +1,7 @@
 package com.fivesum.sumfood.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -14,5 +15,7 @@ public interface FoodItemRepository extends JpaRepository<FoodItem, Long> {
     List<FoodItem> findByCategoriesContaining(Category category);
 
     List<FoodItem> findByRestaurant(Restaurant restaurant);
+
+    Optional<FoodItem> findByIsDonatedAndImageName(boolean isDonated, String imageName);
 
 }
