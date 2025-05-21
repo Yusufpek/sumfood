@@ -86,6 +86,38 @@ public class FoodItemService {
     }
 
     @Transactional
+    public FoodItemResponse decreaseStock(FoodItem foodItem) {
+        foodItem.setStock(foodItem.getStock() - 1);
+        foodItemRepository.save(foodItem);
+        return toResponseDTO(foodItem);
+    }
+
+    @Transactional
+    public FoodItemResponse addDonatedFoodItem(FoodItem foodItem) {
+        Optional<FoodItem> existingDonationItem = foodItemRepository.findByIsDonatedAndImageName(true,
+                foodItem.getImageName());
+        FoodItem item;
+        if (existingDonationItem.isPresent()) {
+            item = existingDonationItem.get();
+            item.setStock(item.getStock() + 1);
+        } else {
+            item = FoodItem.builder()
+                    .name(foodItem.getName())
+                    .description(foodItem.getDescription())
+                    .price(0)
+                    .stock(1)
+                    .isDonated(true)
+                    .restaurant(foodItem.getRestaurant())
+                    .imageName(foodItem.getImageName())
+                    .categories(foodItem.getCategories())
+                    .build();
+        }
+        foodItemRepository.save(item);
+        decreaseStock(foodItem);
+        return toResponseDTO(item);
+    }
+
+    @Transactional
     public FoodItemResponse updateFoodItem(FoodItemAddRequest request, Long id) {
         Optional<FoodItem> foodItemOptional = foodItemRepository.findById(id);
         if (foodItemOptional.isPresent()) {
