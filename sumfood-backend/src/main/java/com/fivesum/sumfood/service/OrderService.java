@@ -114,7 +114,7 @@ public class OrderService {
 				.shoppingCart(shoppingCart)
 				.customer(customer)
 				.paymentStatus(paymentStatus)
-				.orderStatus(OrderStatus.PENDING)
+				.orderStatus(OrderStatus.DONATED)
 				.orderType(OrderType.DONATION)
 				.build();
 		shoppingCartService.disableShoppingCart(shoppingCart);
@@ -139,6 +139,7 @@ public class OrderService {
 		pastStatusList.add(OrderStatus.FAILED);
 		pastStatusList.add(OrderStatus.CANCELLED);
 		pastStatusList.add(OrderStatus.DELIVERED);
+		pastStatusList.add(OrderStatus.DONATED);
 
 		List<Order> orders = orderRepository.findByCustomerAndOrderStatusIn(customer, pastStatusList);
 		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
