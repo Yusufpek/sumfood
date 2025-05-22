@@ -40,7 +40,7 @@ public class Order extends EntityBase {
     @Column(nullable = false)
     private OrderStatus orderStatus;
 
-    @Column(nullable = false, length = 500)
+    @Column(nullable = true, length = 500)
     private String address;
 
     @Column(nullable = true)

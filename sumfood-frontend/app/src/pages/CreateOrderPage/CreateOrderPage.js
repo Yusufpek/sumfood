@@ -5,7 +5,6 @@ import Footer from '../../components/layout/Footer';
 import './CreateOrderPage.css';
 import axios from 'axios';
 
-
 const CreateOrderPage = () => {
     // --- State (Updated: Removed category list state) ---
     const FOOD_IMAGE_BASE = "http://localhost:8080/api/food/public/image/";
@@ -14,16 +13,16 @@ const CreateOrderPage = () => {
     const [loading, setLoading] = useState(true);
 
     // --- Cart State ---
-    const [cart, setCart] = useState([]);
+    const [cart, setCart] = useState(null);
 
     const navigate = useNavigate();
 
     // --- Effects (keep as is) ---
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
+        const localToken = localStorage.getItem('token');
+        if (localToken) {
             setIsLoggedIn(true);
-            setToken(token);
+            setToken(localToken);
         } else {
             navigate("/login");
         }
@@ -31,30 +30,52 @@ const CreateOrderPage = () => {
 
     useEffect(() => {
         const fetchShoppingCart = async () => {
-            setCart(null);
             try {
-                const token = localStorage.getItem('token');
-                if (!token) {
+                const currentToken = localStorage.getItem('token');
+                if (!currentToken) {
+                    setCart(null);
                     return;
                 }
                 const cartResponse = await axios.get('http://localhost:8080/api/shopping_cart/', {
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${currentToken}`,
                         'Role': 'CUSTOMER'
                     }
                 });
                 console.log('fetched shopping cart:', cartResponse.data);
                 setCart(cartResponse.data);
             } catch (err) {
-                setCart(null);
+                if (err.response && err.response.status === 404) {
+                    setCart(null); // Cart not found, set to null
+                } else {
+                    console.error("Error fetching shopping cart for create order page:", err);
+                    setCart(null); // Set to null on other errors too
+                }
             }
         };
         fetchShoppingCart();
     }, []);
 
     const updateQuantity = async (cartId, itemId, amount) => {
-        if (!token) {
-            navigate("/");
+        const currentToken = localStorage.getItem('token');
+        if (!currentToken) {
+            navigate("/login");
+            return;
+        }
+        const itemToUpdate = cart?.items?.find(item => item.foodItemId === itemId);
+        if (itemToUpdate && itemToUpdate.price === 0 && amount > 0) {
+            alert("Donated items quantity cannot be increased.");
+            return;
+        }
+        
+        if (itemToUpdate && itemToUpdate.amount + amount < 1 && (itemToUpdate.amount * -1 !== amount)) {
+             // This condition means we are trying to decrement below 1, but not removing the item entirely.
+             // For donated items, this means they can only be removed, not decremented to 0.
+             // For regular items, this logic already prevents going below 1.
+            if (itemToUpdate.price === 0) {
+                 alert("Donated items can only be removed, not reduced to zero quantity.");
+                 return;
+            }
         }
         try {
             const response = await axios.post('http://localhost:8080/api/shopping_cart/update/',
@@ -65,40 +86,41 @@ const CreateOrderPage = () => {
                 },
                 {
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${currentToken}`,
                         'Role': 'CUSTOMER'
                     }
                 });
 
-            console.log(amount);
-            console.log('updating shopping cart item amount:', response.data);
+            console.log('Updated quantity by:', amount);
+            console.log('Updating shopping cart item amount response:', response.data);
             setCart(response.data);
+            window.dispatchEvent(new Event('cart-updated'));
         } catch (err) {
-            console.error("Error creating shopping cart:", err);
-            setCart(null);
+            console.error("Error updating shopping cart quantity:", err); 
         }
     };
 
     // --- Place Order Function ---
     const createOrder = async () => {
-        const token = localStorage.getItem('token');
+        const currentToken = localStorage.getItem('token');
 
-        if (!token) {
-            navigate("/");
+        if (!currentToken) {
+            navigate("/login"); // Redirect if no token
+            return;
         }
-        console.log("token");
-        console.log(token);
+        console.log("Placing order with token:", currentToken);
         try {
             const response = await axios.post('http://localhost:8080/api/order/', {},
                 {
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${currentToken}`,
                         'Role': 'CUSTOMER'
                     }
                 });
 
-            console.log('create order:', response.data);
-            // setCart(response.data);
+            console.log('Create order response:', response.data);
+            setCart(null);
+            window.dispatchEvent(new Event('cart-updated'));
             navigate("/orders");
         } catch (err) {
             console.error("Error creating order:", err);
@@ -112,13 +134,13 @@ const CreateOrderPage = () => {
             <Navbar isLoggedIn={isLoggedIn} username={`User`} />
 
             <main className="main-content">
-                {cart && (
-                    <div className="cart-section-container"> {/* New container for centering */}
+                                {cart && (
+                    <div className="cart-section-container">
                         <div className="cart-container">
                             <h2>Your Shopping Cart</h2>
-                            {!cart.items ? (
+                            {(!cart.items || cart.items.length === 0) ? (
                                 <p>Your cart is empty. Add some items!</p>
-                            ) : cart.items.length > 0 ? (
+                            ) : (
                                 <>
                                     <table className="cart-table">
                                         <thead>
@@ -132,20 +154,36 @@ const CreateOrderPage = () => {
                                         </thead>
                                         <tbody>
                                             {cart.items.map(item => {
+                                                const isDonated = item.price === 0;
                                                 return (
                                                     <tr key={item.foodItemId} className="cart-item">
-                                                        <td>{item.foodItemName}</td>
-                                                        <td>${item.price}</td>
+                                                        <td>{item.foodItemName} {isDonated && <span className="donation-tag-inline">(Donation)</span>}</td>
+                                                        <td>${Number(item.price).toFixed(2)}</td>
                                                         <td>
                                                             <div className="quantity-controls">
-                                                                <button onClick={() => updateQuantity(cart.id, item.foodItemId, -1)} disabled={item.qty <= 1}>-</button>
+                                                                <button 
+                                                                    onClick={() => updateQuantity(cart.id, item.foodItemId, -1)} 
+                                                                    disabled={item.amount <= 1 || isDonated}
+                                                                >
+                                                                    -
+                                                                </button>
                                                                 <span>{item.amount}</span>
-                                                                <button onClick={() => updateQuantity(cart.id, item.foodItemId, 1)}>+</button>
+                                                                <button 
+                                                                    onClick={() => updateQuantity(cart.id, item.foodItemId, 1)}
+                                                                    disabled={isDonated}
+                                                                >
+                                                                    +
+                                                                </button>
                                                             </div>
                                                         </td>
-                                                        <td>${(item.price * item.amount)}</td>
+                                                        <td>${(item.price * item.amount).toFixed(2)}</td>
                                                         <td>
-                                                            <button className="btn-remove" onClick={() => updateQuantity(cart.id, item.foodItemId, item.amount * -1)}>×</button>
+                                                            <button 
+                                                                className="btn-remove" 
+                                                                onClick={() => updateQuantity(cart.id, item.foodItemId, item.amount * -1)}
+                                                            >
+                                                                ×
+                                                            </button>
                                                         </td>
                                                     </tr>
                                                 )
@@ -153,22 +191,20 @@ const CreateOrderPage = () => {
                                         </tbody>
                                     </table>
                                     <div className="cart-total">
-                                        <strong>Total: ${cart.totalPrice.toFixed(2)}</strong>
+                                        <strong>Total: ${cart.totalPrice ? cart.totalPrice.toFixed(2) : '0.00'}</strong>
                                     </div>
                                     <button
                                         className="btn btn-place-order"
-                                        disabled={cart.items.length === 0}
+                                        disabled={!cart.items || cart.items.length === 0}
                                         onClick={createOrder}
                                     >
                                         Order
                                     </button>
                                 </>
-                            ) : null /* Don't show table/total/button if cart is empty after success */}
+                            )}
                         </div>
                     </div>)}
-
             </main>
-
             <Footer />
         </div>
     );

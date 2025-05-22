@@ -16,8 +16,6 @@ import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.enums.Category;
 import com.fivesum.sumfood.repository.FoodItemRepository;
-import com.fivesum.sumfood.service.CustomerService;
-import com.fivesum.sumfood.service.RestaurantService;
 
 import lombok.AllArgsConstructor;
 
@@ -26,15 +24,15 @@ import lombok.AllArgsConstructor;
 public class FoodItemService {
 
     private final FoodItemRepository foodItemRepository;
-    private final CustomerService customerService;
     private final RestaurantService restaurantService;
 
     public FoodItem getById(Long id) {
         return foodItemRepository.getById(id);
     }
 
+    // get all food items that are not donated
     public List<FoodItem> getAllFoodItems() {
-        return foodItemRepository.findAll();
+        return foodItemRepository.findByIsDonated(false);
     }
 
     public List<FoodItem> getItemsByCategory(Category category) {
@@ -42,8 +40,16 @@ public class FoodItemService {
     }
 
     public List<FoodItemResponse> getFoodItemByRestaurant(Restaurant restaurant) {
-        List<FoodItem> foodItems = foodItemRepository.findByRestaurant(restaurant);
+        List<FoodItem> foodItems = foodItemRepository.findByRestaurantAndIsDonated(restaurant, false);
         return foodItems.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
+    }
+
+    public List<FoodItemResponse> getDonatedFoodItemByRestaurant(Restaurant restaurant) {
+        List<FoodItem> foodItems = foodItemRepository.findByRestaurantAndIsDonated(restaurant, true);
+        return foodItems.stream()
+                .filter(item -> item.getStock() > 0)
+                .map(item -> toResponseDTO(item))
+                .collect(Collectors.toList());
     }
 
     public List<FoodItemResponse> getFoodItemsByCustomer(Customer customer, double maxDistance) {
@@ -83,6 +89,48 @@ public class FoodItemService {
         foodItem.getCategories().add(request.getCategory());
         foodItemRepository.save(foodItem);
         return toResponseDTO(foodItem);
+    }
+
+    @Transactional
+    public FoodItemResponse decreaseStock(FoodItem foodItem) {
+        foodItem.setStock(foodItem.getStock() - 1);
+        foodItemRepository.save(foodItem);
+        return toResponseDTO(foodItem);
+    }
+
+    @Transactional
+    public FoodItemResponse increaseStock(FoodItem foodItem, int amount) {
+        foodItem.setStock(foodItem.getStock() + amount);
+        foodItemRepository.save(foodItem);
+        return toResponseDTO(foodItem);
+    }
+
+    @Transactional
+    public FoodItemResponse addDonatedFoodItem(FoodItem foodItem, int amount) {
+        Optional<FoodItem> existingDonationItem = foodItemRepository.findByIsDonatedAndImageName(true,
+                foodItem.getImageName());
+        FoodItem item;
+        if (existingDonationItem.isPresent()) {
+            item = existingDonationItem.get();
+            item.setStock(item.getStock() + amount);
+        } else {
+            item = FoodItem.builder()
+                    .name(foodItem.getName())
+                    .description(foodItem.getDescription())
+                    .price(0)
+                    .stock(amount)
+                    .isDonated(true)
+                    .restaurant(foodItem.getRestaurant())
+                    .imageName(foodItem.getImageName())
+                    .categories(new ArrayList<Category>())
+                    .build();
+            for (Category category : foodItem.getCategories()) {
+                item.getCategories().add(category);
+            }
+        }
+        foodItemRepository.save(item);
+        decreaseStock(foodItem);
+        return toResponseDTO(item);
     }
 
     @Transactional

@@ -544,3 +544,67 @@
       text-align: left;
     }
   }
+
+/* Donation Section Styles */
+.donation-offer-section {
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.donation-offer-prompt {
+    color: #0f5132;
+    font-size: 1.1em;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.donation-item-card {
+    border-left: 4px solid #198754;
+    background-color: #f0fff0;
+}
+
+.donation-tag {
+    font-size: 0.8em;
+    color: #198754;
+    background-color: #d1e7dd;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 5px;
+}
+
+.free-donation-tag {
+    display: block;
+    font-size: 0.8em;
+    color: #0f5132;
+    margin-top: 4px;
+}
+
+.item-stock-info {
+    color: #666;
+    font-size: 0.9em;
+    margin: 5px 0;
+}
+
+.out-of-stock {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.add-donation-item-btn {
+    background-color: #198754;
+}
+
+.add-donation-item-btn:hover {
+    background-color: #146c43;
+}
+
+.add-donation-item-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.donation-category-title {
+    color: #198754;
+}

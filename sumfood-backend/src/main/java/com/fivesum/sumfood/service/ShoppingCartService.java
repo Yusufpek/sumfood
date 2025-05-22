@@ -45,7 +45,12 @@ public class ShoppingCartService {
         orderRestaurant = restaurantService.getRestaurantById(request.getRestaurantId());
 
         FoodItem foodItem = foodItemService.getById(request.getFoodItemId());
-        calculatedTotalPrice = foodItem.getPrice() * request.getFoodItemCount();
+        if (foodItem.getStock() <= 0) {
+            throw new InvalidRequestException("Invalid request, food item has no stock!");
+        }
+        if (!foodItem.isDonated()) {
+            calculatedTotalPrice = foodItem.getPrice() * request.getFoodItemCount();
+        }
 
         ShoppingCart shoppingCart = ShoppingCart.builder()
                 .customer(customer)
@@ -85,13 +90,16 @@ public class ShoppingCartService {
         }
 
         ShoppingCart shoppingCart = this.getShoppingCartById(request.getShoppingCartId());
+        calculatedTotalPrice = shoppingCart.getTotalPrice();
 
         if (shoppingCart.getCustomer() != customer) {
             throw new UnauthorizedAccessException("You are not allowed to update this shopping cart.");
         }
 
         FoodItem foodItem = foodItemService.getById(request.getFoodItemId());
-        calculatedTotalPrice = foodItem.getPrice() * request.getFoodItemCount();
+        if (foodItem.getStock() <= 0 && request.getFoodItemCount() > 0) {
+            throw new InvalidRequestException("Invalid request, food item has no stock!");
+        }
 
         if (foodItem.getRestaurant() != shoppingCart.getRestaurant()) {
             throw new ConflictException("Cannot add items from different restaurants to the same cart.");
@@ -110,28 +118,32 @@ public class ShoppingCartService {
                     .build();
 
             shoppingCartItemRepository.save(shoppingCardItem);
-
-            calculatedTotalPrice = shoppingCart.getTotalPrice() + request.getFoodItemCount() * foodItem.getPrice();
+            if (!foodItem.isDonated())
+                calculatedTotalPrice = shoppingCart.getTotalPrice() + request.getFoodItemCount() * foodItem.getPrice();
         } else {
             // update relation
             if (request.getFoodItemCount() + updateItem.getAmount() < 0) {
                 throw new ConflictException("Cannot remove more items than exist in the cart.");
             } else if (request.getFoodItemCount() + updateItem.getAmount() == 0) {
-                calculatedTotalPrice = shoppingCart.getTotalPrice()
-                        - updateItem.getAmount() * updateItem.getFoodItem().getPrice();
+                if (!foodItem.isDonated())
+                    calculatedTotalPrice = shoppingCart.getTotalPrice()
+                            - updateItem.getAmount() * updateItem.getFoodItem().getPrice();
+
                 List<ShoppingCartFoodItemRelation> items = shoppingCart.getItems();
                 items.remove(updateItem);
                 shoppingCartItemRepository.delete(updateItem);
-                if (calculatedTotalPrice == 0) {
+                if (!foodItem.isDonated() && calculatedTotalPrice == 0) {
                     shoppingCartRepository.delete(shoppingCart);
                 }
             } else {
                 updateItem.setAmount(updateItem.getAmount() + request.getFoodItemCount());
-                calculatedTotalPrice = shoppingCart.getTotalPrice() + foodItem.getPrice() * request.getFoodItemCount();
                 shoppingCartItemRepository.save(updateItem);
+                if (!foodItem.isDonated())
+                    calculatedTotalPrice = shoppingCart.getTotalPrice()
+                            + foodItem.getPrice() * request.getFoodItemCount();
             }
         }
-        if (calculatedTotalPrice != 0) {
+        if (foodItem.isDonated() || calculatedTotalPrice != 0) {
             shoppingCart.setTotalPrice(calculatedTotalPrice);
             shoppingCartRepository.save(shoppingCart);
             return mapToDTO(shoppingCart);

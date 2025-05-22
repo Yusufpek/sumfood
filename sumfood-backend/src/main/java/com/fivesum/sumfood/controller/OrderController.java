@@ -55,6 +55,27 @@ public class OrderController {
 
     }
 
+    @Transactional
+    @PostMapping("/donate/")
+    public ResponseEntity<?> createDonationOrder(@RequestHeader("Authorization") String token) {
+        String email = jwtService.extractUsername(token.replace("Bearer ", ""));
+
+        Optional<Customer> customer = customerService.findByEmail(email);
+        if (customer.isPresent()) {
+            try {
+                OrderResponse response = orderService.createDonationOrder(customer.get());
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            } catch (InvalidRequestException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("An unexpected error occurred: " + e.getMessage());
+            }
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+    }
+
     @GetMapping("/orders")
     public ResponseEntity<?> getOrders(@RequestHeader("Authorization") String token) {
         try {
