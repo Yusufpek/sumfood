@@ -46,7 +46,10 @@ public class FoodItemService {
 
     public List<FoodItemResponse> getDonatedFoodItemByRestaurant(Restaurant restaurant) {
         List<FoodItem> foodItems = foodItemRepository.findByRestaurantAndIsDonated(restaurant, true);
-        return foodItems.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
+        return foodItems.stream()
+        .filter(item -> item.getStock() > 0)
+        .map(item -> toResponseDTO(item))
+        .collect(Collectors.toList());
     }
 
     public List<FoodItemResponse> getFoodItemsByCustomer(Customer customer, double maxDistance) {
