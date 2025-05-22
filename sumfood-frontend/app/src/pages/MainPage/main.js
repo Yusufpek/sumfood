@@ -15,7 +15,8 @@ const ENDPOINTS = {
   CUSTOMER: `${API_BASE_URL}/customer/`,
   CUSTOMER_ADDRESS: `${API_BASE_URL}/customer/address/`,
   SHOPPING_CART: `${API_BASE_URL}/shopping_cart/`,
-  UPDATE_CART: `${API_BASE_URL}/shopping_cart/update/`
+  UPDATE_CART: `${API_BASE_URL}/shopping_cart/update/`,
+  PUBLIC_WHEELS: `${API_BASE_URL}/wheels/public`
 };
 
 // --- Simplified helper function for category grouping ---
@@ -441,16 +442,15 @@ const MainPage = () => {
       
       setSpinwheels(prevState => ({ ...prevState, loading: true, error: null }));
       try {
-        const response = await axios.get(`${API_BASE_URL}/restaurant/spinwheel/public/all`);
+        const response = await axios.get(ENDPOINTS.PUBLIC_WHEELS + '/all');
         console.log('Fetched spinwheels:', response.data);
         const items = Array.isArray(response.data) ? response.data : [];
         setSpinwheels(prevState => ({ ...prevState, items }));
       } catch (err) {
         console.error("Error fetching spinwheels:", err);
-        // Don't show error for spinwheels as they might not be implemented yet
         setSpinwheels(prevState => ({
           ...prevState,
-          error: null,
+          error: "Couldn't load spinwheels right now.",
           items: []
         }));
       } finally {
@@ -604,38 +604,68 @@ const MainPage = () => {
       <main className="main-content">
         {(!userState.isLoggedIn || addressState.selectedAddress) && (
           <>
-            {/* Spinwheel section */}
-            {spinwheels.items.length > 0 && (
-              <div className="spinwheel-section">
-                <h2>Try Your Luck with Restaurant Spinwheels!</h2>
-                <div className="spinwheel-display">
+            {/* Spinwheel section - Enhanced and always visible */}
+            <div className="spinwheel-featured-section">
+              <div className="section-header">
+                <h2>
+                  <span className="emoji-icon">🎡</span> 
+                  Restaurant Spinwheels 
+                  <span className="emoji-icon">🎲</span>
+                </h2>
+                <p className="section-subheading">Try your luck and win delicious mystery items!</p>
+              </div>
+
+              {spinwheels.loading ? (
+                <div className="spinwheel-loading">
+                  <div className="spinner"></div>
+                  <p>Discovering exciting spinwheels for you...</p>
+                </div>
+              ) : spinwheels.error ? (
+                <div className="spinwheel-error">
+                  <p>{spinwheels.error}</p>
+                </div>
+              ) : spinwheels.items.length === 0 ? (
+                <div className="spinwheel-empty">
+                  <p>No spinwheels available right now. Check back later!</p>
+                  <p className="spinwheel-hint">Restaurants are creating exciting spinwheels for you to try.</p>
+                </div>
+              ) : (
+                <div className="spinwheel-carousel">
                   {spinwheels.items.map(wheel => (
                     <div key={wheel.id} className="spinwheel-card-display">
                       <div className="spinwheel-card-image">
-                        <span className="spinwheel-badge">Spin & Win</span>
-                        <img 
-                          src={`${API_BASE_URL}/restaurant/public/image/${wheel.restaurant.logoName}`} 
-                          alt={wheel.restaurant.displayName}
-                          onError={(e) => {e.target.src = '/placeholder-restaurant.png';}}
-                        />
+                        <span className="spinwheel-badge">Spin & Win!</span>
+                        <div className="wheel-icon">
+                          <div className="wheel-circle">
+                            <span role="img" aria-label="wheel">🎡</span>
+                          </div>
+                          {wheel.restaurantName && (
+                            <div className="restaurant-badge">
+                              {wheel.restaurantName.slice(0, 1).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className="spinwheel-card-info">
                         <h3>{wheel.name}</h3>
-                        <p>{wheel.description || `Try your luck at ${wheel.restaurant.displayName}`}</p>
-                        <p>From: <strong>{wheel.restaurant.displayName}</strong></p>
-                        <span className="spinwheel-card-price">${wheel.price.toFixed(2)} per spin</span>
+                        <p>{wheel.description || `Try your luck at ${wheel.restaurantName}` || 'Spin for a surprise meal!'}</p>
+                        <p className="restaurant-name">
+                          <span role="img" aria-label="restaurant">🍽️</span> 
+                          <strong>{wheel.restaurantName || 'Restaurant'}</strong>
+                        </p>
+                        <span className="spinwheel-card-price">${wheel.price ? wheel.price.toFixed(2) : '5.00'} per spin</span>
                       </div>
                       <button 
                         className="try-btn"
-                        onClick={() => navigate(`/restaurant/${wheel.restaurant.id}/spinwheel/${wheel.id}`)}
+                        onClick={() => navigate(`/restaurant/${wheel.restaurantId}/spinwheel/${wheel.id}`)}
                       >
                         Try Your Luck!
                       </button>
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             <div className="food-items-container">
               <h2 style={{ textAlign: 'center' }}>Available Food Items</h2>
