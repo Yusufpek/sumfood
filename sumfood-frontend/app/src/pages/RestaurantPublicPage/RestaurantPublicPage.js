@@ -18,6 +18,8 @@ const SHOPPING_CART_ENDPOINT = `${API_BASE_URL}/shopping_cart/`;
 const UPDATE_CART_ENDPOINT = `${API_BASE_URL}/shopping_cart/update/`;
 const PUBLIC_RESTAURANT_DONATED_ITEMS = (id) => `${API_BASE_URL}/food/public/restaurant/${id}/donated-items`;
 
+const FAVORITE_RESTAURANT_STATUS = (id) => `${API_BASE_URL}/customer/restaurants/fav/${id}`;
+const REMOVE_FAVORITE_RESTAURANT = (id) => `${API_BASE_URL}/customer/restaurants/fav/${id}`;
 
 // --- Helper Functions (Keep as is) ---
 const formatErrorMessage = (err, defaultMessage) => {
@@ -75,6 +77,9 @@ function RestaurantPublicPage() {
   const [loadingReviews, setLoadingReviews] = useState(true);
   const [loadingOfferedDonations, setLoadingOfferedDonations] = useState(true);
   const [error, setError] = useState(null);
+
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [processingFavorite, setProcessingFavorite] = useState(false);
 
   const [cartConflict, setCartConflict] = useState({
     show: false,
@@ -212,7 +217,61 @@ function RestaurantPublicPage() {
         setLoadingOfferedDonations(false);
     }
   }, [restaurantId]);
-  
+
+  useEffect(() => {
+      const fetchFavoriteStatus = async () => {
+          const token = localStorage.getItem('token');
+          if (!token || !restaurantId) return;
+          try {
+              const response = await axios.get(FAVORITE_RESTAURANT_STATUS(restaurantId), {
+                  headers: { 'Authorization': `Bearer ${token}`, 'Role': 'CUSTOMER' }
+              });
+              console.log("Favorite status response:", response);
+              console.log("Is Favorite:", response.data);
+              setIsFavorite(response.data || false);
+          } catch (err) {
+              console.error("Error fetching favorite status:", err);
+              setIsFavorite(false);
+          }
+      };
+
+    if (localStorage.getItem('token')) {
+         fetchFavoriteStatus();
+    }
+}, [restaurantId]);
+
+  const handleToggleFavorite = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+          navigate('/login');
+          return;
+      }
+      if (!restaurantData || processingFavorite) return;
+
+      setProcessingFavorite(true);
+      setError(null);
+
+    try {
+      await axios.put(
+            REMOVE_FAVORITE_RESTAURANT(restaurantData.id), 
+            {}, // empty body
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Role': 'CUSTOMER'
+                }
+            }
+        );
+
+      setIsFavorite(!isFavorite);
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+      setError(`Could not ${isFavorite ? 'remove from' : 'add to'} favorites.`);
+    } finally {
+      setProcessingFavorite(false);
+    }
+  };
+
 
   const handleClearCartAndAdd = async () => {
     const item = cartConflict.newItem;
@@ -422,6 +481,8 @@ function RestaurantPublicPage() {
               onError={(e) => {e.target.src = '/placeholder-restaurant.png';}}
             />
           </div>
+
+
           
           <div className="restaurant-header-info">
             <h1>{restaurantData.displayName || restaurantData.name || 'Restaurant'}</h1>
@@ -439,6 +500,22 @@ function RestaurantPublicPage() {
               <span className="no-rating">Not Rated Yet</span>
             )}
           </div>
+
+          <div className="restaurant-actions">
+            <button
+              className={`favorite-button ${isFavorite ? 'favorited' : ''}`}
+              onClick={handleToggleFavorite}
+              disabled={processingFavorite || !localStorage.getItem('token')}
+              title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            >
+              <span className="heart-icon">
+                {isFavorite ? '❤️' : '♡'}
+              </span>
+              {processingFavorite ? <span className="processing-dots">...</span> : ''}
+            </button>
+          </div>
+
+
         </header>
 
         {error && restaurantData && <p className="error-message warning">{error}</p>}
