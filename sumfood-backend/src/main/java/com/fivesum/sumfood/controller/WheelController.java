@@ -79,6 +79,18 @@ public class WheelController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    @PostMapping("restaurant/add_bulk_to_wheel/{wheelId}")
+    public ResponseEntity<WheelResponse> addBulkItemsToWheel(
+            @RequestHeader("Authorization") String token, @PathVariable Long wheelId,
+            @RequestBody List<Long> foodItemIds) {
+        String email = jwtService.extractUsername(token.substring(7));
+        Optional<Restaurant> restaurant = restaurantService.findByEmail(email);
+        if (restaurant.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK).body(wheelService.addBulkItemsToWheel(wheelId, foodItemIds, restaurant.get()));
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
     @DeleteMapping("restaurant/remove_from_wheel/{wheelId}/{foodItemId}")
     public ResponseEntity<WheelResponse> removeItemFromWheel(
             @RequestHeader("Authorization") String token, @PathVariable Long wheelId,

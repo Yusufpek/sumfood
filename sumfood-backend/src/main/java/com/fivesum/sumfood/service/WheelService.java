@@ -35,7 +35,7 @@ public class WheelService {
         }
         return toResponseDTO(wheel);
     }
-    
+
     public List<WheelResponse> getAllActiveWheels() {
         List<Wheel> wheels = wheelRepository.findAll();
         return wheels.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
@@ -46,13 +46,29 @@ public class WheelService {
         return toResponseDTO(wheel);
     } 
     public WheelResponse createWheel(Restaurant restaurant, WheelCreateRequest request) {
+        List<FoodItem> foodItems = new ArrayList<>();
+        if (request.getFoodItemIds() != null) {
+            for (Long foodItemId : request.getFoodItemIds()) {
+                FoodItem foodItem = foodItemService.getById(foodItemId);
+                foodItems.add(foodItem);
+            }
+        }
+
         Wheel wheel = Wheel.builder()
                 .restaurant(restaurant)
                 .title(request.getName())
                 .description(request.getDescription())
-                .price(0)
+                .price(request.getPrice())
                 .items(new ArrayList<>())
                 .build();
+        wheelRepository.save(wheel);
+        for (FoodItem foodItem : foodItems) {
+            WheelItemRelation item = WheelItemRelation.builder()
+                    .wheel(wheel)
+                    .foodItem(foodItem)
+                    .build();
+            wheel.getItems().add(item);
+        }
         wheelRepository.save(wheel);
         return toResponseDTO(wheel);
     }
@@ -71,7 +87,25 @@ public class WheelService {
                 .build();
         wheel.getItems().add(item);
         wheelRepository.save(wheel);
-        updatePrice(wheel);
+        return toResponseDTO(wheel);
+    }
+
+    public WheelResponse addBulkItemsToWheel(long wheelId, List<Long> foodItemIds, Restaurant restaurant) {
+        Wheel wheel = wheelRepository.findById(wheelId).orElseThrow(() -> new RuntimeException("Wheel not found"));
+
+        if (wheel.getRestaurant() != restaurant) {
+            throw new RuntimeException("Unauthorized access to this wheel");
+        }
+
+        for (Long foodItemId : foodItemIds) {
+            FoodItem foodItem = foodItemService.getById(foodItemId);
+            WheelItemRelation item = WheelItemRelation.builder()
+                    .wheel(wheel)
+                    .foodItem(foodItem)
+                    .build();
+            wheel.getItems().add(item);
+        }
+        wheelRepository.save(wheel);
         return toResponseDTO(wheel);
     }
 
@@ -89,7 +123,6 @@ public class WheelService {
 
         wheel.getItems().remove(itemToRemove);
         wheelRepository.save(wheel);
-        updatePrice(wheel);
         return toResponseDTO(wheel);
     }
 
@@ -123,17 +156,5 @@ public class WheelService {
                 .price(wheel.getPrice())
                 .items(items)
                 .build();
-    }
-
-    public void updatePrice(Wheel wheel) {
-        double newPrice = wheel.getItems().stream()
-                .mapToDouble(i -> i.getFoodItem().getPrice())
-                .sum();
-        if (wheel.getItems().size() > 0) {
-            wheel.setPrice(Math.round((newPrice / wheel.getItems().size()) * 100.0) / 100.0);
-        } else {
-            wheel.setPrice(0.0);
-        }
-        wheelRepository.save(wheel);
     }
 }
