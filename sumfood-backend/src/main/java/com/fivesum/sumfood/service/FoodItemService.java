@@ -30,8 +30,9 @@ public class FoodItemService {
         return foodItemRepository.getById(id);
     }
 
+    // get all food items that are not donated
     public List<FoodItem> getAllFoodItems() {
-        return foodItemRepository.findAll();
+        return foodItemRepository.findByIsDonated(false);
     }
 
     public List<FoodItem> getItemsByCategory(Category category) {

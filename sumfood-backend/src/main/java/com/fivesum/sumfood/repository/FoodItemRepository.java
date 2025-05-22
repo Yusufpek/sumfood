@@ -20,4 +20,6 @@ public interface FoodItemRepository extends JpaRepository<FoodItem, Long> {
 
     Optional<FoodItem> findByIsDonatedAndImageName(boolean isDonated, String imageName);
 
+    List<FoodItem> findByIsDonated(boolean isDonated);
+
 }
