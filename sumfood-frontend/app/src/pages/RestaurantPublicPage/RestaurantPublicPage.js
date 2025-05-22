@@ -11,18 +11,16 @@ import './RestaurantPublicPage.css'; // Create this CSS file
 // --- Constants ---
 const API_BASE_URL = 'http://localhost:8080/api';
 const FOOD_IMAGE_BASE = `${API_BASE_URL}/food/public/image/`;
-// This endpoint definition is CORRECT, assuming you add the corresponding method in the Java Controller
 const RESTAURANT_ENDPOINT = (id) => `${API_BASE_URL}/restaurant/public/${id}`;
-const MENU = (id) => `${API_BASE_URL}/food/items/restaurant/${id}`; // Changed from /food/public/items/restaurant/
-const REVIEWS_ENDPOINT = (id) => `${API_BASE_URL}/review/public/restaurant/${id}`; // Assumed handled by ReviewController
-// Cart endpoints (Assumed handled by ShoppingCartController)
+const MENU = (id) => `${API_BASE_URL}/food/items/restaurant/${id}`; 
+const REVIEWS_ENDPOINT = (id) => `${API_BASE_URL}/review/public/restaurant/${id}`;
 const SHOPPING_CART_ENDPOINT = `${API_BASE_URL}/shopping_cart/`;
 const UPDATE_CART_ENDPOINT = `${API_BASE_URL}/shopping_cart/update/`;
+const PUBLIC_RESTAURANT_DONATED_ITEMS = (id) => `${API_BASE_URL}/food/public/restaurant/${id}/donated-items`;
 
 
 // --- Helper Functions (Keep as is) ---
 const formatErrorMessage = (err, defaultMessage) => {
-    // ... (implementation unchanged)
     let displayError = defaultMessage || 'An unexpected error occurred.';
     if (err.response) {
         displayError = `Server error ${err.response.status}.`;
@@ -31,7 +29,6 @@ const formatErrorMessage = (err, defaultMessage) => {
         } else if (typeof err.response.data === 'string' && err.response.data.length < 200) {
           displayError += ` Details: ${err.response.data}`;
         } else if (err.response.data && typeof err.response.data === 'object') {
-             // Attempt to stringify simple objects, avoid large ones
              try {
                  const dataStr = JSON.stringify(err.response.data);
                  if (dataStr.length < 200) displayError += ` Details: ${dataStr}`;
@@ -46,14 +43,13 @@ const formatErrorMessage = (err, defaultMessage) => {
 };
 
 const groupItemsByCategory = (items) => {
-  // ... (implementation unchanged)
   if (!items || items.length === 0) return {};
   return items.reduce((acc, item) => {
     const categoryId = item.category_id || item.categoryId || item.category ||
                       (typeof item.categories === 'string' ? item.categories :
                        Array.isArray(item.categories) && item.categories.length > 0 ? item.categories[0] : null) ||
-                      'uncategorized'; // Ensure categoryId is a string
-    const categoryKey = String(categoryId); // Explicitly convert to string
+                      'uncategorized'; 
+    const categoryKey = String(categoryId); 
     if (!acc[categoryKey]) {
       acc[categoryKey] = [];
     }
@@ -68,20 +64,18 @@ function RestaurantPublicPage() {
   const { restaurantId } = useParams();
   const navigate = useNavigate();
 
-
-  // State for different data parts
   const [restaurantData, setRestaurantData] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [offeredDonationItems, setOfferedDonationItems] = useState([]);
   const [cart, setCart] = useState(null);
 
-  // Loading and Error States
   const [loadingRestaurant, setLoadingRestaurant] = useState(true);
   const [loadingMenu, setLoadingMenu] = useState(true);
   const [loadingReviews, setLoadingReviews] = useState(true);
+  const [loadingOfferedDonations, setLoadingOfferedDonations] = useState(true);
   const [error, setError] = useState(null);
 
-   // Cart conflict state
   const [cartConflict, setCartConflict] = useState({
     show: false,
     newItem: null,
@@ -89,13 +83,11 @@ function RestaurantPublicPage() {
     newRestaurant: null
   });
 
-  // Fetch restaurant details - Uses RESTAURANT_ENDPOINT
   useEffect(() => {
     const fetchRestaurantDetails = async () => {
       setLoadingRestaurant(true);
-      setError(null); // Reset error specific to this fetch
+      setError(null); 
       try {
-        // This endpoint MUST exist on the backend (GET /api/restaurant/public/{id})
         const response = await axios.get(RESTAURANT_ENDPOINT(restaurantId));
         setRestaurantData(response.data);
         setImage(IMAGEBASE + response.data.logoName);
@@ -108,26 +100,22 @@ function RestaurantPublicPage() {
       }
     };
     fetchRestaurantDetails();
-  }, [restaurantId]);
+  }, [restaurantId, IMAGEBASE]);
 
-  // Fetch menu items - Uses MENU_ENDPOINT (Assumed correct)
-    // Inside RestaurantPublicPage component
     useEffect(() => {
         const fetchMenuItems = async () => {
           setLoadingMenu(true);
           try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(MENU(restaurantId), {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Role': 'CUSTOMER'
-              }
-            });
+            const headers = {};
+            if (token) { 
+                headers['Authorization'] = `Bearer ${token}`;
+                headers['Role'] = 'CUSTOMER';
+            }
+            const response = await axios.get(MENU(restaurantId), { headers });
             
-            // Add logging to debug the response
             console.log('Menu items response:', response.data);
             
-            // Handle different response structures
             const items = Array.isArray(response.data) 
               ? response.data 
               : response.data.items || response.data.foodItems || [];
@@ -150,8 +138,6 @@ function RestaurantPublicPage() {
         }
       }, [restaurantId]);
 
-  // Fetch reviews - Uses REVIEWS_ENDPOINT (Assumed correct)
-  // Using mock data as before, replace with actual fetch when ready
   useEffect(() => {
     const fetchReviews = async () => {
       if(!restaurantId){
@@ -163,7 +149,7 @@ function RestaurantPublicPage() {
       try{
         const response = await axios.get(REVIEWS_ENDPOINT(restaurantId));
         console.log('Reviews response:', response.data);
-        const fetchedReviews = Array.isArray(response.data) ? response.data : response.data.reviews || response.data;
+        const fetchedReviews = Array.isArray(response.data) ? response.data : response.data.reviews || response.data.content || response.data || [];
         setReviews(fetchedReviews);
       }
       catch (err) {
@@ -181,7 +167,6 @@ function RestaurantPublicPage() {
     fetchReviews();
   }, [restaurantId]);
 
-   // Fetch current cart (Keep as is - Assumed correct)
    useEffect(() => {
     const fetchShoppingCart = async () => {
       const token = localStorage.getItem('token');
@@ -202,25 +187,46 @@ function RestaurantPublicPage() {
     fetchShoppingCart();
   }, []);
 
+  useEffect(() => {
+    const fetchOfferedDonationItems = async () => {
+        if (!restaurantId) {
+            setLoadingOfferedDonations(false);
+            return;
+        }
+        setLoadingOfferedDonations(true);
+        try {
+            const response = await axios.get(PUBLIC_RESTAURANT_DONATED_ITEMS(restaurantId));
+            console.log('Offered Donation Items response:', response.data);
+            setOfferedDonationItems(Array.isArray(response.data) ? response.data : []);
+        } catch (err) {
+            console.error("Error fetching offered donation items:", err);
+            setError(prev => prev ? `${prev} | ${formatErrorMessage(err, 'Failed to load special donation items.')}` : formatErrorMessage(err, 'Failed to load special donation items.'));
+            setOfferedDonationItems([]);
+        } finally {
+            setLoadingOfferedDonations(false);
+        }
+    };
+    if (restaurantId) {
+        fetchOfferedDonationItems();
+    } else {
+        setLoadingOfferedDonations(false);
+    }
+  }, [restaurantId]);
   
 
-  // --- Cart Logic (Keep as is - Assumed correct) ---
   const handleClearCartAndAdd = async () => {
-    // ... (implementation unchanged)
     const item = cartConflict.newItem;
-    const currentCartRestaurantName = cartConflict.currentRestaurant; // Get name from conflict state
     setCartConflict({show: false, newItem: null, currentRestaurant: null, newRestaurant: null});
 
     if (!item) return;
 
     const token = localStorage.getItem('token');
     if (!token) {
-      navigate("/login"); // Redirect to login if not authenticated
+      navigate("/login"); 
       return;
     }
 
     try {
-       // Ensure cart is fetched before attempting delete/create
       let currentCart = cart;
       if (!currentCart) {
           try {
@@ -228,20 +234,18 @@ function RestaurantPublicPage() {
                   headers: { 'Authorization': `Bearer ${token}`, 'Role': 'CUSTOMER' }
               });
               currentCart = cartRes.data;
-              setCart(currentCart); // Update state
+              setCart(currentCart); 
           } catch (fetchErr) {
                if (!fetchErr.response || fetchErr.response.status !== 404) {
                   console.error("Error fetching cart before clear:", fetchErr);
-                  setError("Could not verify cart state. Please try again.");
+                  setError(formatErrorMessage(fetchErr, "Could not verify cart state. Please try again."));
                   return;
                }
           }
       }
 
-
-      // Clear the existing cart IF it exists
       if(currentCart && currentCart.id) {
-          await axios.delete(`${SHOPPING_CART_ENDPOINT}${currentCart.id}`, { // Use correct endpoint with ID
+          await axios.delete(`${SHOPPING_CART_ENDPOINT}${currentCart.id}`, { 
               headers: { 'Authorization': `Bearer ${token}`, 'Role': 'CUSTOMER' }
           });
           console.log('Cleared existing cart:', currentCart.id);
@@ -249,11 +253,9 @@ function RestaurantPublicPage() {
           console.log('No existing cart found to clear.');
       }
 
-
-      // Create a new cart with the selected item
       const response = await axios.post(SHOPPING_CART_ENDPOINT, {
         foodItemId: item.foodItemId,
-        restaurantId: item.restaurantId, // Ensure item has restaurantId
+        restaurantId: item.restaurantId, 
         foodItemCount: 1,
       }, {
         headers: { 'Authorization': `Bearer ${token}`, 'Role': 'CUSTOMER' }
@@ -261,7 +263,10 @@ function RestaurantPublicPage() {
 
       console.log('Created new shopping cart:', response.data);
       setCart(response.data);
-      window.dispatchEvent(new Event('cart-updated')); // Notify Navbar dropdown
+      window.dispatchEvent(new Event('cart-updated')); 
+      if (item.isDonated) {
+        navigate('/create_order');
+      }
     } catch (err) {
       console.error("Error clearing cart and adding item:", err);
       setError(formatErrorMessage(err, 'Failed to update cart.'));
@@ -269,79 +274,73 @@ function RestaurantPublicPage() {
     }
   };
 
-  const addToCart = async (itemToAdd) => {
-    // ... (implementation unchanged)
+  const addToCart = async (itemToAdd, isDonated = false) => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate("/login");
       return;
     }
-    if (!restaurantData) return; // Need restaurant data
+    if (!restaurantData) return; 
 
-    // Prepare item data for API (ensure IDs are correct)
     const apiItem = {
-        foodItemId: itemToAdd.foodItemId || itemToAdd.id, // Use foodItemId if available, else id
-        restaurantId: restaurantData.id, // Use the ID of the restaurant being viewed
+        foodItemId: itemToAdd.foodItemId || itemToAdd.id, 
+        restaurantId: restaurantData.id, 
         foodItemCount: 1
     };
 
     try {
-      // 1. Fetch the current cart status *right now*
       let currentCartData = null;
       try {
           const cartResponse = await axios.get(SHOPPING_CART_ENDPOINT, {
              headers: { 'Authorization': `Bearer ${token}`, 'Role': 'CUSTOMER' }
           });
           currentCartData = cartResponse.data;
-          setCart(currentCartData); // Update local state
+          setCart(currentCartData); 
       } catch (getCartErr) {
           if (!getCartErr.response || getCartErr.response.status !== 404) {
-              throw getCartErr; // Rethrow unexpected errors
+              console.error("Error fetching current cart status:", getCartErr);
+              setError(formatErrorMessage(getCartErr, "Could not verify your cart. Please try again."));
+              return; 
           }
           console.log("No active cart found, will create new.");
       }
 
-
-      // 2. Check for restaurant conflict
+      if (isDonated && currentCartData && currentCartData.items) {
+          const itemAlreadyInCart = currentCartData.items.find(cartItem => cartItem.foodItemId === apiItem.foodItemId);
+          if (itemAlreadyInCart) {
+              setError(`You have already claimed one "${itemToAdd.name}". Donated items can only be claimed once.`);
+              return;
+          }
+      }
       if (currentCartData && currentCartData.items && currentCartData.items.length > 0) {
         const existingRestaurantId = currentCartData.restaurantId;
         const newRestaurantId = apiItem.restaurantId;
 
         if (existingRestaurantId && existingRestaurantId !== newRestaurantId) {
-          // Conflict! Need restaurant name for the popup.
-          // Fetching *all* restaurants just for the name is inefficient.
-          // Ideally, the cart response should include the restaurant name.
-          // WORKAROUND: Use ID or a generic message if name not available.
-          // Fetch restaurant name for current cart (if needed and not available)
-          let currentRestoName = `Restaurant ID ${existingRestaurantId}`; // Default
-          // You might need another API call here if cart doesn't include name
-          // For now, using ID as placeholder
-
+          let currentRestoName = currentCartData.restaurantName || `Restaurant ID ${existingRestaurantId}`; 
+          
           setCartConflict({
             show: true,
-            newItem: apiItem,
-            currentRestaurant: currentRestoName, // Placeholder name
-            newRestaurant: restaurantData.displayName || restaurantData.name // Name of current page's restaurant
+            newItem: { ...apiItem, name: itemToAdd.name, isDonated }, 
+            currentRestaurant: currentRestoName, 
+            newRestaurant: restaurantData.displayName || restaurantData.name 
           });
-          return; // Stop processing
+          return; 
         }
       }
 
-      // 3. No conflict or cart is empty/new - Add or Update
       let response;
       if (currentCartData && currentCartData.id) {
-        // Cart exists, update it
         response = await axios.post(UPDATE_CART_ENDPOINT, {
             shoppingCartId: currentCartData.id,
             foodItemId: apiItem.foodItemId,
-            foodItemCount: apiItem.foodItemCount, // Add 1
+            foodItemCount: apiItem.foodItemCount, 
         }, {
             headers: { 'Authorization': `Bearer ${token}`, 'Role': 'CUSTOMER' }
         });
         console.log('Updated existing cart:', response.data);
 
       } else {
-         // Cart doesn't exist, create new
          response = await axios.post(SHOPPING_CART_ENDPOINT, {
              foodItemId: apiItem.foodItemId,
              restaurantId: apiItem.restaurantId,
@@ -352,8 +351,11 @@ function RestaurantPublicPage() {
          console.log('Created new cart:', response.data);
       }
 
-      setCart(response.data); // Update local cart state
-      window.dispatchEvent(new Event('cart-updated')); // Notify navbar
+      setCart(response.data); 
+      window.dispatchEvent(new Event('cart-updated')); 
+      if (isDonated) {
+        navigate('/create_order');
+      }
 
     } catch (err) {
         console.error("Error adding item to cart:", err);
@@ -361,10 +363,11 @@ function RestaurantPublicPage() {
     }
   };
 
-  // --- Memoized values ---
+  const isDonatedItemInCart = (foodItemId) => {
+    if (!cart || !cart.items) return false;
+    return cart.items.some(cartItem => cartItem.foodItemId === foodItemId);
+  };
   const groupedMenuItems = useMemo(() => groupItemsByCategory(menuItems), [menuItems]);
-
-  // --- Render Logic ---
 
   if (loadingRestaurant) {
     return (
@@ -376,7 +379,6 @@ function RestaurantPublicPage() {
     );
   }
 
-  // If there was an error fetching the main restaurant data, show error page
   if (error && !restaurantData) {
     return (
       <>
@@ -391,7 +393,6 @@ function RestaurantPublicPage() {
     );
   }
 
-  // If no error, but still no data (e.g., 404 Not Found from backend)
   if (!restaurantData) {
       return (
         <>
@@ -412,41 +413,36 @@ function RestaurantPublicPage() {
       {cartConflict.show && <CartConflictPopup />}
 
       <div className="restaurant-public-page">
-        {/* --- Header Section --- */}
         <header className="restaurant-header">
-      <div className="restaurant-logo-container">
-        <img 
-          src={image} 
-          alt={restaurantData.displayName} 
-          className="restaurant-logo" 
-          onError={(e) => {e.target.src = '/placeholder-restaurant.png';}}
-        />
-      </div>
-      
-      <div className="restaurant-header-info">
-        <h1>{restaurantData.displayName || restaurantData.name || 'Restaurant'}</h1>
-        <p className="restaurant-description">{restaurantData.description || 'No description available.'}</p>
-        <p className="restaurant-address">
-          <span role="img" aria-label="location">📍</span>
-          {restaurantData.address || 'Address not available'}
-        </p>
-      </div>
+          <div className="restaurant-logo-container">
+            <img 
+              src={image} 
+              alt={restaurantData.displayName} 
+              className="restaurant-logo" 
+              onError={(e) => {e.target.src = '/placeholder-restaurant.png';}}
+            />
+          </div>
+          
+          <div className="restaurant-header-info">
+            <h1>{restaurantData.displayName || restaurantData.name || 'Restaurant'}</h1>
+            <p className="restaurant-description">{restaurantData.description || 'No description available.'}</p>
+            <p className="restaurant-address">
+              <span role="img" aria-label="location">📍</span>
+              {restaurantData.address || 'Address not available'}
+            </p>
+          </div>
 
-      <div className="restaurant-rating">
-        {restaurantData.averageRate != null ? (
-          <StarRatingDisplay rating={restaurantData.averageRate} size={24} />
-        ) : (
-          <span className="no-rating">Not Rated Yet</span>
-        )}
-      </div>
-    </header>
+          <div className="restaurant-rating">
+            {restaurantData.averageRate != null ? (
+              <StarRatingDisplay rating={restaurantData.averageRate} size={24} />
+            ) : (
+              <span className="no-rating">Not Rated Yet</span>
+            )}
+          </div>
+        </header>
 
-        {/* Display non-critical errors (e.g., menu/reviews failed but restaurant loaded) */}
         {error && restaurantData && <p className="error-message warning">{error}</p>}
-
-        {/* --- Sections will now flow directly --- */}
         
-        {/* --- Menu Section --- */}
         <section id="menu" className="restaurant-section">
           <h2>Menu</h2>
           {loadingMenu ? (
@@ -456,18 +452,16 @@ function RestaurantPublicPage() {
           ) : (
               Object.keys(groupedMenuItems).map(categoryId => (
                   <div key={categoryId} className="category-group">
-                      {/* Ensure categoryId is treated as a string for display */}
                       <h3 className="category-title">
                           {String(categoryId) !== 'uncategorized' ? String(categoryId).replace(/_/g, ' ') : 'Other Items'}
                       </h3>
                       <div className="food-item-grid">
                           {groupedMenuItems[categoryId]?.map(item => {
-                              // Ensure all required fields exist
-                              if (!item?.name || !item?.price) return null;
+                              if (!item?.name || item?.price == null) return null; 
 
-                              const foodImageUrl = FOOD_IMAGE_BASE + item.restaurantName.replace(" ", "_") + "/" + item.imageName;
+                              const foodImageUrl = FOOD_IMAGE_BASE + (item.restaurantName || restaurantData.name).replace(/\s+/g, "_") + "/" + item.imageName;
                               return (
-                                  <div key={item.id || item.image_name} className="food-item-card-simple">
+                                  <div key={item.foodItemId || item.id || item.image_name} className="food-item-card-simple">
                                       <img 
                                           src={foodImageUrl} 
                                           alt={item.name} 
@@ -495,21 +489,65 @@ function RestaurantPublicPage() {
           )}
         </section>
 
-        {/* Location and Reviews Container */}
+        {loadingOfferedDonations ? (
+            <section className="restaurant-section donation-offer-section"><p>Loading special donation offers...</p></section>
+        ) : offeredDonationItems.length > 0 && (
+            <section id="donations" className="restaurant-section donation-offer-section">
+                <h2 className="donation-category-title">Community Support Items</h2>
+                <p className="donation-offer-prompt">
+                    This restaurant is offering the following items for free. You can claim one of each available donated item.
+                </p>
+                <div className="food-item-grid">
+                    {offeredDonationItems.map(item => {
+                        if (!item?.name || item.price !== 0 || !item.foodItemId) return null; 
+                        
+                        const foodImageUrl = FOOD_IMAGE_BASE + (item.restaurantName || restaurantData.name).replace(/\s+/g, "_") + "/" + item.imageName;
+                        const itemInCart = isDonatedItemInCart(item.foodItemId);
+                        const outOfStock = item.stock <= 0;
+
+                        return (
+                            <div key={item.foodItemId} className="food-item-card-simple donation-item-card">
+                                <img 
+                                    src={foodImageUrl} 
+                                    alt={item.name} 
+                                    onError={(e) => {}} 
+                                />
+                                <h3>{item.name} <span className="donation-tag">DONATION</span></h3>
+                                {item.description && (
+                                    <p className="item-description-small">{item.description}</p>
+                                )}
+                                <p className="item-price"><strong>FREE</strong></p>
+                                <p className={`item-stock-info ${outOfStock ? 'out-of-stock' : ''}`}>
+                                    Stock: {item.stock > 0 ? item.stock : 'Out of Stock'}
+                                </p>
+                                <button
+                                    className="btn btn-add-to-cart-small add-donation-item-btn"
+                                    onClick={() => addToCart(item, true)} 
+                                    disabled={outOfStock || itemInCart}
+                                >
+                                    {outOfStock ? 'Out of Stock' : itemInCart ? 'Claimed' : 'Claim for FREE'}
+                                </button>
+                            </div>
+                        );
+                    })}
+                </div>
+            </section>
+        )}
+
+
         <div className="location-reviews-container">
           <section id="location" className="restaurant-section">
             <h2>Location</h2>
             {(restaurantData.latitude && restaurantData.longitude) ? (
                 <div className="map-container-public">
-                    {/* Ensure API key is configured for react-google-maps */}
                     <Map
                         defaultCenter={{ lat: restaurantData.latitude, lng: restaurantData.longitude }}
                         defaultZoom={15}
-                        gestureHandling={'none'} // Prevents panning
+                        gestureHandling={'none'} 
                         disableDefaultUI={true}
-                        clickableIcons={false} // Prevents clicking on POIs
-                        draggable={false} // Prevents dragging
-                        scrollwheel={false} // Prevents zooming with mouse wheel
+                        clickableIcons={false} 
+                        draggable={false} 
+                        scrollwheel={false} 
                         style={{ width: '100%', height: '300px' }}
                         mapId={'RESTAURANT_LOCATION_MAP'}
                         options={{
@@ -542,23 +580,20 @@ function RestaurantPublicPage() {
             ) : (
               <div className="reviews-list">
                 {reviews.map(review => (
-                  <div key={review.orderId || `review-${Math.random()}`} className="review-card compact-review">
+                  <div key={review.reviewId || review.orderId || `review-${Math.random()}`} className="review-card compact-review">
                     
                     {review.foodReviewComment && review.foodReviewComment.trim() !== '' ? (
-                        
                        <p className="review-comment">"{review.foodReviewComment}"</p>
-
                     ) : (
                        <div className="delivery-score-display">
                         <span>Rating: </span>
                         <StarRatingDisplay rating={review.foodReviewScore} size={14} inactiveColor="#cccccc"/>
                     </div>
-
                     )}
                     <p className="review-author">
                        - {review.customerName || 'Anonymous Customer'} on {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Unknown Date'}
                     </p>
-                    {review.foodReviewComment && review.foodReviewComment.trim() !== '' && (
+                    {review.foodReviewComment && review.foodReviewComment.trim() !== '' && review.foodReviewScore != null && (
                       <div className="delivery-score-display">
                           <span>Rating: </span>
                           <StarRatingDisplay rating={review.foodReviewScore} size={14} inactiveColor="#cccccc"/>
@@ -575,24 +610,22 @@ function RestaurantPublicPage() {
     </>
   );
 
-    // CartConflictPopup component (Keep as is)
     function CartConflictPopup() {
-        // ... (implementation unchanged)
         return (
-          <div className="address-popup-overlay"> {/* Reuse overlay style */}
-            <div className="address-popup cart-conflict-popup"> {/* Reuse popup base style */}
+          <div className="address-popup-overlay"> 
+            <div className="address-popup cart-conflict-popup"> 
               <h2>Different Restaurant</h2>
               <p>Your cart contains items from <strong>{cartConflict.currentRestaurant || 'another restaurant'}</strong>.</p>
-              <p>Adding items from <strong>{cartConflict.newRestaurant || 'this restaurant'}</strong> will clear your current cart.</p>
+              <p>Adding "{cartConflict.newItem?.name || 'items'}" from <strong>{cartConflict.newRestaurant || 'this restaurant'}</strong> will clear your current cart.</p>
               <div className="address-popup-actions">
                 <button
-                  className="btn btn-secondary" // Style as secondary action
+                  className="btn btn-secondary" 
                   onClick={() => setCartConflict({...cartConflict, show: false})}
                 >
                   Cancel
                 </button>
                 <button
-                  className="btn btn-primary" // Style as primary action
+                  className="btn btn-primary" 
                   onClick={handleClearCartAndAdd}
                 >
                   Clear Cart & Add
