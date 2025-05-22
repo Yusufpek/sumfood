@@ -23,7 +23,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @Entity
 @Table(name = "shopping_cart_wheels", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "shopping_cart_id", "wheel_id" })
+        @UniqueConstraint(columnNames = { "id" })
 })
 public class ShoppingCartWheelRelation{
     @Id
