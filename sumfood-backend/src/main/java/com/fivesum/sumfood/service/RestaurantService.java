@@ -18,8 +18,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.fivesum.sumfood.dto.requests.AuthRequest;
 import com.fivesum.sumfood.dto.requests.RestaurantRegistrationRequest;
 import com.fivesum.sumfood.dto.responses.RestaurantProfileResponse;
+import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.model.Restaurant;
 import com.fivesum.sumfood.model.Customer;
+import com.fivesum.sumfood.model.CustomerFavoriteRestaurant;
+import com.fivesum.sumfood.repository.CustomerFavoriteRestaurantRepository;
 import com.fivesum.sumfood.repository.RestaurantRepository;
 
 import lombok.AllArgsConstructor;
@@ -29,6 +32,7 @@ import lombok.AllArgsConstructor;
 public class RestaurantService implements UserDetailsService {
 
     private final RestaurantRepository restaurantRepository;
+    private final CustomerFavoriteRestaurantRepository customerFavoriteRestaurantRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final GoogleMapsService googleMapsService;
@@ -148,6 +152,33 @@ public class RestaurantService implements UserDetailsService {
             }
         }
         return restaurants;
+    }
+
+    public List<RestaurantProfileResponse> getCustomerFavoriteRestaurants(Customer customer) {
+        return customerFavoriteRestaurantRepository.findByCustomerId(customer.getId()).stream()
+                .map(customerFavRes -> toProfileResponse(customerFavRes.getRestaurant())).collect(Collectors.toList());
+    }
+
+    public RestaurantProfileResponse uptadeCustomerFavoriteRestaurants(Customer customer, Long restaurantId) {
+        Optional<Restaurant> res = restaurantRepository.findById(restaurantId);
+        if (!res.isPresent()) {
+            throw new InvalidRequestException("Restaurant Id is invalid");
+        }
+        Restaurant restaurant = res.get();
+
+        Optional<CustomerFavoriteRestaurant> favRes = customerFavoriteRestaurantRepository
+                .findByCustomerIdAndRestaurantId(customer.getId(), restaurantId);
+        if (favRes.isPresent()) {
+            customerFavoriteRestaurantRepository.delete(favRes.get());
+        } else {
+            CustomerFavoriteRestaurant newFavRes = CustomerFavoriteRestaurant
+                    .builder()
+                    .customer(customer)
+                    .restaurant(restaurant)
+                    .build();
+            customerFavoriteRestaurantRepository.save(newFavRes);
+        }
+        return toProfileResponse(restaurant);
     }
 
     public RestaurantProfileResponse toProfileResponse(Restaurant restaurant) {

@@ -12,6 +12,7 @@ import com.fivesum.sumfood.dto.requests.AddressRequest;
 import com.fivesum.sumfood.dto.requests.CustomerUpdateRequest;
 import com.fivesum.sumfood.dto.responses.CustomerGetResponse;
 import com.fivesum.sumfood.dto.responses.RestaurantProfileResponse;
+import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.model.Customer;
 import com.fivesum.sumfood.model.Order;
 import com.fivesum.sumfood.model.Address;
@@ -46,7 +47,8 @@ public class CustomerController {
 
             return ResponseEntity.ok(updatedCustomer);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -66,7 +68,8 @@ public class CustomerController {
 
             return ResponseEntity.ok(resp);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -133,7 +136,8 @@ public class CustomerController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error " + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -178,7 +182,8 @@ public class CustomerController {
 
             return ResponseEntity.ok("Address updated successfully");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -204,7 +209,8 @@ public class CustomerController {
 
             return ResponseEntity.ok("Address deleted successfully");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
         }
     }
 
@@ -217,6 +223,41 @@ public class CustomerController {
         if (customer.isPresent()) {
             return ResponseEntity.status(HttpStatus.OK).body(
                     restaurantService.getRestaurantByCustomer(customer.get(), maxDistance));
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    @GetMapping("/restaurants/fav")
+    public ResponseEntity<List<RestaurantProfileResponse>> getFavRestaurantsByCustomer(
+            @RequestHeader("Authorization") String token) {
+        String email = jwtService.extractUsername(token.substring(7));
+        Optional<Customer> customer = customerService.findByEmail(email);
+        if (customer.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(restaurantService.getCustomerFavoriteRestaurants(customer.get()));
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    @PutMapping("/restaurants/fav/{restaurantId}")
+    public ResponseEntity<?> updateFavRestaurantsByCustomer(
+            @RequestHeader("Authorization") String token, @PathVariable String restaurantId) {
+        String email = jwtService.extractUsername(token.substring(7));
+        Optional<Customer> customer = customerService.findByEmail(email);
+        if (customer.isPresent()) {
+            try {
+                Long resId = Long.parseLong(restaurantId);
+                RestaurantProfileResponse response = restaurantService.uptadeCustomerFavoriteRestaurants(customer.get(),
+                        resId);
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            } catch (InvalidRequestException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            } catch (NumberFormatException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Restaurant ID format is incorrect.");
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("An unexpected error occurred: " + e.getMessage());
+            }
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
@@ -252,7 +293,8 @@ public class CustomerController {
 
             return ResponseEntity.ok("Order cancelled successfully");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occured: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occured: " + e.getMessage());
         }
     }
 }
