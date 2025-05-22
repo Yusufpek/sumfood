@@ -230,6 +230,9 @@ public class OrderService {
 			throw new InvalidRequestException("Order is not cancellable!");
 		}
 		order.setOrderStatus(OrderStatus.CANCELLED);
+		for(ShoppingCartFoodItemRelation item: order.getShoppingCart().getItems()){
+			foodItemService.increaseStock(item.getFoodItem(), item.getAmount());
+		}
 		orderRepository.save(order);
 	}
 
