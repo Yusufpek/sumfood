@@ -12,8 +12,6 @@ const OrdersPage = () => {
   const [pastOrders, setPastOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Helper function to handle common API errors
   const handleApiError = (err) => {
     let msg = 'Failed to load orders.';
     if (err.response) {
@@ -21,7 +19,7 @@ const OrdersPage = () => {
         localStorage.removeItem('token');
         setIsLoggedIn(false);
         navigate('/login');
-        return true; // Indicate that we redirected
+        return true; 
       }
       if (err.response.data?.message) {
         msg = err.response.data.message;
@@ -35,8 +33,8 @@ const OrdersPage = () => {
     } else {
       msg = `Error: ${err.message}`;
     }
-    setError(msg);
-    return false; // No redirect
+            setError(msg);
+    return false;
   };
 
   useEffect(() => {
@@ -50,53 +48,35 @@ const OrdersPage = () => {
   }, [navigate]);
 
   useEffect(() => {
-    const fetchActiveOrders = async () => {
-      if (!isLoggedIn) return;
+    if (!isLoggedIn) return;
+    const fetchAllOrders = async () => {
       setLoading(true);
-      setError(null);
+      setError(null); 
+      const token = localStorage.getItem('token');
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8080/api/order/orders/active', {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Role': 'CUSTOMER'
-          }
-        });
-        const ordersData = Array.isArray(response.data) ? response.data : [];
-        setActiveOrders(ordersData);
+        const [activeRes, pastRes] = await Promise.all([
+          axios.get('http://localhost:8080/api/order/orders/active', {
+            headers: { 'Authorization': `Bearer ${token}`, 'Role': 'CUSTOMER' }
+          }),
+          axios.get('http://localhost:8080/api/order/orders/past', {
+            headers: { 'Authorization': `Bearer ${token}`, 'Role': 'CUSTOMER' }
+          })
+        ]);
+        
+        setActiveOrders(Array.isArray(activeRes.data) ? activeRes.data : []);
+        setPastOrders(Array.isArray(pastRes.data) ? pastRes.data : []);
+
       } catch (err) {
-        handleApiError(err);
+        const redirected = handleApiError(err)
+        if (redirected) return; 
       } finally {
         setLoading(false);
       }
     };
-    fetchActiveOrders();
+
+    fetchAllOrders();
   }, [isLoggedIn, navigate]);
 
-  useEffect(() => {
-    const fetchPastOrders = async () => {
-      if (!isLoggedIn) return;
-      setLoading(true);
-      setError(null);
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8080/api/order/orders/past', {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Role': 'CUSTOMER'
-          }
-        });
-        const ordersData = Array.isArray(response.data) ? response.data : [];
-        console.log(ordersData);
-        setPastOrders(ordersData);
-      } catch (err) {
-        handleApiError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPastOrders();
-  }, [isLoggedIn, navigate]);
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -109,10 +89,13 @@ const OrdersPage = () => {
     }
   };
 
+  const getOrderTypeDisplayName = (orderType) => {
+    if (!orderType) return 'Regular';
+    return orderType.charAt(0).toUpperCase() + orderType.slice(1).toLowerCase();
+  };
+
   const getStatusDisplayName = (status) => {
     if (!status) return 'Processing';
-    
-    // Convert underscores to spaces and capitalize each word
     return status.toLowerCase()
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -121,9 +104,8 @@ const OrdersPage = () => {
 
   const getPaymentStatusClass = (status) => {
     if (!status) return 'payment-pending';
-    
     const statusLower = status.toLowerCase();
-    if (statusLower.includes('paid') || statusLower.includes('complete')) {
+    if (statusLower.includes('paid') || statusLower.includes('successful') || statusLower.includes('complete')) {
       return 'payment-complete';
     } else if (statusLower.includes('fail')) {
       return 'payment-failed';
@@ -140,7 +122,6 @@ const OrdersPage = () => {
     if (!items || items.length === 0) {
       return <li className="no-items">No items available</li>;
     }
-    
     return items.map((item, idx) => (
       <li key={idx} className="order-item">
         <span className="item-name">{item.name || item.foodItemName || 'Unknown Item'}</span>
@@ -154,7 +135,10 @@ const OrdersPage = () => {
     <div className="orders-page-container">
       <Navbar />
       <main className="orders-main-content">
-        <h2>Your Orders</h2>
+        <div className="orders-header">
+          <h2>Your Orders</h2>
+        </div>
+
         {loading ? (
           <div className="loading-container">
             <div className="loading-spinner"></div>
@@ -222,7 +206,7 @@ const OrdersPage = () => {
                               >
                                 Track Order
                               </button>
-                              
+                            
                               <details>
                                 <summary>View Items</summary>
                                 <div className="order-details-panel">
@@ -255,6 +239,7 @@ const OrdersPage = () => {
                     <thead>
                       <tr>
                         <th>Order #</th>
+                        <th>Type</th>
                         <th>Restaurant</th>
                         <th>Date</th>
                         <th>Order Status</th>
@@ -267,6 +252,11 @@ const OrdersPage = () => {
                       {pastOrders.map(order => (
                         <tr key={order.id}>
                           <td>{order.id || 'N/A'}</td>
+                          <td>
+                            <span className={`order-type-badge order-type-${(order.orderType || 'REGULAR').toLowerCase()}`}>
+                              {getOrderTypeDisplayName(order.orderType)}
+                            </span>
+                          </td>
                           <td>{order.restaurantName || 'Unknown Restaurant'}</td>
                           <td>{formatDate(order.createdAt)}</td>
                           <td>
@@ -276,13 +266,13 @@ const OrdersPage = () => {
                           </td>
                           <td>
                             <span className={getPaymentStatusClass(order.paymentStatus)}>
-                              {order.paymentStatus || 'N/A'}
+                               {order.paymentStatus ? getStatusDisplayName(order.paymentStatus) : 'N/A'}
                             </span>
                           </td>
                           <td>${Number(order.totalPrice || 0).toFixed(2)}</td>
                           <td>
                             <div className="order-actions">
-                              {((order.orderStatus || order.status) || '').toUpperCase() === 'DELIVERED' && (
+                              {order.orderType !== 'DONATION' && order.orderType !== undefined && ((order.orderStatus || order.status) || '').toUpperCase() === 'DELIVERED' && (
                                 order.reviewId ? (
                                   <button
                                     className="view-review-btn"
@@ -299,16 +289,20 @@ const OrdersPage = () => {
                                   </button>
                                 )
                               )}
-                              
                               <details>
                                 <summary>View Items</summary>
                                 <div className="order-details-panel">
                                   <ul className="order-items-list">
                                     {renderOrderItems(order.foodItems)}
                                   </ul>
-                                  {(order.deliveryAddress || order.address) && (
+                                  {(order.orderType !== 'DONATION' || (order.orderType === 'DONATION' && order.address)) && (order.deliveryAddress || order.address) && (
                                     <div className="delivery-info">
                                       <strong>Delivery Address:</strong> {order.deliveryAddress || order.address}
+                                    </div>
+                                  )}
+                                  {order.orderType === 'DONATION' && (
+                                    <div className="donation-info">
+                                        <p><em>Thank you for your donation!</em></p>
                                     </div>
                                   )}
                                 </div>

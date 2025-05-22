@@ -6,6 +6,7 @@ import '../styles/restaurant-orders.css';
 
 function RestaurantOrders() {
   const [orders, setOrders] = useState([]);
+  const [donatedFoodItems, setDonatedFoodItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [restaurantInfo, setRestaurantInfo] = useState({});
@@ -55,6 +56,13 @@ function RestaurantOrders() {
         });
         console.log('Orders:', ordersResponse.data);
         setOrders(ordersResponse.data || []);
+
+        const donatedItemsResponse = await axios.get('http://localhost:8080/api/food/items/restaurant/donated', {
+          headers: {'Authorization': `Bearer ${token}`, 'Role': 'RESTAURANT'}
+        });
+        setDonatedFoodItems(donatedItemsResponse.data || []);
+        console.log('Donated Food Items:', donatedFoodItems);
+
         setLoading(false);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -178,17 +186,58 @@ function RestaurantOrders() {
           <h1>Order Management</h1>
         </header>
 
+        <div className="tab-section donated-items-inventory-section">
+          <h2>Donated Items Inventory</h2>
+          {loading && !donatedFoodItems.length ? (
+            <p>Loading donated items list...</p>
+          ) : !loading && donatedFoodItems.length === 0 ? (
+            <div className="no-orders">No items currently marked for donation.</div>
+          ) : (
+            <div className="donated-items-grid">
+              {donatedFoodItems.map(item => (
+                <div key={item.foodItemId} className="donated-item-card">
+                  {item.imageName && (
+                    <div className="donated-item-image-container">
+                      <img
+                        src={`http://localhost:8080/api/food/public/image/${encodeURIComponent(item.restaurantName)}/${encodeURIComponent(item.imageName)}`}
+                        alt={item.name}
+                        className="donated-item-image"
+                        onError={(e) => {e.target.src = '/placeholder-food.jpg';}}
+                      />
+                    </div>
+                  )}
+                  <div className="donated-item-details">
+                    <span className="donated-item-name">{item.name}</span>
+                    <span className="donated-item-category">
+                      {(item.categories || []).join(', ') || 'Uncategorized'}
+                    </span>
+                    <span className="donated-item-stock">
+                      Stock: {item.stock}
+                    </span>
+                    {item.description && (
+                      <p className="donated-item-description">{item.description}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <hr className="section-divider" />
+
         <div className="orders-tabs">
           <div className="tab-section">
-            <h2>New Orders</h2>
-            {getOrdersByStatus('PENDING').length === 0 ? (
-              <div className="no-orders">No new orders</div>
+            <h2>New Orders (Sales)</h2>
+            {getOrdersByStatus('PENDING').filter(o => o.orderType !== 'DONATION').length === 0 ? (
+              <div className="no-orders">No new sales orders</div>
             ) : (
               <div className="orders-list">
-                {getOrdersByStatus('PENDING').map(order => (
+                {getOrdersByStatus('PENDING').filter(o => o.orderType !== 'DONATION').map(order => (
                   <div key={order.id} className="order-card pending">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
+                      {order.orderType === 'DONATION' && <span className="order-type-badge order-type-donation">Donation</span>}
                     </div>
                     <span className="order-date">{formatOrderDate(order.createdAt)}</span>
                     <div className="order-items">
@@ -196,13 +245,13 @@ function RestaurantOrders() {
                       <ul>
                         {(order.foodItems || []).map((item, idx) => (
                           <li key={idx}>
-                            {item.amount}x {item.foodItemName} - ${item.price}
+                            {item.amount}x {item.foodItemName} - ${item.price != null ? item.price.toFixed(2) : 'N/A'}
                           </li>
                         ))}
                       </ul>
                     </div>
                     <div className="order-total">
-                      <p><strong>Total:</strong> ${order.totalPrice}</p>
+                      <p><strong>Total:</strong> ${order.totalPrice != null ? order.totalPrice.toFixed(2) : 'N/A'}</p>
                     </div>
                     <div className="order-actions">
                       {getStatusActions(order)}
@@ -277,21 +326,20 @@ function RestaurantOrders() {
               </div>
             )}
           </div>
-
           <div className="tab-section">
             <h2>Completed Orders</h2>
-            {getOrdersByStatus('DELIVERED').length === 0 ? (
-              <div className="no-orders">No completed orders</div>
+            {orders.filter(order => order.orderStatus === 'DELIVERED' && order.orderType !== 'DONATION').length === 0 ? (
+              <div className="no-orders">No completed sales orders</div>
             ) : (
               <div className="orders-list completed-list">
-                {getOrdersByStatus('DELIVERED').map(order => (
+                {orders.filter(order => order.orderStatus === 'DELIVERED' && order.orderType !== 'DONATION').map(order => (
                   <div key={order.id} className="order-card completed">
                     <div className="order-header">
                       <span className="order-number">Order #{order.id}</span>
                     </div>
                     <span className="order-date">{formatOrderDate(order.createdAt)}</span>
                     <div className="order-total">
-                      <p><strong>Total:</strong> ${order.totalPrice}</p>
+                      <p><strong>Total:</strong> ${order.totalPrice != null ? order.totalPrice.toFixed(2) : 'N/A'}</p>
                     </div>
                   </div>
                 ))}
