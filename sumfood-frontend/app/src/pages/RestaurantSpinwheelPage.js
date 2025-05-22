@@ -181,15 +181,13 @@ function RestaurantSpinwheelPage() {
 
     try {
       const spinwheelData = {
+        restaurantId: restaurantInfo.id,
         name: newSpinwheel.name,
         description: newSpinwheel.description,
         price: newSpinwheel.price,
-        active: newSpinwheel.active,
-        items: selectedItems.map(item => ({
-          foodItemId: item.foodItemId,
-          probability: item.probability || 1
-        }))
+        foodItemIds: selectedItems.map(item => (item.foodItemId))
       };
+      console.log('Creating spinwheel with data:', spinwheelData);
 
       const response = await axios.post(ENDPOINTS.CREATE_WHEEL, spinwheelData, {
         headers: {
@@ -356,16 +354,6 @@ function RestaurantSpinwheelPage() {
                                 <span className="item-price">${item.price.toFixed(2)}</span>
                               </div>
                               <div className="item-controls">
-                                <label>
-                                  Weight:
-                                  <input
-                                    type="number"
-                                    min="1"
-                                    max="10"
-                                    value={item.probability}
-                                    onChange={(e) => updateItemProbability(item.foodItemId, e.target.value)}
-                                  />
-                                </label>
                                 <button 
                                   className="remove-item-btn"
                                   onClick={() => toggleItemSelection(item)}>
