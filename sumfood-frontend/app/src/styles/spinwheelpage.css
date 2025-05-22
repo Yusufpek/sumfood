@@ -1,0 +1,255 @@
+/* ../styles/spinwheel.css */
+
+/* --- Global Styles --- */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f2f5; /* Light gray background */
+  color: #333;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+/* --- Page Container --- */
+.spinwheel-page-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem; /* Padding for smaller screens */
+  background-color: #ffffff; /* White background for the main content area */
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 768px) {
+  .spinwheel-page-container {
+    padding: 2rem; /* More padding on larger screens */
+  }
+}
+
+
+/* --- Loading and Error Messages --- */
+.page-loading-message,
+.page-error-container {
+  text-align: center;
+  padding: 3rem 1rem;
+  font-size: 1.2rem;
+  color: #555;
+}
+.page-error-container h2 {
+  color: #d32f2f; /* Red for error heading */
+  margin-bottom: 0.5rem;
+}
+
+/* --- Restaurant Banner --- */
+.restaurant-banner {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #e9ecef; /* Light gray for banner */
+  border-radius: 8px;
+}
+.restaurant-logo {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  margin: 0 auto 1rem auto;
+  border-radius: 50%;
+  border: 3px solid #dee2e6; /* Light border for logo */
+  background-color: #fff; /* White background for logo if transparent */
+}
+.restaurant-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #343a40; /* Dark gray for title */
+}
+
+/* --- Spinwheel Content Area --- */
+.spinwheel-content-area {
+  padding: 1.5rem;
+  border-radius: 8px;
+  /* background-color: #f8f9fa; */ /* Optional: slightly different bg for this section */
+}
+.spinwheel-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #495057; /* Medium gray for spinwheel name */
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+.spinwheel-description {
+  color: #6c757d; /* Lighter gray for description */
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 1rem;
+}
+
+/* --- Price and Payment Section --- */
+.spinwheel-price-section {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.spinwheel-price-text {
+  font-size: 1.25rem;
+  color: #28a745; /* Green for price */
+  margin-bottom: 0.75rem;
+}
+.spinwheel-price-text strong {
+    font-weight: 700;
+}
+
+
+/* --- SpinWheel Component Placeholder --- */
+.spinwheel-interactive-area {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+  min-height: 350px; /* Ensure space for the wheel or message */
+}
+.spinwheel-placeholder-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #6c757d;
+  padding: 2rem;
+  border: 2px dashed #ced4da; /* Dashed border for placeholder */
+  border-radius: 8px;
+  min-height: 300px; /* Consistent height */
+  width: 100%;
+  max-width: 400px;
+}
+
+/* --- Result Section --- */
+.spinwheel-result-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #fff3cd; /* Light yellow for result */
+  border: 1px solid #ffeeba; /* Yellow border */
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.spinwheel-result-section h3 {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #856404; /* Dark yellow/brown for result heading */
+  margin-bottom: 0.5rem;
+}
+.spinwheel-result-section p {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 0.25rem;
+}
+.spinwheel-result-section strong {
+  font-size: 1.3rem;
+  color: #d63384; /* A distinct color for the prize name */
+  font-weight: 700;
+}
+.result-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem; /* Space between buttons */
+  flex-wrap: wrap; /* Allow buttons to wrap on small screens */
+}
+.success-message {
+  color: #155724; /* Dark green for success */
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+/* --- Rules Section --- */
+.spinwheel-rules-section {
+  margin-top: 2.5rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa; /* Very light gray for rules */
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+.spinwheel-rules-section h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.75rem;
+}
+.spinwheel-rules-section ol {
+  list-style-position: inside;
+  padding-left: 0;
+  color: #555;
+  margin-bottom: 0.75rem;
+}
+.spinwheel-rules-section li {
+  margin-bottom: 0.3rem;
+}
+.disclaimer {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* --- General Button Styling --- */
+.button {
+  padding: 0.65rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  text-decoration: none; /* For link-like buttons */
+  display: inline-block; /* Proper spacing and sizing */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+}
+
+.button-primary {
+  background-color: #007bff; /* Primary blue */
+  color: white;
+}
+.button-primary:hover:not(:disabled) {
+  background-color: #0056b3; /* Darker blue */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+.button-primary:active:not(:disabled) {
+  transform: translateY(0px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+}
+
+.button-secondary {
+  background-color: #6c757d; /* Secondary gray */
+  color: white;
+}
+.button-secondary:hover:not(:disabled) {
+  background-color: #545b62; /* Darker gray */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+.button-secondary:active:not(:disabled) {
+  transform: translateY(0px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+}
+
+/* Specific button types from your JSX */
+.payment-button { /* Extends .button and .button-primary */
+  font-size: 1.1rem; /* Larger payment button */
+  padding: 0.75rem 1.5rem;
+  background-color: #28a745; /* Green for payment */
+}
+.payment-button:hover:not(:disabled) {
+  background-color: #1e7e34; /* Darker green */
+}
+
+.order-button { /* Extends .button and .button-primary */ }
+.skip-button { /* Extends .button and .button-secondary */ }
+.browse-button { /* Extends .button and .button-primary */ }
+.cart-button { /* Extends .button and .button-secondary */ }
+
+
+.button:disabled {
+  background-color: #adb5bd; /* Lighter gray for disabled */
+  color: #6c757d;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
