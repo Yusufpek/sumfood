@@ -28,6 +28,16 @@ public class WheelService {
         return wheels.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
     }
 
+    public List<WheelResponse> getAllActiveWheels() {
+        List<Wheel> wheels = wheelRepository.findAll();
+        return wheels.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
+    }
+
+    public WheelResponse getWheelByID(long wheelId) {
+        Wheel wheel = wheelRepository.findById(wheelId).orElseThrow(() -> new RuntimeException("Wheel not found"));
+        return toResponseDTO(wheel);
+    } 
+
     public WheelResponse createWheel(Restaurant restaurant, WheelCreateRequest request) {
         Wheel wheel = Wheel.builder()
                 .restaurant(restaurant)
@@ -112,7 +122,11 @@ public class WheelService {
         double newPrice = wheel.getItems().stream()
                 .mapToDouble(i -> i.getFoodItem().getPrice())
                 .sum();
-        wheel.setPrice(Math.round((newPrice / wheel.getItems().size()) * 100.0) / 100.0);
+        if (wheel.getItems().size() > 0) {
+            wheel.setPrice(Math.round((newPrice / wheel.getItems().size()) * 100.0) / 100.0);
+        } else {
+            wheel.setPrice(0.0);
+        }
         wheelRepository.save(wheel);
     }
 }

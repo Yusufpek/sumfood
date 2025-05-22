@@ -9,7 +9,7 @@ import '../styles/spinwheel.css';
 // API Constants
 const API_BASE_URL = 'http://localhost:8080/api';
 const ENDPOINTS = {
-  SPINWHEEL: `${API_BASE_URL}/restaurant/spinwheel`,
+  SPINWHEEL: `${API_BASE_URL}/wheels/public`,
   RESTAURANT_INFO: `${API_BASE_URL}/restaurant/public`,
   RESTAURANT_IMAGE_BASE: `${API_BASE_URL}/restaurant/public/image/`,
   SHOPPING_CART: `${API_BASE_URL}/shopping_cart/`,
@@ -43,7 +43,8 @@ function SpinwheelPage() {
         setRestaurant(restaurantResponse.data);
         
         // Fetch spinwheel info
-        const spinwheelResponse = await axios.get(`${ENDPOINTS.SPINWHEEL}/${spinwheelId}/public`);
+        const spinwheelResponse = await axios.get(`${ENDPOINTS.SPINWHEEL}/${spinwheelId}`);
+        console.log('Spinwheel data:', spinwheelResponse.data);
         
         // Process spinwheel items to include full food item details
         const wheelWithItems = {

@@ -93,4 +93,17 @@ public class WheelController {
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
+    // Add this new public endpoint for all active wheels
+    @GetMapping("/public/all")
+    public ResponseEntity<List<WheelResponse>> getAllPublicWheels() {
+        // Fetch all active wheels that are publicly available
+        return ResponseEntity.status(HttpStatus.OK).body(wheelService.getAllActiveWheels());
+    }
+
+    @GetMapping("/public/{wheelId}")
+    public ResponseEntity<WheelResponse> getWheelByID(@PathVariable Long wheelId) {
+        // Fetch a specific wheel by ID
+        return ResponseEntity.status(HttpStatus.OK).body(wheelService.getWheelByID(wheelId));
+    }
 }
