@@ -107,7 +107,7 @@ public class OrderService {
 		}
 		for (ShoppingCartFoodItemRelation item : items) {
 			FoodItem foodItem = item.getFoodItem();
-			foodItemService.addDonatedFoodItem(foodItem);
+			foodItemService.addDonatedFoodItem(foodItem, item.getAmount());
 		}
 
 		Order order = Order.builder()

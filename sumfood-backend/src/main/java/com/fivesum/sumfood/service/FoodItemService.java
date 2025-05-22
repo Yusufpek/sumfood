@@ -96,19 +96,19 @@ public class FoodItemService {
     }
 
     @Transactional
-    public FoodItemResponse addDonatedFoodItem(FoodItem foodItem) {
+    public FoodItemResponse addDonatedFoodItem(FoodItem foodItem, int amount) {
         Optional<FoodItem> existingDonationItem = foodItemRepository.findByIsDonatedAndImageName(true,
                 foodItem.getImageName());
         FoodItem item;
         if (existingDonationItem.isPresent()) {
             item = existingDonationItem.get();
-            item.setStock(item.getStock() + 1);
+            item.setStock(item.getStock() + amount);
         } else {
             item = FoodItem.builder()
                     .name(foodItem.getName())
                     .description(foodItem.getDescription())
                     .price(0)
-                    .stock(1)
+                    .stock(amount)
                     .isDonated(true)
                     .restaurant(foodItem.getRestaurant())
                     .imageName(foodItem.getImageName())
