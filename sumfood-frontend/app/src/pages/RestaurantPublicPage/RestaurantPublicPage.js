@@ -18,10 +18,8 @@ const SHOPPING_CART_ENDPOINT = `${API_BASE_URL}/shopping_cart/`;
 const UPDATE_CART_ENDPOINT = `${API_BASE_URL}/shopping_cart/update/`;
 const PUBLIC_RESTAURANT_DONATED_ITEMS = (id) => `${API_BASE_URL}/food/public/restaurant/${id}/donated-items`;
 
-const FAVORITE_RESTAURANT_STATUS = (id) => `${API_BASE_URL}/customer/favorites/status/${id}`;
-const ADD_FAVORITE_RESTAURANT = (id) => `${API_BASE_URL}/customer/favorites/${id}`;
-const REMOVE_FAVORITE_RESTAURANT = (id) => `${API_BASE_URL}/customer/favorites/${id}`;
-
+const FAVORITE_RESTAURANT_STATUS = (id) => `${API_BASE_URL}/customer/restaurants/fav/${id}`;
+const REMOVE_FAVORITE_RESTAURANT = (id) => `${API_BASE_URL}/customer/restaurants/fav/${id}`;
 
 // --- Helper Functions (Keep as is) ---
 const formatErrorMessage = (err, defaultMessage) => {
@@ -228,7 +226,9 @@ function RestaurantPublicPage() {
               const response = await axios.get(FAVORITE_RESTAURANT_STATUS(restaurantId), {
                   headers: { 'Authorization': `Bearer ${token}`, 'Role': 'CUSTOMER' }
               });
-              setIsFavorite(response.data.isFavorite || false);
+              console.log("Favorite status response:", response);
+              console.log("Is Favorite:", response.data);
+              setIsFavorite(response.data || false);
           } catch (err) {
               console.error("Error fetching favorite status:", err);
               setIsFavorite(false);
@@ -251,28 +251,27 @@ function RestaurantPublicPage() {
       setProcessingFavorite(true);
       setError(null);
 
-      const endpoint = isFavorite
-          ? REMOVE_FAVORITE_RESTAURANT(restaurantData.id)
-          : ADD_FAVORITE_RESTAURANT(restaurantData.id);
-      const method = isFavorite ? 'delete' : 'post';
+    try {
+      await axios.put(
+            REMOVE_FAVORITE_RESTAURANT(restaurantData.id), 
+            {}, // empty body
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Role': 'CUSTOMER'
+                }
+            }
+        );
 
-      try {
-          await axios[method](endpoint, 
-              method === 'post' ? {} : undefined,
-              {
-                  headers: { 'Authorization': `Bearer ${token}`, 'Role': 'CUSTOMER' }
-              }
-          );
-          setIsFavorite(!isFavorite);
-      } catch (err) {
-          console.error("Error toggling favorite:", err);
-          setError(formatErrorMessage(err, `Could not ${isFavorite ? 'remove from' : 'add to'} favorites.`));
-          setTimeout(() => setError(null), 5000);
-      } finally {
-          setProcessingFavorite(false);
-      }
+      setIsFavorite(!isFavorite);
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+      setError(`Could not ${isFavorite ? 'remove from' : 'add to'} favorites.`);
+    } finally {
+      setProcessingFavorite(false);
+    }
   };
-  
+
 
   const handleClearCartAndAdd = async () => {
     const item = cartConflict.newItem;

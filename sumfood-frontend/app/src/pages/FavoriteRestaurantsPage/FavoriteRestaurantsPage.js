@@ -7,7 +7,7 @@ import StarRatingDisplay from '../../components/common/StarRatingDisplay';
 import './FavoriteRestaurantsPage.css';
 
 const API_BASE_URL = 'http://localhost:8080/api';
-const CUSTOMER_FAVORITES_ENDPOINT = `${API_BASE_URL}/customer/favorites`;
+const CUSTOMER_FAVORITES_ENDPOINT = `${API_BASE_URL}/customer/restaurants/fav`;
 const RESTAURANT_LOGO_BASE = `${API_BASE_URL}/restaurant/public/image/`;
 
 
@@ -30,6 +30,7 @@ function FavoriteRestaurantsPage() {
                 const response = await axios.get(CUSTOMER_FAVORITES_ENDPOINT, {
                     headers: { 'Authorization': `Bearer ${token}`, 'Role': 'CUSTOMER' }
                 });
+                console.log("Response from favorites API:", response);
                 setFavoriteRestaurants(response.data || []);
                 console.log("Favorite Restaurants:", response.data);
             } catch (err) {
@@ -101,12 +102,6 @@ function FavoriteRestaurantsPage() {
                                         <p className="favorite-restaurant-address">
                                             {restaurant.addressShort || restaurant.address?.split(',')[0] || 'Location details'}
                                         </p>
-                                        {restaurant.averageRate != null && (
-                                            <div className="favorite-restaurant-rating">
-                                                <StarRatingDisplay rating={restaurant.averageRate} size={18} />
-                                                <span>({restaurant.reviewCount || 0} reviews)</span>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             </Link>
