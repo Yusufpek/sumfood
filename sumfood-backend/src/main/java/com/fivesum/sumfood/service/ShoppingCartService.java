@@ -10,8 +10,11 @@ import com.fivesum.sumfood.exception.UnauthorizedAccessException;
 import com.fivesum.sumfood.model.*;
 import com.fivesum.sumfood.repository.*;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -48,8 +51,13 @@ public class ShoppingCartService {
         if (foodItem.getStock() <= 0) {
             throw new InvalidRequestException("Invalid request, food item has no stock!");
         }
-        if (!foodItem.isDonated()) {
+        if (foodItem.isDonated()) {
+            if (!checkLastDonatedShoppingCart()) {
+                throw new InvalidRequestException("The free-item claim limit has been exceeded!");
+            }
+        } else {
             calculatedTotalPrice = foodItem.getPrice() * request.getFoodItemCount();
+
         }
 
         ShoppingCart shoppingCart = ShoppingCart.builder()
@@ -105,6 +113,10 @@ public class ShoppingCartService {
             throw new ConflictException("Cannot add items from different restaurants to the same cart.");
         }
 
+        if (foodItem.isDonated() && !checkLastDonatedShoppingCart()) {
+            throw new InvalidRequestException("The free-item claim limit has been exceeded!");
+        }
+
         ShoppingCartFoodItemRelation updateItem = getShoppingItemInCart(shoppingCart.getId(), foodItem.getId());
         if (updateItem == null) {
             if (request.getFoodItemCount() <= 0) {
@@ -150,6 +162,18 @@ public class ShoppingCartService {
         }
 
         return null;
+    }
+
+    public boolean checkLastDonatedShoppingCart() {
+        Optional<ShoppingCart> lastDonatedCart = shoppingCartRepository.findTopByDonatedItemOrderByCreatedAtDesc();
+        if (lastDonatedCart.isPresent()) {
+            System.out.println("IS PRESENT");
+            Instant cartTime = lastDonatedCart.get().getCreateAt().toInstant();
+            if (Duration.between(cartTime, Instant.now()).toHours() < 24) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Transactional
