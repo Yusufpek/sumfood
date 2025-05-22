@@ -28,6 +28,14 @@ public class WheelService {
         return wheels.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
     }
 
+    public WheelResponse getWheelById(Restaurant restaurant, long wheelId) {
+        Wheel wheel = wheelRepository.findById(wheelId).orElseThrow(() -> new RuntimeException("Wheel not found"));
+        if (wheel.getRestaurant() != restaurant) {
+            throw new RuntimeException("Unauthorized access to this wheel");
+        }
+        return toResponseDTO(wheel);
+    }
+
     public WheelResponse createWheel(Restaurant restaurant, WheelCreateRequest request) {
         Wheel wheel = Wheel.builder()
                 .restaurant(restaurant)
