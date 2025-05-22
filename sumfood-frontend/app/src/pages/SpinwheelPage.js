@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
-import WheelComponent from 'react-wheel-of-prizes';
+import SpinwheelComponent from '../components/spinwheel/SpinwheelComponent';
 import '../styles/spinwheel.css';
 
 // API Constants
@@ -14,42 +14,6 @@ const ENDPOINTS = {
   RESTAURANT_IMAGE_BASE: `${API_BASE_URL}/restaurant/public/image/`,
   SHOPPING_CART: `${API_BASE_URL}/shopping_cart/`,
   UPDATE_CART: `${API_BASE_URL}/shopping_cart/update/`
-};
-
-// Create a custom SpinwheelComponent that uses the WheelComponent
-const SpinwheelComponent = ({ items, onSpinComplete, readOnly }) => {
-  // Extract names for segments
-  const segments = items.map(item => item.name);
-  
-  // Generate colors for segments (repeating if needed)
-  const segColors = ["#EE4040", "#F0CF50", "#815CD1", "#3DA5E0", "#34A24F", "#F78801"];
-  
-  const onFinished = (winner) => {
-    // Find the corresponding item based on the winner name
-    const wonItem = items.find(item => item.name === winner);
-    if (wonItem && onSpinComplete) {
-      onSpinComplete(wonItem);
-    }
-  };
-
-  return (
-    <div className="wheel-container">
-      <WheelComponent
-        segments={segments}
-        segColors={segColors}
-        onFinished={onFinished}
-        primaryColor="black"
-        contrastColor="white"
-        buttonText={readOnly ? "Pay to Spin" : "Spin"}
-        isOnlyOnce={true}
-        size={290}
-        upDuration={100}
-        downDuration={1000}
-        fontFamily="Arial"
-        disabled={readOnly}
-      />
-    </div>
-  );
 };
 
 function SpinwheelPage() {
