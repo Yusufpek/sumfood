@@ -37,7 +37,5 @@ public class ShoppingCartWheelRelation{
     @ManyToOne(optional = false)
     @JoinColumn(name = "wheel_id", nullable = false)
     private Wheel wheel;
-
-    @Column(nullable = false)
-    private int amount = 1;
+    
 }
