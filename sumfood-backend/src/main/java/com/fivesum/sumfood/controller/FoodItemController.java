@@ -258,6 +258,25 @@ public class FoodItemController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    @GetMapping("/public/restaurant/{restaurantId}/donated-items")
+    public ResponseEntity<List<FoodItemResponse>> getOfferedDonationItemsByRestaurantPublic(
+            @PathVariable Long restaurantId) {
+            try {
+                Restaurant restaurant = restaurantService.getRestaurantById(restaurantId);
+
+                if (restaurant == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
+                }
+                List<FoodItemResponse> donatedItems = foodItemService.getDonatedFoodItemByRestaurant(restaurant);
+                
+                return ResponseEntity.ok(donatedItems);
+
+            } catch (Exception e) {
+                System.err.println("Error fetching donated items for restaurant ID " + restaurantId + ": " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+            }
+        }
+
     @GetMapping("/items/restaurant/{restaurantId}")
     public ResponseEntity<List<FoodItemResponse>> getMenuItemsByRestaurantId(
             @PathVariable Long restaurantId,
