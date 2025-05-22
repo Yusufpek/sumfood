@@ -22,6 +22,7 @@ import CourierReviews from './pages/CourierReviews/CourierReviews';
 import NotFoundPage from './pages/NotFoundPage';
 import SpinwheelPage from './pages/SpinwheelPage';
 import RestaurantSpinwheelPage from './pages/RestaurantSpinwheelPage';
+import FavoriteRestaurantsPage from './pages/FavoriteRestaurantsPage/FavoriteRestaurantsPage';
 
 function App() {
   return (
@@ -132,6 +133,9 @@ function App() {
             {/* Direct spinwheel routes - replaces SpinwheelRouter */}
             <Route path="/restaurant/:restaurantId/spinwheel/:spinwheelId" element={<SpinwheelPage />} />
             <Route path="/restaurant-dashboard/spinwheel" element={<RestaurantSpinwheelPage />} />
+
+            <Route path="/restaurant/:restaurantId" element={<RestaurantPublicPage />} />
+            <Route path="/favorites" element={<FavoriteRestaurantsPage />} />
 
             {/* 404 route */}
             <Route path="*" element={<NotFoundPage />} />

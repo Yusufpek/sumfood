@@ -31,6 +31,7 @@ const Navbar = () => {
       <div className="navbar-links">
         <Link to="/profile">Profile</Link>
         <Link to="/orders">Order History</Link>
+        <Link to="/favorites">Favorite Restaurants</Link>
         <CartDropdown />
         <button 
           className="logout-button" 
