@@ -154,6 +154,16 @@ public class RestaurantService implements UserDetailsService {
         return restaurants;
     }
 
+    public boolean getIsRestaurantFav(Customer customer, Long restaurantId) {
+        Optional<CustomerFavoriteRestaurant> favRes = customerFavoriteRestaurantRepository
+                .findByCustomerIdAndRestaurantId(customer.getId(), restaurantId);
+        if (favRes.isPresent()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public List<RestaurantProfileResponse> getCustomerFavoriteRestaurants(Customer customer) {
         return customerFavoriteRestaurantRepository.findByCustomerId(customer.getId()).stream()
                 .map(customerFavRes -> toProfileResponse(customerFavRes.getRestaurant())).collect(Collectors.toList());

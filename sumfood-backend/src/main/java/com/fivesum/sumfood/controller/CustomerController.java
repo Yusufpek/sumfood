@@ -239,6 +239,26 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    @GetMapping("/restaurants/fav/{restaurantId}")
+    public ResponseEntity<?> getIsFavRestaurantsByCustomer(
+            @RequestHeader("Authorization") String token, @PathVariable String restaurantId) {
+        String email = jwtService.extractUsername(token.substring(7));
+        Optional<Customer> customer = customerService.findByEmail(email);
+        if (customer.isPresent()) {
+            try {
+                Long resId = Long.parseLong(restaurantId);
+                boolean response = restaurantService.getIsRestaurantFav(customer.get(), resId);
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            } catch (NumberFormatException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Restaurant ID format is incorrect.");
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("An unexpected error occurred: " + e.getMessage());
+            }
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
     @PutMapping("/restaurants/fav/{restaurantId}")
     public ResponseEntity<?> updateFavRestaurantsByCustomer(
             @RequestHeader("Authorization") String token, @PathVariable String restaurantId) {
