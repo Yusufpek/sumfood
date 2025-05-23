@@ -7,13 +7,13 @@ const API_BASE_URL = 'http://localhost:8080/api';
 const ENDPOINTS = {
   SHOPPING_CART: `${API_BASE_URL}/shopping_cart/`,
   UPDATE_CART: `${API_BASE_URL}/shopping_cart/update/`,
-  CREATE_DONATION_ORDER: `${API_BASE_URL}/order/donate/`
+  CREATE_DONATION_ORDER: `${API_BASE_URL}/order/donate/` // Added from conflict
 };
 
 const CartDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [cart, setCart] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // Initialized to false as fetch is conditional
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -25,16 +25,19 @@ const CartDropdown = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token && !cart) {
-    fetchShoppingCart();
+    // Fetch cart if dropdown is open and cart data is not yet loaded, or if token exists and cart is null (initial load)
+    if (isOpen && !cart && token) {
+        fetchShoppingCart();
+    } else if (token && !cart) { // Initial fetch if token exists but cart is not loaded
+        fetchShoppingCart();
     }
-
+    
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
-
+    
     const handleCartUpdate = () => {
       fetchShoppingCart();
     };
@@ -46,7 +49,7 @@ const CartDropdown = () => {
       document.removeEventListener('mousedown', handleClickOutside);
       window.removeEventListener('cart-updated', handleCartUpdate);
     };
-  }, [cart]);
+  }, [isOpen, cart]); // Added isOpen to dependencies to fetch when opened if cart is null
 
   const fetchShoppingCart = async () => {
     setLoading(true);
@@ -66,50 +69,75 @@ const CartDropdown = () => {
       setCart(cartResponse.data);
     } catch (err) {
       console.error("Error fetching shopping cart:", err);
-      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+      if (err.response && (err.response.status === 401 || err.response.status === 403)) { // Auth error handling
         localStorage.removeItem('token');
-        setIsOpen(false);
+        setIsOpen(false); // Close dropdown
+        setCart(null); // Clear cart state
         navigate('/login');
-      } else if (err.response && err.response.status === 404) {
+      } else if (err.response && err.response.status === 404) { // Cart not found
         setCart(null);
+      } else { // Other errors
+        setCart(null); // Or handle more gracefully
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const updateQuantity = async (cartId, itemId, amount) => {
+  const updateItemQuantity = async (cartId, itemId, amount, isFromSpinwheel, currentPrice) => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate("/login");
       return;
     }
 
-    const itemToUpdate = cart?.items?.find(item => item.foodItemId === itemId);
-
-    if (itemToUpdate && itemToUpdate.price === 0 && amount > 0) {
+    // Prevent increasing quantity of donated (price === 0) regular items from dropdown
+    if (!isFromSpinwheel && currentPrice === 0 && amount > 0) {
       console.warn("Cannot increase quantity of donated items from dropdown.");
       return; 
     }
-    if (itemToUpdate && itemToUpdate.amount + amount < 1 && (itemToUpdate.amount * -1 !== amount)) {
-        if (itemToUpdate.price === 0) return;
+    
+    // For regular items, if current amount is 1 and trying to decrease (amount = -1),
+    // and it's a donated item, prevent removal by decrement. Removal should use 'x' button.
+    // However, the 'x' button for donated items will also be disabled based on merged logic.
+    // This specific check might be redundant if 'x' is disabled for donated items.
+    const regularItem = cart?.items?.find(item => item.foodItemId === itemId);
+    if (regularItem && regularItem.amount + amount < 1 && (regularItem.amount * -1 !== amount)) {
+        if (regularItem.price === 0) { // If it's a donated item, don't allow decrement to zero
+            console.warn("Donated items quantity cannot be reduced to zero using '-' button. Use 'x' if removal is intended (and allowed).");
+            return;
+        }
     }
+
+
     try {
-      const response = await axios.post(ENDPOINTS.UPDATE_CART,
-        {
-          'shoppingCartId': cartId,
-          'foodItemId': itemId,
-          'foodItemCount': amount,
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Role': 'CUSTOMER'
-          }
-        });
-      setCart(response.data);
+      const payload = {
+        'shoppingCartId': cartId,
+        'foodItemId': itemId,
+        'foodItemCount': amount, 
+      };
+      // If backend needs to distinguish wheel item updates specifically (e.g., for removal)
+      // if (isFromSpinwheel && amount < 0) { // Example: if removing a wheel item
+      //   payload.isWheelRemoval = true;
+      // }
+
+      const response = await axios.post(ENDPOINTS.UPDATE_CART, payload, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Role': 'CUSTOMER'
+        }
+      });
+
+      setCart(response.data); 
+      // Check if the cart became empty (both regular items and wheel items)
+      if (!response.data || 
+          ((!response.data.items || response.data.items.length === 0) && 
+           (!response.data.wheels || response.data.wheels.length === 0))) {
+        setCart(null);
+      }
     } catch (err) {
       console.error("Error updating shopping cart:", err);
+      fetchShoppingCart(); // Re-fetch to ensure consistency on error
     }
   };
 
@@ -125,18 +153,62 @@ const CartDropdown = () => {
     navigate('/create_order');
   };
 
-  const getItemCount = () => {
-    if (!cart || !cart.items) return 0;
-    return cart.items.reduce((total, item) => total + item.amount, 0);
+  const getCombinedCartItems = () => {
+    if (!cart) return [];
+    
+    const combined = [];
+
+    if (cart.items && Array.isArray(cart.items)) {
+      cart.items.forEach(item => {
+        combined.push({
+          key: `item-${item.foodItemId}`,
+          foodItemId: item.foodItemId,
+          name: item.foodItemName,
+          price: item.price,
+          amount: item.amount,
+          isFromSpinwheel: false,
+          isDonated: item.price === 0 // Check if regular item is a donation
+        });
+      });
+    }
+
+    if (cart.wheels && Array.isArray(cart.wheels)) {
+      cart.wheels.forEach((wheelItem, index) => {
+        combined.push({
+          key: `wheel-${wheelItem.foodItemId}-${wheelItem.wheelId}-${index}`, 
+          foodItemId: wheelItem.foodItemId,
+          name: wheelItem.foodItemName,
+          price: wheelItem.price,
+          amount: 1, 
+          isFromSpinwheel: true,
+          isDonated: false // Assuming wheel items are not donations in the price === 0 sense
+        });
+      });
+    }
+    return combined;
+  };
+  
+  const combinedItemsForDisplay = getCombinedCartItems();
+
+  const getTotalItemCount = () => {
+    if (!cart) return 0;
+    let total = 0;
+    if (cart.items && Array.isArray(cart.items)) {
+      total += cart.items.reduce((sum, item) => sum + item.amount, 0);
+    }
+    if (cart.wheels && Array.isArray(cart.wheels)) {
+      total += cart.wheels.length; 
+    }
+    return total;
   };
 
-  // Donation
+  // Donation Modal Functions
   const handleOpenDonateCartConfirm = () => {
     setDonationError(null);
     setDonationSuccess(null);
-    if (!cart || !cart.items || cart.items.length === 0 || cart.totalPrice === 0) {
-        setDonationError("Your cart is empty or has no value. Please add items to donate.");
-        setTimeout(() => setDonationError(null), 3000); // Clear error after 3s
+    if (!cart || combinedItemsForDisplay.length === 0 || (cart.totalPrice === 0 && !combinedItemsForDisplay.some(item => item.price > 0) )) {
+        setDonationError("Your cart is empty or has no value to donate. Please add items.");
+        setTimeout(() => setDonationError(null), 3000);
         return;
     }
     setShowDonateCartConfirm(true);
@@ -148,12 +220,11 @@ const CartDropdown = () => {
 
   const handleConfirmCartDonation = async () => {
     const token = localStorage.getItem('token');
-    console.log("Token:", token);
     if (!token) {
       navigate("/login");
       return;
     }
-    if (!cart || !cart.items || cart.items.length === 0 || cart.totalPrice === 0) {
+    if (!cart || combinedItemsForDisplay.length === 0 || (cart.totalPrice === 0 && !combinedItemsForDisplay.some(item => item.price > 0) )) {
       setDonationError("Cannot donate an empty or zero-value cart.");
       setTimeout(() => {
         setShowDonateCartConfirm(false);
@@ -174,11 +245,11 @@ const CartDropdown = () => {
         }
       });
       setDonationSuccess(`Successfully created donation order (ID: ${response.data.id}). Thank you!`);
-      fetchShoppingCart();
+      fetchShoppingCart(); // Refresh cart, it should be empty now
       setTimeout(() => {
         setShowDonateCartConfirm(false);
         setDonationSuccess(null);
-        setIsOpen(false);
+        setIsOpen(false); // Close dropdown after successful donation
       }, 3000);
     } catch (err) {
       let msg = 'Failed to create donation order.';
@@ -200,11 +271,10 @@ const CartDropdown = () => {
     }
   };
 
-
   return (
     <div className="cart-dropdown" ref={dropdownRef}>
       <button className="cart-toggle" onClick={toggleDropdown}>
-        🛒 <span className="cart-count">{getItemCount()}</span>
+        <span role="img" aria-label="cart">🛒</span> <span className="cart-count">{getTotalItemCount()}</span>
       </button>
       
       {isOpen && (
@@ -213,42 +283,48 @@ const CartDropdown = () => {
           
           {loading ? (
             <p className="cart-loading">Loading cart...</p>
-          ) : !cart || !cart.items || cart.items.length === 0 ? (
-            <p className="cart-empty">Your cart is empty</p>
+          ) : !cart || combinedItemsForDisplay.length === 0 ? (
+            <p className="cart-empty">Your cart is empty.</p>
           ) : (
             <>
               <div className="cart-items-container">
-                {cart.items.map(item => {
-                  const isDonated = item.price === 0;
-                  return (
-                  <div key={item.foodItemId} className="cart-dropdown-item">
+                {combinedItemsForDisplay.map(item => (
+                  <div key={item.key} className="cart-dropdown-item">
                     <div className="cart-item-details">
-                      <span className="item-name">{item.foodItemName} {isDonated && <span className="donation-tag-inline">(Donation)</span>}</span>
+                      <span className="item-name">
+                        {item.isFromSpinwheel && (
+                          <span className="spinwheel-indicator" role="img" aria-label="won item">🎁 </span>
+                        )}
+                        {item.name}
+                        {item.isDonated && !item.isFromSpinwheel && <span className="donation-tag-inline"> (Donation)</span>}
+                      </span>
                       <span className="item-price">${Number(item.price).toFixed(2)}</span>
                     </div>
                     <div className="cart-item-controls">
                       <button 
-                        onClick={() => updateQuantity(cart.id, item.foodItemId, -1)} 
-                        disabled={item.amount <= 1 || isDonated} // Disable decrement for donated
+                        onClick={() => updateItemQuantity(cart.id, item.foodItemId, -1, item.isFromSpinwheel, item.price)} 
+                        disabled={item.isFromSpinwheel || item.amount <= 1 || item.isDonated}
                       >
                         -
                       </button>
                       <span className="item-quantity">{item.amount}</span>
                       <button 
-                        onClick={() => updateQuantity(cart.id, item.foodItemId, 1)}
-                        disabled={isDonated} // Disable increment for donated
+                        onClick={() => updateItemQuantity(cart.id, item.foodItemId, 1, item.isFromSpinwheel, item.price)}
+                        disabled={item.isFromSpinwheel || item.isDonated}
                       >
                         +
                       </button>
                       <button 
                         className="remove-item" 
-                        onClick={() => updateQuantity(cart.id, item.foodItemId, item.amount * -1)}
+                        title="Remove item"
+                        onClick={() => updateItemQuantity(cart.id, item.foodItemId, item.amount * -1, item.isFromSpinwheel, item.price)}
+                        disabled={item.isFromSpinwheel || item.isDonated} // Donated items also can't be removed this way from dropdown
                       >
                         ×
                       </button>
                     </div>
                   </div>
-                )})}
+                ))}
               </div>
               
               <div className="cart-dropdown-footer">
@@ -256,17 +332,21 @@ const CartDropdown = () => {
                   <span>Total:</span>
                   <span>${cart.totalPrice ? Number(cart.totalPrice).toFixed(2) : '0.00'}</span>
                 </div>
-                <div className="cart-actions">
-                    <button className="checkout-button" onClick={placeOrder}>
-                      <span className="button-icon">✔</span>
-                      Checkout
+                <div className="cart-actions"> {/* Added for layout */}
+                    <button 
+                        className="checkout-button" 
+                        onClick={placeOrder}
+                        disabled={combinedItemsForDisplay.length === 0} // Disable if cart is effectively empty
+                    >
+                        <span className="button-icon">✔</span>
+                        Checkout
                     </button>
                     <button 
                         className="donate-cart-button" 
                         onClick={handleOpenDonateCartConfirm}
-                        disabled={!cart || !cart.items || cart.items.length === 0 || cart.totalPrice === 0 || donating}
+                        disabled={!cart || combinedItemsForDisplay.length === 0 || (cart.totalPrice === 0 && !combinedItemsForDisplay.some(item => item.price > 0)) || donating}
                     >
-                    <span className="button-icon">❤️</span>
+                        <span className="button-icon">❤️</span>
                         Donate This Cart
                     </button>
                 </div>
@@ -276,11 +356,10 @@ const CartDropdown = () => {
         </div>
       )}
 
+      {/* Donation Confirmation Modal */}
       {showDonateCartConfirm && (
         <div className="modal-overlay" onClick={(e) => { 
-            if (e.target === e.currentTarget) { // only close if overlay itself is clicked
-                handleCloseDonateCartConfirm();
-            }
+            if (e.target === e.currentTarget) { handleCloseDonateCartConfirm(); }
         }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>Confirm Cart Donation</h3>
@@ -301,9 +380,9 @@ const CartDropdown = () => {
             )}
             <div className="modal-actions">
               {!donationSuccess && (
-                 <button onClick={handleConfirmCartDonation} className="confirm-btn" disabled={donating}>
+                  <button onClick={handleConfirmCartDonation} className="confirm-btn" disabled={donating}>
                     {donating ? 'Processing...' : 'Yes, Donate & Pay'}
-                </button>
+                  </button>
               )}
               <button onClick={handleCloseDonateCartConfirm} className="cancel-btn" disabled={donating}>
                 {donationSuccess ? 'Close' : 'Cancel'}

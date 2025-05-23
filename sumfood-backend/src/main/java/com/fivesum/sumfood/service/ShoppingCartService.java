@@ -2,8 +2,10 @@ package com.fivesum.sumfood.service;
 
 import com.fivesum.sumfood.dto.requests.ShoppingCartCreateRequest;
 import com.fivesum.sumfood.dto.requests.ShoppingCartUpdateRequest;
+import com.fivesum.sumfood.dto.requests.ShoppingCartWheelRequest;
 import com.fivesum.sumfood.dto.responses.ShoppingCartItemResponse;
 import com.fivesum.sumfood.dto.responses.ShoppingCartResponse;
+import com.fivesum.sumfood.dto.responses.ShoppingCartWheelResponse;
 import com.fivesum.sumfood.exception.ConflictException;
 import com.fivesum.sumfood.exception.InvalidRequestException;
 import com.fivesum.sumfood.exception.UnauthorizedAccessException;
@@ -24,6 +26,8 @@ import org.springframework.stereotype.Service;
 public class ShoppingCartService {
 
     private final ShoppingCartRepository shoppingCartRepository;
+    private final WheelRepository wheelRepository;
+    private final ShoppingCartWheelRelationRepository shoppingCartWheelRepository;
     private final ShoppingCartFoodItemRelationRepository shoppingCartItemRepository;
     private final RestaurantService restaurantService;
     private final FoodItemService foodItemService;
@@ -61,21 +65,29 @@ public class ShoppingCartService {
                 .build();
         shoppingCartRepository.save(shoppingCart);
 
-        ShoppingCartFoodItemRelation shoppingCartItem = ShoppingCartFoodItemRelation.builder()
-                .shoppingCart(shoppingCart)
-                .foodItem(foodItem)
-                .amount(request.getFoodItemCount())
-                .build();
+        System.out.println("_________________________");
+        System.out.println("Shopping cart created: " + shoppingCart);
 
-        shoppingCartItemRepository.save(shoppingCartItem);
+        if (request.getFoodItemCount() > 0) {
+            ShoppingCartFoodItemRelation shoppingCartItem = ShoppingCartFoodItemRelation.builder()
+                    .shoppingCart(shoppingCart)
+                    .foodItem(foodItem)
+                    .amount(request.getFoodItemCount())
+                    .build();
+            
+            shoppingCartItemRepository.save(shoppingCartItem);
 
-        List<ShoppingCartFoodItemRelation> items = shoppingCart.getItems();
-        items.add(shoppingCartItem);
-        shoppingCart.setItems(items);
-        shoppingCartRepository.save(shoppingCart);
+            System.out.println("_________________________");
+            System.out.println("Shopping cart item created: " + shoppingCartItem);
 
-        System.out.println("================");
-        System.out.println(shoppingCart.getItems());
+            List<ShoppingCartFoodItemRelation> items = shoppingCart.getItems();
+            items.add(shoppingCartItem);
+            shoppingCart.setItems(items);
+            shoppingCartRepository.save(shoppingCart);
+
+            System.out.println("================");
+            System.out.println(shoppingCart.getItems());
+        }
 
         return mapToDTO(shoppingCart);
     }
@@ -162,6 +174,42 @@ public class ShoppingCartService {
         return false;
     }
 
+    @Transactional
+    public ShoppingCartResponse addWheelToShoppingCart(ShoppingCartWheelRequest request, Customer customer) {
+        double calculatedTotalPrice = 0;
+
+        if (request.getFoodItemId() == null || request.getShoppingCartId() == null || request.getWheelId() == null) {
+            throw new InvalidRequestException("Invalid request: missing IDs.");
+        }
+
+        ShoppingCart shoppingCart = this.getShoppingCartById(request.getShoppingCartId());
+
+        if (shoppingCart.getCustomer() != customer) {
+            throw new UnauthorizedAccessException("You are not allowed to update this shopping cart.");
+        }
+
+        Wheel wheel = wheelRepository.findById(request.getWheelId())
+                .orElseThrow(() -> new InvalidRequestException("Wheel not found"));
+        if (wheel.getRestaurant() != shoppingCart.getRestaurant()) {
+            throw new ConflictException("Cannot add items from different restaurants to the same cart.");
+        }
+
+        FoodItem foodItem = foodItemService.getById(request.getFoodItemId());
+
+        calculatedTotalPrice = shoppingCart.getTotalPrice() + wheel.getPrice();
+        shoppingCart.setTotalPrice(calculatedTotalPrice);
+        shoppingCartRepository.save(shoppingCart);
+
+        ShoppingCartWheelRelation shoppingCartWheel = ShoppingCartWheelRelation.builder()
+                .shoppingCart(shoppingCart)
+                .wheel(wheel)
+                .foodItem(foodItem)
+                .build();
+        shoppingCartWheelRepository.save(shoppingCartWheel);
+
+        return mapToDTO(shoppingCart);
+    }
+
     public ShoppingCart getShoppingCartById(Long id) {
         return shoppingCartRepository.findById(id)
                 .orElseThrow(() -> new InvalidRequestException("Shopping cart not found"));
@@ -188,15 +236,31 @@ public class ShoppingCartService {
     }
 
     public ShoppingCartResponse mapToDTO(ShoppingCart cart) {
-        List<ShoppingCartItemResponse> items = cart.getItems().stream()
-                .map(item -> ShoppingCartItemResponse.builder()
-                        .foodItemId(item.getFoodItem().getId())
-                        .foodItemName(item.getFoodItem().getName())
-                        .imageRestaurantName(item.getFoodItem().getRestaurant().getBusinessName())
-                        .amount(item.getAmount())
-                        .price(item.getFoodItem().getPrice())
-                        .build())
-                .collect(Collectors.toList());
+        List<ShoppingCartItemResponse> items = new ArrayList<>();
+        if(cart.getItems() != null) {
+            items = cart.getItems().stream()
+                    .map(item -> ShoppingCartItemResponse.builder()
+                            .foodItemId(item.getFoodItem().getId())
+                            .foodItemName(item.getFoodItem().getName())
+                            .price(item.getFoodItem().getPrice())
+                            .amount(item.getAmount())
+                            .imageRestaurantName(item.getFoodItem().getRestaurant().getBusinessName())
+                            .build())
+                    .collect(Collectors.toList());
+        }
+            
+        List<ShoppingCartWheelResponse> wheels = new ArrayList<>();
+        if(cart.getWheels() != null) {
+            wheels = cart.getWheels().stream()
+                    .map(item -> ShoppingCartWheelResponse.builder()
+                            .wheelId(item.getWheel().getId())
+                            .price(item.getWheel().getPrice())
+                            .foodItemId(item.getFoodItem().getId())
+                            .foodItemName(item.getFoodItem().getName())
+                            .imageRestaurantName(item.getFoodItem().getRestaurant().getBusinessName())
+                            .build())
+                    .collect(Collectors.toList());
+        }
 
         return ShoppingCartResponse.builder()
                 .id(cart.getId())
@@ -204,6 +268,7 @@ public class ShoppingCartService {
                 .restaurantId(cart.getRestaurant().getId())
                 .restaurantName(cart.getRestaurant().getDisplayName())
                 .items(items)
+                .wheels(wheels)
                 .build();
 
     }

@@ -2,6 +2,7 @@ package com.fivesum.sumfood.controller;
 
 import com.fivesum.sumfood.dto.requests.ShoppingCartCreateRequest;
 import com.fivesum.sumfood.dto.requests.ShoppingCartUpdateRequest;
+import com.fivesum.sumfood.dto.requests.ShoppingCartWheelRequest;
 import com.fivesum.sumfood.dto.responses.ShoppingCartResponse;
 import com.fivesum.sumfood.exception.ConflictException;
 import com.fivesum.sumfood.exception.InvalidRequestException;
@@ -63,6 +64,29 @@ public class ShoppingCartController {
         if (customer.isPresent()) {
             try {
                 ShoppingCartResponse response = shoppingCartService.updateShoppingCart(request, customer.get());
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            } catch (InvalidRequestException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            } catch (UnauthorizedAccessException e) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+            } catch (ConflictException e) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("An unexpected error occurred: " + e.getMessage());
+            }
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    @PostMapping("/add_wheel")
+    public ResponseEntity<?> addWheelToShoppingCart(@RequestBody ShoppingCartWheelRequest request,
+            @RequestHeader("Authorization") String token) {
+        String email = jwtService.extractUsername(token.replace("Bearer ", ""));
+        Optional<Customer> customer = customerService.findByEmail(email);
+        if (customer.isPresent()) {
+            try {
+                ShoppingCartResponse response = shoppingCartService.addWheelToShoppingCart(request, customer.get());
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
             } catch (InvalidRequestException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
