@@ -15,4 +15,5 @@ public class ShoppingCartResponse {
     private String restaurantName;
     private double totalPrice;
     private List<ShoppingCartItemResponse> items;
+    private List<ShoppingCartWheelResponse> wheels;
 }

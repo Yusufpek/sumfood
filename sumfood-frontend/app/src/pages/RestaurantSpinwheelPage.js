@@ -9,7 +9,9 @@ import '../styles/spinwheel.css';
 const API_BASE_URL = 'http://localhost:8080/api';
 const ENDPOINTS = {
   RESTAURANT_MENU: `${API_BASE_URL}/food/items/restaurant`,
-  SPINWHEELS: `${API_BASE_URL}/restaurant/spinwheel`,
+  SPINWHEELS: `${API_BASE_URL}/wheels/restaurant`,
+  CREATE_WHEEL: `${API_BASE_URL}/wheels/restaurant/create`,
+  DELETE_WHEEL: `${API_BASE_URL}/wheels/restaurant/delete`,
 };
 
 function RestaurantSpinwheelPage() {
@@ -179,15 +181,15 @@ function RestaurantSpinwheelPage() {
 
     try {
       const spinwheelData = {
-        ...newSpinwheel,
-        items: selectedItems.map(item => ({
-          foodItemId: item.foodItemId,
-          probability: item.probability || 1
-        })),
-        restaurantId: restaurantInfo.id
+        restaurantId: restaurantInfo.id,
+        name: newSpinwheel.name,
+        description: newSpinwheel.description,
+        price: newSpinwheel.price,
+        foodItemIds: selectedItems.map(item => (item.foodItemId))
       };
+      console.log('Creating spinwheel with data:', spinwheelData);
 
-      const response = await axios.post(ENDPOINTS.SPINWHEELS, spinwheelData, {
+      const response = await axios.post(ENDPOINTS.CREATE_WHEEL, spinwheelData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Role': 'RESTAURANT'
@@ -214,34 +216,6 @@ function RestaurantSpinwheelPage() {
     }
   };
 
-  const toggleSpinwheelActive = async (spinwheelId, currentStatus) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
-    try {
-      await axios.patch(`${ENDPOINTS.SPINWHEELS}/${spinwheelId}`,
-        { active: !currentStatus },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Role': 'RESTAURANT'
-          }
-        }
-      );
-
-      // Update the local state
-      setSpinwheels(spinwheels.map(wheel =>
-        wheel.id === spinwheelId ? { ...wheel, active: !currentStatus } : wheel
-      ));
-    } catch (err) {
-      console.error('Error updating spinwheel status:', err);
-      setError('Failed to update spinwheel status');
-    }
-  };
-
   const deleteSpinwheel = async (spinwheelId) => {
     if (!window.confirm('Are you sure you want to delete this spinwheel?')) {
       return;
@@ -254,7 +228,7 @@ function RestaurantSpinwheelPage() {
     }
 
     try {
-      await axios.delete(`${ENDPOINTS.SPINWHEELS}/${spinwheelId}`, {
+      await axios.delete(`${ENDPOINTS.DELETE_WHEEL}/${spinwheelId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Role': 'RESTAURANT'
@@ -286,7 +260,6 @@ function RestaurantSpinwheelPage() {
 
         {error && <div className="error-message">{error}</div>}
 
-        {/* Simplified content for testing */}
         <div className="spinwheel-actions">
           <button className="create-btn" onClick={() => setIsCreating(true)}>
             Create New Spinwheel
@@ -296,103 +269,116 @@ function RestaurantSpinwheelPage() {
         {isCreating && (
           <div className="create-spinwheel-form">
             <h2>Create New Spinwheel</h2>
-            <div className="form-group">
-              <label>Name</label>
-              <input
-                type="text"
-                name="name"
-                value={newSpinwheel.name}
-                onChange={handleInputChange}
-                placeholder="Spinwheel name"
-                required
-              />
-            </div>
+            <div className="form-grid">
+              <div className="form-column">
+                <div className="form-group">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={newSpinwheel.name}
+                    onChange={handleInputChange}
+                    placeholder="Spinwheel name"
+                    required
+                  />
+                </div>
 
-            <div className="form-group">
-              <label>Description</label>
-              <textarea
-                name="description"
-                value={newSpinwheel.description}
-                onChange={handleInputChange}
-                placeholder="Describe your spinwheel"
-              />
-            </div>
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea
+                    name="description"
+                    value={newSpinwheel.description}
+                    onChange={handleInputChange}
+                    placeholder="Describe your spinwheel"
+                    rows="4"
+                  />
+                </div>
 
-            <div className="form-group">
-              <label>Price ($)</label>
-              <input
-                type="number"
-                name="price"
-                value={newSpinwheel.price}
-                onChange={handleInputChange}
-                min="0"
-                step="0.01"
-              />
-            </div>
-
-            <div className="menu-items-selection">
-              <h3>Select Menu Items</h3>
-              <p>Choose at least 2 items for your spinwheel</p>
-
-              <div className="selected-items-preview">
-                <h4>Selected Items ({selectedItems.length})</h4>
-                {selectedItems.length > 0 ? (
-                  <div className="selected-items-list">
-                    {selectedItems.map(item => (
-                      <div key={item.foodItemId} className="selected-item">  {}
-                        <span>{item.name}</span>
-                        <span>${item.price.toFixed(2)}</span>
-                        <label>
-                          Weight:
-                          <input
-                            type="number"
-                            min="1"
-                            max="10"
-                            value={item.probability}
-                            onChange={(e) => updateItemProbability(item.foodItemId, e.target.value)}
-                          />
-                        </label>
-                        <button onClick={() => toggleItemSelection(item)}>Remove</button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p>No items selected</p>
-                )}
-
-                {selectedItems.length > 0 && (
-                  <div className="expected-price">
-                    <p>Expected Value: ${calculateExpectedPrice().toFixed(2)}</p>
-                  </div>
-                )}
+                <div className="form-group">
+                  <label>Price ($)</label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={newSpinwheel.price}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="0.01"
+                    className="price-input"
+                  />
+                </div>
+                
+                <div className="form-info-box">
+                  <h4>Spinwheel Rules</h4>
+                  <ul>
+                    <li>Select at least 2 items for your spinwheel</li>
+                    <li>Set probabilities to control how often items appear</li>
+                    <li>Higher weights mean higher chances of winning</li>
+                    <li>Set a fair price based on the items' values</li>
+                  </ul>
+                </div>
               </div>
-
-              <div className="available-items">
-                <h4>Available Menu Items</h4>
-                <div className="menu-items-grid">
-                  {menuItems.map(item => (
-                    <div
-                      key={item.foodItemId}  // CHANGED: Use foodItemId
-                      className={`menu-item ${selectedItems.find(i => i.foodItemId === item.foodItemId) ? 'selected' : ''}`}
-                      onClick={() => toggleItemSelection(item)}
-                    >
-                      <h5>{item.name}</h5>
-                      <p>${item.price.toFixed(2)}</p>
-                      <p>{item.description}</p>
+              
+              <div className="form-column">
+                <div className="menu-items-selection">
+                  <h3>Select Menu Items</h3>
+                  
+                  <div className="selection-container">
+                    <div className="available-items">
+                      <h4>Available Menu Items</h4>
+                      <div className="menu-items-grid">
+                        {menuItems.map(item => (
+                          <div
+                            key={item.foodItemId}
+                            className={`menu-item ${selectedItems.find(i => i.foodItemId === item.foodItemId) ? 'selected' : ''}`}
+                            onClick={() => toggleItemSelection(item)}
+                          >
+                            <h5>{item.name}</h5>
+                            <p className="item-price">${item.price.toFixed(2)}</p>
+                            <p className="item-description">{item.description}</p>
+                            {selectedItems.find(i => i.foodItemId === item.foodItemId) && (
+                              <div className="selected-badge">✓</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
+
+                    <div className="selected-items-preview">
+                      <h4>Selected Items ({selectedItems.length})</h4>
+                      {selectedItems.length > 0 ? (
+                        <div className="selected-items-list">
+                          {selectedItems.map(item => (
+                            <div key={item.foodItemId} className="selected-item">
+                              <div className="item-details">
+                                <span className="item-name">{item.name}</span>
+                                <span className="item-price">${item.price.toFixed(2)}</span>
+                              </div>
+                              <div className="item-controls">
+                                <button 
+                                  className="remove-item-btn"
+                                  onClick={() => toggleItemSelection(item)}>
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="empty-selection">No items selected</p>
+                      )}
+
+                      {selectedItems.length > 0 && (
+                        <div className="expected-price">
+                          <p>Expected Value: <span className="price-value">${calculateExpectedPrice().toFixed(2)}</span></p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             <div className="form-actions">
-              <button
-                className="save-btn"
-                onClick={handleCreateSpinwheel}
-                disabled={selectedItems.length < 2 || !newSpinwheel.name}
-              >
-                Create Spinwheel
-              </button>
               <button
                 className="cancel-btn"
                 onClick={() => {
@@ -408,6 +394,13 @@ function RestaurantSpinwheelPage() {
                 }}
               >
                 Cancel
+              </button>
+              <button
+                className="save-btn"
+                onClick={handleCreateSpinwheel}
+                disabled={selectedItems.length < 2 || !newSpinwheel.name}
+              >
+                Create Spinwheel
               </button>
             </div>
           </div>
