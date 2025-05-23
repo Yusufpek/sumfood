@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class OrderService {
 	private final ShoppingCartService shoppingCartService;
+	private final FoodItemService foodItemService;
 	private final OrderRepository orderRepository;
 	private final CustomerService customerService;
 
@@ -41,7 +42,25 @@ public class OrderService {
 
 		// PAYMENT CHECK
 		double totalPrice = shoppingCart.getTotalPrice();
-		PaymentStatus paymentStatus = getPayment(totalPrice);
+		PaymentStatus paymentStatus;
+		if (totalPrice == 0) { // donation
+			paymentStatus = PaymentStatus.SUCCESSFUL;
+		} else {
+			paymentStatus = getPayment(totalPrice);
+		}
+
+		// update item stock
+		List<ShoppingCartFoodItemRelation> items = shoppingCart.getItems();
+		// check all items stock
+		for (ShoppingCartFoodItemRelation item : items) {
+			if (item.getFoodItem().getStock() <= 0) {
+				throw new InvalidRequestException("Invalid request food item has no stock!");
+			}
+		}
+		// decrease stock count
+		for (ShoppingCartFoodItemRelation item : items) {
+			foodItemService.decreaseStock(item.getFoodItem());
+		}
 
 		// Order Address
 		Address address = customerService.getDefaultAddressByCustomer(customer);
@@ -59,6 +78,44 @@ public class OrderService {
 				.paymentStatus(paymentStatus)
 				.orderStatus(OrderStatus.PENDING)
 				.orderType(OrderType.REGULAR)
+				.build();
+		shoppingCartService.disableShoppingCart(shoppingCart);
+		orderRepository.save(order);
+		return toResponseDTO(order);
+	}
+
+	@Transactional(rollbackOn = Exception.class, dontRollbackOn = { InvalidRequestException.class })
+	public OrderResponse createDonationOrder(Customer customer) {
+		ShoppingCart shoppingCart = shoppingCartService.getActiveCartByCustomer(customer);
+		if (shoppingCart == null) {
+			throw new InvalidRequestException("Invalid request active shopping cart is not exist!");
+		}
+
+		// PAYMENT CHECK
+		double totalPrice = shoppingCart.getTotalPrice();
+		if (totalPrice == 0)
+			throw new InvalidRequestException("Invalid request active shopping cart has donated items!");
+
+		PaymentStatus paymentStatus = getPayment(totalPrice);
+
+		// items
+		List<ShoppingCartFoodItemRelation> items = shoppingCart.getItems();
+		for (ShoppingCartFoodItemRelation item : items) {
+			if (item.getFoodItem().getStock() <= 0) {
+				throw new InvalidRequestException("Invalid request food item has no stock!");
+			}
+		}
+		for (ShoppingCartFoodItemRelation item : items) {
+			FoodItem foodItem = item.getFoodItem();
+			foodItemService.addDonatedFoodItem(foodItem, item.getAmount());
+		}
+
+		Order order = Order.builder()
+				.shoppingCart(shoppingCart)
+				.customer(customer)
+				.paymentStatus(paymentStatus)
+				.orderStatus(OrderStatus.DONATED)
+				.orderType(OrderType.DONATION)
 				.build();
 		shoppingCartService.disableShoppingCart(shoppingCart);
 		orderRepository.save(order);
@@ -82,6 +139,7 @@ public class OrderService {
 		pastStatusList.add(OrderStatus.FAILED);
 		pastStatusList.add(OrderStatus.CANCELLED);
 		pastStatusList.add(OrderStatus.DELIVERED);
+		pastStatusList.add(OrderStatus.DONATED);
 
 		List<Order> orders = orderRepository.findByCustomerAndOrderStatusIn(customer, pastStatusList);
 		return orders.stream().map(item -> toResponseDTO(item)).collect(Collectors.toList());
@@ -172,6 +230,9 @@ public class OrderService {
 			throw new InvalidRequestException("Order is not cancellable!");
 		}
 		order.setOrderStatus(OrderStatus.CANCELLED);
+		for(ShoppingCartFoodItemRelation item: order.getShoppingCart().getItems()){
+			foodItemService.increaseStock(item.getFoodItem(), item.getAmount());
+		}
 		orderRepository.save(order);
 	}
 
@@ -203,20 +264,33 @@ public class OrderService {
 						.price(item.getFoodItem().getPrice())
 						.build())
 				.collect(Collectors.toList());
-
-		return OrderResponse
-				.builder()
-				.id(order.getId())
-				.createdAt(order.getCreateAt())
-				.orderStatus(order.getOrderStatus().toString())
-				.orderType(order.getOrderType().toString())
-				.paymentStatus(order.getPaymentStatus().toString())
-				.totalPrice(order.getShoppingCart().getTotalPrice())
-				.restaurantName(order.getShoppingCart().getRestaurant().getDisplayName())
-				.address(order.getAddress())
-				.latitude(order.getLatitude())
-				.longitude(order.getLongitude())
-				.foodItems(items)
-				.build();
+		if (order.getOrderType() == OrderType.DONATION) {
+			return OrderResponse
+					.builder()
+					.id(order.getId())
+					.createdAt(order.getCreateAt())
+					.orderStatus(order.getOrderStatus().toString())
+					.orderType(order.getOrderType().toString())
+					.paymentStatus(order.getPaymentStatus().toString())
+					.totalPrice(order.getShoppingCart().getTotalPrice())
+					.restaurantName(order.getShoppingCart().getRestaurant().getDisplayName())
+					.foodItems(items)
+					.build();
+		} else {
+			return OrderResponse
+					.builder()
+					.id(order.getId())
+					.createdAt(order.getCreateAt())
+					.orderStatus(order.getOrderStatus().toString())
+					.orderType(order.getOrderType().toString())
+					.paymentStatus(order.getPaymentStatus().toString())
+					.totalPrice(order.getShoppingCart().getTotalPrice())
+					.restaurantName(order.getShoppingCart().getRestaurant().getDisplayName())
+					.address(order.getAddress())
+					.latitude(order.getLatitude())
+					.longitude(order.getLongitude())
+					.foodItems(items)
+					.build();
+		}
 	}
 }

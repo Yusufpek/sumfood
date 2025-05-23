@@ -544,3 +544,218 @@
       text-align: left;
     }
   }
+
+/* Donation Section Styles */
+.donation-offer-section {
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.donation-offer-prompt {
+    color: #0f5132;
+    font-size: 1.1em;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.donation-item-card {
+    border-left: 4px solid #198754;
+    background-color: #f0fff0;
+}
+
+.donation-tag {
+    font-size: 0.8em;
+    color: #198754;
+    background-color: #d1e7dd;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 5px;
+}
+
+.free-donation-tag {
+    display: block;
+    font-size: 0.8em;
+    color: #0f5132;
+    margin-top: 4px;
+}
+
+.item-stock-info {
+    color: #666;
+    font-size: 0.9em;
+    margin: 5px 0;
+}
+
+.out-of-stock {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.add-donation-item-btn {
+    background-color: #198754;
+}
+
+.add-donation-item-btn:hover {
+    background-color: #146c43;
+}
+
+.add-donation-item-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.donation-category-title {
+    color: #198754;
+}
+
+/* RestaurantPublicPage.css */
+
+/* ... (existing styles for restaurant-header etc.) ... */
+
+.restaurant-header {
+  /* ... your existing grid setup ... */
+  /* Add a new column for actions or adjust existing */
+  grid-template-columns: auto 1fr auto auto; /* Added one more auto column */
+  align-items: center; /* Better vertical alignment */
+}
+
+.restaurant-actions {
+  grid-column: 4; /* Place it in the new last column */
+  grid-row: 1; /* Align with the top part */
+  justify-self: end; /* Align to the right of its grid area */
+  /* If your rating was also justify-self: end, they might overlap.
+     Adjust grid-column for rating if needed, e.g., rating to column 3, actions to column 4 */
+}
+.restaurant-rating { /* Adjust if it was in the last column before */
+    grid-column: 3; 
+    /* ... keep other rating styles ... */
+}
+
+
+.favorite-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  font-size: 1.8em; /* Adjust size of the heart icon */
+  line-height: 1;
+  transition: transform 0.2s ease, color 0.2s ease;
+  color: #ccc; /* Default empty heart color */
+}
+
+.favorite-button:hover {
+  transform: scale(1.1);
+}
+
+.favorite-button.favorited .heart-icon {
+  color: #e74c3c; /* Red color for favorited heart */
+}
+.favorite-button .heart-icon { /* For empty heart */
+  color: #a0a0a0; /* Greyish for empty heart */
+}
+
+.favorite-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments for the new action button in header */
+@media (max-width: 768px) {
+  .restaurant-header {
+    /* Adjust grid for an extra item if needed, or stack actions */
+    grid-template-columns: auto 1fr; /* Example: logo and info/actions */
+    /* grid-template-rows: auto auto auto auto; */ /* May need more rows */
+  }
+  .restaurant-actions {
+    grid-column: 2; /* Or 1 if stacking below logo */
+    grid-row: 1; /* Or adjust if stacking */
+    justify-self: end; /* Or start/center */
+    margin-top: 5px; /* Add some space if it's below other elements */
+  }
+}
+
+@media (max-width: 480px) {
+    .restaurant-actions {
+        /* Further adjustments for very small screens */
+        justify-self: start; /* Example */
+        margin-top: 10px;
+    }
+}
+/* RestaurantPublicPage.css */
+
+/* ... (your existing styles for .restaurant-header, .restaurant-actions etc.) ... */
+
+.restaurant-actions {
+  /* Ensure this is positioned correctly in your header grid */
+  grid-column: 4; /* Example, adjust to your layout */
+  grid-row: 1;
+  justify-self: end;
+  align-self: center; /* Helps vertically align the button */
+}
+
+.favorite-button {
+  background: none;          /* No background color by default */
+  border: none;              /* No border by default */
+  cursor: pointer;
+  padding: 5px;              /* Minimal padding around the icon for clickability */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;             /* Remove default focus outline if not desired, or style it custom */
+  -webkit-appearance: none;  /* Remove default browser styling on some systems */
+  -moz-appearance: none;
+  appearance: none;
+  transition: opacity 0.15s ease-in-out; /* Smooth opacity transition if used */
+  /* NO TRANSFORM OR SCALING HERE */
+}
+
+/* Hover state for the button WHEN IT IS NOT DISABLED */
+.favorite-button:hover:not(:disabled) {
+  /* Option 1: No visual change at all on button area hover, only on icon */
+   background: none; /* Explicitly ensure no background change */
+
+  /* Option 2: Subtle opacity change on the whole button for feedback */
+  /* opacity: 0.85; */
+}
+
+.favorite-button:focus {
+    outline: none; /* Or style a custom focus ring, e.g., outline: 2px solid blue; */
+}
+
+
+.favorite-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.heart-icon {
+  font-size: 1.8em;        /* Adjust size of the heart character */
+  line-height: 1;          /* Ensure consistent line height */
+  color: #aaa;             /* Default "empty" heart color (light grey for '♡') */
+  transition: color 0.2s ease; /* Smooth color transition for the heart itself */
+  /* NO TRANSFORM HERE */
+}
+
+/* When the button is NOT favorited AND IS HOVERED (and not disabled) */
+.favorite-button:not(.favorited):hover:not(:disabled) .heart-icon {
+  color: #666; /* Darker grey for empty heart on hover for interactivity feedback */
+}
+
+/* When the button IS favorited */
+.favorite-button.favorited .heart-icon {
+  color: #e74c3c;          /* Red color for "favorited" state (for '❤️') */
+}
+
+/* If you want the filled red heart to slightly change on hover (optional) */
+.favorite-button.favorited:hover:not(:disabled) .heart-icon {
+  /* color: #d63031; */ /* Example: Slightly darker red on hover */
+  /* Or a subtle brightness: filter: brightness(1.1); */
+}
+
+
+.processing-dots {
+  margin-left: 4px;
+  font-size: 1em;
+  color: #555; /* Or match your theme */
+}
