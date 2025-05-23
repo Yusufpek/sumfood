@@ -63,24 +63,26 @@ public class ShoppingCartService {
         System.out.println("_________________________");
         System.out.println("Shopping cart created: " + shoppingCart);
 
-        ShoppingCartFoodItemRelation shoppingCartItem = ShoppingCartFoodItemRelation.builder()
-                .shoppingCart(shoppingCart)
-                .foodItem(foodItem)
-                .amount(request.getFoodItemCount())
-                .build();
+        if (request.getFoodItemCount() > 0) {
+            ShoppingCartFoodItemRelation shoppingCartItem = ShoppingCartFoodItemRelation.builder()
+                    .shoppingCart(shoppingCart)
+                    .foodItem(foodItem)
+                    .amount(request.getFoodItemCount())
+                    .build();
+            
+            shoppingCartItemRepository.save(shoppingCartItem);
 
-        shoppingCartItemRepository.save(shoppingCartItem);
+            System.out.println("_________________________");
+            System.out.println("Shopping cart item created: " + shoppingCartItem);
 
-        System.out.println("_________________________");
-        System.out.println("Shopping cart item created: " + shoppingCartItem);
+            List<ShoppingCartFoodItemRelation> items = shoppingCart.getItems();
+            items.add(shoppingCartItem);
+            shoppingCart.setItems(items);
+            shoppingCartRepository.save(shoppingCart);
 
-        List<ShoppingCartFoodItemRelation> items = shoppingCart.getItems();
-        items.add(shoppingCartItem);
-        shoppingCart.setItems(items);
-        shoppingCartRepository.save(shoppingCart);
-
-        System.out.println("================");
-        System.out.println(shoppingCart.getItems());
+            System.out.println("================");
+            System.out.println(shoppingCart.getItems());
+        }
 
         return mapToDTO(shoppingCart);
     }
