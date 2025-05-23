@@ -92,8 +92,8 @@ public class FoodItemService {
     }
 
     @Transactional
-    public FoodItemResponse decreaseStock(FoodItem foodItem) {
-        foodItem.setStock(foodItem.getStock() - 1);
+    public FoodItemResponse decreaseStock(FoodItem foodItem, int amount) {
+        foodItem.setStock(foodItem.getStock() - amount);
         foodItemRepository.save(foodItem);
         return toResponseDTO(foodItem);
     }
@@ -129,7 +129,7 @@ public class FoodItemService {
             }
         }
         foodItemRepository.save(item);
-        decreaseStock(foodItem);
+        decreaseStock(foodItem, amount);
         return toResponseDTO(item);
     }
 

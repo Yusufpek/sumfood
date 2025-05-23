@@ -59,7 +59,7 @@ public class OrderService {
 		}
 		// decrease stock count
 		for (ShoppingCartFoodItemRelation item : items) {
-			foodItemService.decreaseStock(item.getFoodItem());
+			foodItemService.decreaseStock(item.getFoodItem(), item.getAmount());
 		}
 
 		// Order Address
@@ -230,7 +230,7 @@ public class OrderService {
 			throw new InvalidRequestException("Order is not cancellable!");
 		}
 		order.setOrderStatus(OrderStatus.CANCELLED);
-		for(ShoppingCartFoodItemRelation item: order.getShoppingCart().getItems()){
+		for (ShoppingCartFoodItemRelation item : order.getShoppingCart().getItems()) {
 			foodItemService.increaseStock(item.getFoodItem(), item.getAmount());
 		}
 		orderRepository.save(order);
